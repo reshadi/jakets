@@ -20,14 +20,15 @@ interface IOutputOptions {
 interface ITscOptions extends IOutputOptions {
   Module?: string;
   SourceMap?: boolean;
+  Target?: string; //enum {ES3, ES5, ES6};
 }
 
 interface IClosureOptions extends IOutputOptions {
 }
 
 //Default values that others can use for convenience
-export var ClientTscOptions: ITscOptions = {};
-export var ServerTscOptions: ITscOptions = {};
+export var ClientTscOptions: ITscOptions = {Target: "ES5"};
+export var ServerTscOptions: ITscOptions = {Target: "ES5"};
 export var ClientClosureOptions: IClosureOptions = {};
 
 export interface CompileConfig extends IOutputOptions {
@@ -93,13 +94,13 @@ function Minify(conf: CompileConfig): string {
     var closureOptions = conf.ClosureOptions || ClientClosureOptions;
     var cmd = "echo optimized it already > " + minifiedFile;
     console.log(cmd);
-    jake.exec([cmd], complete);
+    jake.exec([cmd], () => this.complete());
   }, { async: true });
 
   file(zippedFile, [minifiedFile], function() {
     var cmd = "gzip --best < " + minifiedFile + " > " + zippedFile;
     console.log(cmd);
-    jake.exec([cmd], complete);
+    jake.exec([cmd], () => this.complete());
   }, { async: true });
 
   return zippedFile;
@@ -119,7 +120,12 @@ function Compile(conf: CompileConfig): string {
 
   var options = "";
 
+  if (tscOptions.Target){
+    options += " --target " + tscOptions.Target;
+  }
+
   options += " --outDir " + outputDir;
+
   if (tscOptions.Module === "commonjs") {
     options += " --module commonjs";
   } else if (conf.OutFile) {
@@ -132,9 +138,9 @@ function Compile(conf: CompileConfig): string {
 
   var dependencies =
       [outputDir]
-          .concat(conf.Files)
-          .concat(GetExtraDependencies())
-          .map(MakeRelative);
+        .concat(conf.Files)
+        .concat(GetExtraDependencies())
+        .map(MakeRelative);
 
   directory(outputDir);
 
@@ -146,7 +152,7 @@ function Compile(conf: CompileConfig): string {
       // "echo //" + (new Date()) + " >> " + outputFile
     ];
     console.log(cmd + "\n");
-    jake.exec(cmd, complete, { printStdout: true });
+    jake.exec(cmd, () => this.complete(), { printStdout: true });
   }, { async: true });
 
   return outputFile;
