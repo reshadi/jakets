@@ -1,0 +1,24 @@
+{
+  "name": "jakets",
+  "version": "1.0.0",
+  "description": "Jake with TypeScript.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/reshadi/jakets.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/reshadi/jakets/issues"
+  },
+  "homepage": "https://github.com/reshadi/jakets",
+  "dependencies": {
+    "jake": "^8.0.12",
+    "tsd": "^0.6.4",
+    "typescript": "^1.6.0"
+  }
+}

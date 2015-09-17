@@ -12,12 +12,17 @@ var ReleaseDir = path.join(BuildDir, "release");
 
 var TSC = path.join(__dirname, "node_modules", ".bin", "tsc");
 
-interface ITscOptions {
+interface IOutputOptions {
+  OutDir?: string;
+  OutFile?: string;
+}
+
+interface ITscOptions extends IOutputOptions {
   Module?: string;
   SourceMap?: boolean;
 }
 
-interface IClosureOptions {
+interface IClosureOptions extends IOutputOptions {
 }
 
 //Default values that others can use for convenience
@@ -25,9 +30,8 @@ export var ClientTscOptions: ITscOptions = {};
 export var ServerTscOptions: ITscOptions = {};
 export var ClientClosureOptions: IClosureOptions = {};
 
-export interface CompileConfig {
+export interface CompileConfig extends IOutputOptions {
   Name: string;
-  OutFile?: string;
   Files: string[];
 
   TscOptions?: ITscOptions;
@@ -40,7 +44,11 @@ function RunAll(configs: CompileConfig[], processor?: (conf: CompileConfig) => s
   task("run", outputs, () => { }).invoke();
 }
 
-var Configs: CompileConfig[];
+var Configs: CompileConfig[] = [];
+
+export function AddConfig(config: CompileConfig):void {
+  Configs.push(config);
+}
 
 export function Configure(configs: CompileConfig[]) {
   Configs = configs;
@@ -104,27 +112,29 @@ function Minify(conf: CompileConfig): string {
 //////////////////////////////////////////////////////////////////////////////////////////
 // Compile 
 function Compile(conf: CompileConfig): string {
-  var outputDir = path.join(DebugDir, conf.Name);
-  var dependencies =
-    [outputDir]
-      .concat(conf.Files)
-      .concat(GetExtraDependencies())
-      .map(MakeRelative);
-
-  var outputFile: string = path.join(outputDir, conf.OutFile || "__compiled");
-  var options: string = "";
   var tscOptions = conf.TscOptions || (conf.OutFile ? ClientTscOptions : ServerTscOptions);
 
-  options += " --outDir " + path.join(DebugDir, conf.Name);
+  var outputDir = MakeRelative(path.join(tscOptions.OutDir || conf.OutDir || DebugDir, conf.Name));
+  var outputFile = path.join(outputDir, tscOptions.OutFile || conf.OutFile || "__compiled");
+
+  var options = "";
+
+  options += " --outDir " + outputDir;
   if (tscOptions.Module === "commonjs") {
     options += " --module commonjs";
   } else if (conf.OutFile) {
-    options += " --out " + outputFile;
+    options += " --outFile " + outputFile;
   }
 
   if (tscOptions.SourceMap){
     options += " --sourceMap"
   }
+
+  var dependencies =
+      [outputDir]
+          .concat(conf.Files)
+          .concat(GetExtraDependencies())
+          .map(MakeRelative);
 
   directory(outputDir);
 

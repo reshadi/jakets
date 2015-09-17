@@ -1,5 +1,5 @@
-ifndef THIRD_PARTY__INCLUDE_BARRIER_
-THIRD_PARTY__INCLUDE_BARRIER_ = 1
+ifndef JAKETS__INCLUDE_BARRIER_
+JAKETS__INCLUDE_BARRIER_ = 1
 
 # The following code will be use in almost all of the project makefiles
 # before we include any new makefile, the current makefile will be the last
@@ -8,17 +8,21 @@ THIRD_PARTY__INCLUDE_BARRIER_ = 1
 # to make the usage of this variable mroe readable and elegant, we add
 # and extra / at the end to differentiate it from / in the middle of the path
 # thre relpace // with nothing.
-THIRD_PARTY__DIR := $(subst //,,$(dir $(lastword $(MAKEFILE_LIST)))/)
+JAKETS__DIR := $(subst //,,$(dir $(lastword $(MAKEFILE_LIST)))/)
 
 
-ROOT__DIR = .
-NODE = node
-NPM = npm
-NODE_MODULES__DIR=$(THIRD_PARTY__DIR)/node_modules
+NODE := node
+NPM := npm
+
+NODE_MODULES__DIR=$(JAKETS__DIR)/node_modules
 
 TSD = $(NODE_MODULES__DIR)/.bin/tsd
 TSC = $(NODE_MODULES__DIR)/.bin/tsc
 JAKE = $(NODE_MODULES__DIR)/.bin/jake
+
+#One can use the following local file to overwrite the above settings
+-include LocalPaths.mk
+
 
 default: run
 
@@ -32,31 +36,32 @@ j-%: compile
 
 compile: setup Jakefile.js
 
-#We use the filter function to allow other makes files to add more .ts files if they need to
+#We use the filter function to allow other makefiles to add more .ts files if they need to
 Jakefile.js: Jakefile.ts
 	$(TSC) --module commonjs --sourceMap Jakefile.ts
 	for f in $(filter %.ts, $^); do echo $$f && $(TSC) --module commonjs --sourceMap $$f; done
 	$(JAKE) CreateDependencies
 
 
-setup: $(TSC) $(JAKE) $(THIRD_PARTY__DIR)/typings/jake/jake.d.ts
+setup: $(TSC) $(JAKE) $(JAKETS__DIR)/typings/jake/jake.d.ts
 
-$(THIRD_PARTY__DIR)/typings/jake/jake.d.ts: $(TSD)
-	cd $(THIRD_PARTY__DIR) && \
-	$(TSD) install jake && \
+#In the following we have to run tsd in the $(JAKETS__DIR), so we use the actual tsd path instead of $(TSD)
+$(JAKETS__DIR)/typings/jake/jake.d.ts: $(TSD)
+	cd $(JAKETS__DIR) && \
+	./node_modules/.bin/tsd install jake
 	touch $@
 
-NODE_MODULES_UPDATED__FILE_ := $(THIRD_PARTY__DIR)/.npm_modules_updated
+NODE_MODULES_UPDATED__FILE_ := $(JAKETS__DIR)/.npm_modules_updated
 $(TSC) $(TSD) $(JAKE): $(NODE_MODULES_UPDATED__FILE_)
 
-$(NODE_MODULES_UPDATED__FILE_): $(THIRD_PARTY__DIR)/package.json
-	cd $(THIRD_PARTY__DIR) && \
-	$(NPM) install typescript tsd jake && \
+$(NODE_MODULES_UPDATED__FILE_): $(JAKETS__DIR)/package.json
 	mkdir -p $(@D) && \
 	touch $@
+	cd $(JAKETS__DIR) && \
+	$(NPM) install typescript tsd jake
 
-$(THIRD_PARTY__DIR)/package.json:
-	cd $(THIRD_PARTY__DIR) && \
+$(JAKETS__DIR)/package.json:
+	cd $(JAKETS__DIR) && \
 	$(NPM) init && \
 	$(NPM) install typescript tsd jake --save
 
