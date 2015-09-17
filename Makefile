@@ -23,6 +23,9 @@ JAKE = $(NODE_MODULES__DIR)/.bin/jake
 #One can use the following local file to overwrite the above settings
 -include LocalPaths.mk
 
+###################################################################################################
+# setup and rules in the current working directory
+#
 
 default: run
 
@@ -32,6 +35,7 @@ run: compile
 j-%: compile
 	$(JAKE) $*
 
+#The following it auto generated to make sure local Jakefile.ts dependencies are captured properly
 -include Jakefile.mk
 
 compile: setup Jakefile.js
@@ -42,6 +46,13 @@ Jakefile.js: Jakefile.ts
 	for f in $(filter %.ts, $^); do echo $$f && $(TSC) --module commonjs --sourceMap $$f; done
 	$(JAKE) CreateDependencies
 
+#
+###################################################################################################
+
+
+###################################################################################################
+# setup in jakets directory
+#
 
 setup: $(TSC) $(JAKE) $(JAKETS__DIR)/typings/jake/jake.d.ts
 
@@ -65,4 +76,32 @@ $(JAKETS__DIR)/package.json:
 	$(NPM) init && \
 	$(NPM) install typescript tsd jake --save
 
+#
+###################################################################################################
+
+
+
+###################################################################################################
+# Rules for debugging/validation
+#
+
+# Each makefile that wants to show the variables of the makefile can do the following
+# Create a phony target that depends on the print-% where % is replaced by the name of variables
+# Example:
+.PHONY: show_vars
+show_vars: $(patsubst %,print-%, \
+          JAKETS__DIR \
+          NODE \
+          NPM \
+          TSC \
+          TSD \
+          JOKE \
+          )
+	@echo ----------------------------------------------------------------^^^jakets^^^
+
+print-%:
+	$(info ----------------------------------------------------------------)
+	$(info  $* = $($*))
+#
+###################################################################################################
 endif
