@@ -3,6 +3,12 @@
 import fs = require("fs");
 import path = require("path");
 
+declare module jake {
+  export interface TaskOptions {
+    parallelLimit?: number;
+  }
+}
+
 function MakeRelative(fullpath: string): string {
   return path.relative(process.cwd(), fullpath);
 }
@@ -42,7 +48,8 @@ export interface CompileConfig extends IOutputOptions {
 function RunAll(configs: CompileConfig[], processor?: (conf: CompileConfig) => string) {
   var outputs = configs.map(processor || Minify);
   console.log(outputs);
-  task("run", outputs, () => { }).invoke();
+  task("run", outputs, () => { 
+  }, <any>{async: true, parallelLimit: outputs.length}).invoke();
 }
 
 var Configs: CompileConfig[] = [];
@@ -78,23 +85,34 @@ function Publish(conf: CompileConfig): string {
 //////////////////////////////////////////////////////////////////////////////////////////
 // Minify
 
+export var GetMinifyCommands = function(minifiedFile: string, outputDir: string, files: string[]): string[] {
+  var cmd = [
+    "printf '\\n//" + (new Date()) + " " + files.join(" ") +  "\\n' >> " + minifiedFile
+  ];
+  return cmd;
+}
+
 function Minify(conf: CompileConfig): string {
   var compilerOutput = Compile(conf);
 
-  if (!conf.OutFile) {
+  var clOptions = conf.ClosureOptions || ClientClosureOptions;
+
+  var outputDir = MakeRelative(path.join(clOptions.OutDir || conf.OutDir || ReleaseDir, conf.Name));
+  var minifiedFile = path.join(outputDir, clOptions.OutFile || conf.OutFile || compilerOutput + ".min.js");
+  var zippedFile = minifiedFile + ".gz";
+
+  var minifyCmds = GetMinifyCommands(minifiedFile, outputDir, [compilerOutput]);
+
+  if (conf.ClosureOptions === null || !minifyCmds) {
     return compilerOutput;
   }
-  var outputDir = path.join(ReleaseDir, conf.Name);
-  var minifiedFile = path.join(outputDir, conf.OutFile);
-  var zippedFile = minifiedFile + ".gz";
 
   directory(outputDir);
 
   file(minifiedFile, [outputDir, compilerOutput], function() {
-    var closureOptions = conf.ClosureOptions || ClientClosureOptions;
-    var cmd = "echo optimized it already > " + minifiedFile;
+    var cmd = minifyCmds;
     console.log(cmd);
-    jake.exec([cmd], () => this.complete());
+    jake.exec(cmd, () => this.complete());
   }, { async: true });
 
   file(zippedFile, [minifiedFile], function() {
