@@ -162,7 +162,7 @@ function Compile(conf: CompileConfig): string {
 
   directory(outputDir);
 
-  file(outputFile, dependencies, () => {
+  file(outputFile, dependencies, function() {
     console.log("compiling " + outputFile + " : " + dependencies.join(" "));
     var cmd = [
       TSC + " " + options + " " + conf.Files.join(" "),
