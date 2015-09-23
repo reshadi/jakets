@@ -12,9 +12,8 @@ declare module jake {
 function MakeRelative(fullpath: string): string {
   return path.relative(process.cwd(), fullpath);
 }
-var BuildDir = MakeRelative(path.join(__dirname, "../build_new"));
-var DebugDir = path.join(BuildDir, "debug");
-var ReleaseDir = path.join(BuildDir, "release");
+
+export var BuildDir = process.env.BUILD__DIR || MakeRelative("./build");
 
 var TSC = path.join(__dirname, "node_modules", ".bin", "tsc");
 
@@ -33,9 +32,13 @@ interface IClosureOptions extends IOutputOptions {
 }
 
 //Default values that others can use for convenience
-export var ClientTscOptions: ITscOptions = {Target: "ES5"};
-export var ServerTscOptions: ITscOptions = {Target: "ES5"};
+export var ClientTscOptions: ITscOptions = { Target: "ES5" };
+export var ServerTscOptions: ITscOptions = { Target: "ES5" };
 export var ClientClosureOptions: IClosureOptions = {};
+
+export function Extend<T>(base: T): T {
+  return <T> Object.create(base);
+}
 
 export interface CompileConfig extends IOutputOptions {
   Name: string;
@@ -48,13 +51,13 @@ export interface CompileConfig extends IOutputOptions {
 function RunAll(configs: CompileConfig[], processor?: (conf: CompileConfig) => string) {
   var outputs = configs.map(processor || Minify);
   console.log(outputs);
-  task("run", outputs, () => { 
-  }, <any>{async: true, parallelLimit: outputs.length}).invoke();
+  task("run", outputs, () => {
+  }, <any>{ async: true, parallelLimit: outputs.length }).invoke();
 }
 
 var Configs: CompileConfig[] = [];
 
-export function AddConfig(config: CompileConfig):void {
+export function AddConfig(config: CompileConfig): void {
   Configs.push(config);
 }
 
@@ -87,7 +90,7 @@ function Publish(conf: CompileConfig): string {
 
 export var GetMinifyCommands = function(minifiedFile: string, outputDir: string, files: string[]): string[] {
   var cmd = [
-    "printf '\\n//" + (new Date()) + " " + files.join(" ") +  "\\n' >> " + minifiedFile
+    "printf '\\n//" + (new Date()) + " " + files.join(" ") + "\\n' >> " + minifiedFile
   ];
   return cmd;
 }
@@ -97,7 +100,9 @@ function Minify(conf: CompileConfig): string {
 
   var clOptions = conf.ClosureOptions || ClientClosureOptions;
 
-  var outputDir = MakeRelative(path.join(clOptions.OutDir || conf.OutDir || ReleaseDir, conf.Name));
+  var releaseDir = path.join(BuildDir, "release");
+
+  var outputDir = MakeRelative(path.join(clOptions.OutDir || conf.OutDir || releaseDir, conf.Name));
   var minifiedFile = path.join(outputDir, clOptions.OutFile || conf.OutFile || compilerOutput + ".min.js");
   var zippedFile = minifiedFile + ".gz";
 
@@ -132,13 +137,16 @@ function Minify(conf: CompileConfig): string {
 // Compile 
 function Compile(conf: CompileConfig): string {
   var tscOptions = conf.TscOptions || (conf.OutFile ? ClientTscOptions : ServerTscOptions);
+  
+  var debugDir = path.join(BuildDir, "debug");
 
-  var outputDir = MakeRelative(path.join(tscOptions.OutDir || conf.OutDir || DebugDir, conf.Name));
-  var outputFile = path.join(outputDir, tscOptions.OutFile || conf.OutFile || "__compiled");
+  var outputDir = MakeRelative(path.join(tscOptions.OutDir || conf.OutDir || debugDir, conf.Name));
+  var outputFilename = tscOptions.OutFile || conf.OutFile;
+  var outputFile = path.join(outputDir, outputFilename || "__compiled");
 
   var options = "";
 
-  if (tscOptions.Target){
+  if (tscOptions.Target) {
     options += " --target " + tscOptions.Target;
   }
 
@@ -146,19 +154,19 @@ function Compile(conf: CompileConfig): string {
 
   if (tscOptions.Module === "commonjs") {
     options += " --module commonjs";
-  } else if (conf.OutFile) {
+  } else if (outputFilename) {
     options += " --outFile " + outputFile;
   }
 
-  if (tscOptions.SourceMap){
+  if (tscOptions.SourceMap) {
     options += " --sourceMap"
   }
 
   var dependencies =
-      [outputDir]
-        .concat(conf.Files)
-        .concat(GetExtraDependencies())
-        .map(MakeRelative);
+    [outputDir]
+      .concat(conf.Files)
+      .concat(GetExtraDependencies())
+      .map(MakeRelative);
 
   directory(outputDir);
 
