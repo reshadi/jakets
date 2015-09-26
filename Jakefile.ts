@@ -3,6 +3,9 @@
 import fs = require("fs");
 import path = require("path");
 
+//////////////////////////////////////////////////////////////////////////////////////////
+// Types and utils
+
 declare module jake {
   export interface TaskOptions {
     parallelLimit?: number;
@@ -10,6 +13,9 @@ declare module jake {
 }
 
 function MakeRelative(fullpath: string): string {
+  if (!fullpath) {
+    return fullpath;
+  }
   return path.relative(process.cwd(), fullpath);
 }
 
@@ -20,6 +26,8 @@ var TSC = path.join(__dirname, "node_modules", ".bin", "tsc");
 interface IOutputOptions {
   OutDir?: string;
   OutFile?: string;
+  OutDirName?: string;
+  OutFileName?: string;
 }
 
 interface ITscOptions extends IOutputOptions {
@@ -31,16 +39,9 @@ interface ITscOptions extends IOutputOptions {
 interface IClosureOptions extends IOutputOptions {
 }
 
-//Default values that others can use for convenience
-export var ClientTscOptions: ITscOptions = { Target: "ES5" };
-export var ServerTscOptions: ITscOptions = { Target: "ES5" };
-export var ClientClosureOptions: IClosureOptions = {};
-
-export function Extend<T>(base: T): T {
-  return <T> Object.create(base);
-}
-
-export interface CompileConfig extends IOutputOptions {
+export interface ICompileConfig {
+  BuildDir?: string;
+  OutFileName?: string;
   Name: string;
   Files: string[];
 
@@ -48,22 +49,67 @@ export interface CompileConfig extends IOutputOptions {
   ClosureOptions?: IClosureOptions;
 }
 
-function RunAll(configs: CompileConfig[], processor?: (conf: CompileConfig) => string) {
+function GetOutputOptions(outputOptions: IOutputOptions, conf: ICompileConfig): IOutputOptions {
+  outputOptions = outputOptions || {};
+  let outDir = outputOptions.OutDir;
+  if (!outDir) {
+    let buildDir = conf.BuildDir || BuildDir;
+    let outDirName = outputOptions.OutDirName || "";
+    outDir = path.join(buildDir, outDirName, conf.Name); //TODO: let's fix this
+  }
+
+  let outFile = outputOptions.OutFile;
+  let outFileName = outputOptions.OutFileName || conf.OutFileName;
+  if (!outFile && outFile !== null && outFileName) {
+    outFile = path.join(outDir, outFileName);
+  }
+
+  return {
+    OutDir: MakeRelative(outDir),
+    OutFile: MakeRelative(outFile),
+    OutFileName: outFileName,
+  };
+}
+
+//Default values that others can use for convenience
+export var DefaultClientTscOptions: ITscOptions = {
+  Target: "ES5",
+  OutDirName: "debug",
+};
+
+export var DefaultServerTscOptions: ITscOptions = {
+  Target: "ES5",
+  OutDirName: "release",
+  Module: "commonjs",
+};
+export var DefaultClosureOptions: IClosureOptions = {
+  OutDirName: "release"
+};
+
+export function Extend<T>(base: T): T {
+  return <T> Object.create(base);
+}
+
+
+function RunAll(configs: ICompileConfig[], processor?: (conf: ICompileConfig) => string) {
   var outputs = configs.map(processor || Minify);
   console.log(outputs);
   task("run", outputs, () => {
   }, <any>{ async: true, parallelLimit: outputs.length }).invoke();
 }
 
-var Configs: CompileConfig[] = [];
+var Configs: ICompileConfig[] = [];
 
-export function AddConfig(config: CompileConfig): void {
+export function AddConfig(config: ICompileConfig): void {
   Configs.push(config);
 }
 
-export function Configure(configs: CompileConfig[]) {
+export function Configure(configs: ICompileConfig[]) {
   Configs = configs;
 }
+
+// 
+//////////////////////////////////////////////////////////////////////////////////////////
 
 desc("publish targets");
 task("publish", [], () => RunAll(Configs, Publish));
@@ -77,7 +123,7 @@ task("compile", [], () => RunAll(Configs, Compile));
 //////////////////////////////////////////////////////////////////////////////////////////
 // PUblish
 
-function Publish(conf: CompileConfig): string {
+function Publish(conf: ICompileConfig): string {
   return "";
 }
 
@@ -95,15 +141,15 @@ export var GetMinifyCommands = function(minifiedFile: string, outputDir: string,
   return cmd;
 }
 
-function Minify(conf: CompileConfig): string {
+function Minify(conf: ICompileConfig): string {
   var compilerOutput = Compile(conf);
 
-  var clOptions = conf.ClosureOptions || ClientClosureOptions;
+  var clOptions = conf.ClosureOptions || DefaultClosureOptions;
 
-  var releaseDir = path.join(BuildDir, "release");
+  var outputOptions = GetOutputOptions(clOptions, conf);
 
-  var outputDir = MakeRelative(path.join(clOptions.OutDir || conf.OutDir || releaseDir, conf.Name));
-  var minifiedFile = path.join(outputDir, clOptions.OutFile || conf.OutFile || compilerOutput + ".min.js");
+  var outputDir = outputOptions.OutDir;
+  var minifiedFile = outputOptions.OutFile || path.join(outputDir, compilerOutput + ".min.js");
   var zippedFile = minifiedFile + ".gz";
 
   var minifyCmds = GetMinifyCommands(minifiedFile, outputDir, [compilerOutput]);
@@ -135,26 +181,24 @@ function Minify(conf: CompileConfig): string {
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Compile 
-function Compile(conf: CompileConfig): string {
-  var tscOptions = conf.TscOptions || (conf.OutFile ? ClientTscOptions : ServerTscOptions);
-  
-  var debugDir = path.join(BuildDir, "debug");
+function Compile(conf: ICompileConfig): string {
+  var tscOptions = conf.TscOptions || (conf.OutFileName === null ? DefaultServerTscOptions : DefaultClientTscOptions);
+  var outputOptions = GetOutputOptions(tscOptions, conf);
 
-  var outputDir = MakeRelative(path.join(tscOptions.OutDir || conf.OutDir || debugDir, conf.Name));
-  var outputFilename = tscOptions.OutFile || conf.OutFile;
-  var outputFile = path.join(outputDir, outputFilename || "__compiled");
-
+  var outputDir = outputOptions.OutDir;
+  var outputFile = outputOptions.OutFile || path.join(outputDir, "__compiled_" + conf.Name);
+console.log("out:"+outputFile);
   var options = "";
 
   if (tscOptions.Target) {
     options += " --target " + tscOptions.Target;
   }
 
-  options += " --outDir " + outputDir;
+  options += " --outDir " + outputOptions.OutDir;
 
   if (tscOptions.Module === "commonjs") {
     options += " --module commonjs";
-  } else if (outputFilename) {
+  } else if (outputOptions.OutFile) {
     options += " --outFile " + outputFile;
   }
 
@@ -203,15 +247,16 @@ function GetExtraDependencies(): string[] {
     dependencies = dependencies.concat("tsd.json");
   }
 
+  var jakefilePattern = /(Jakefile.*)\.js$/;
   var jsJakeFiles =
     Object.keys(require('module')._cache)
-      .filter(m => m.search(/Jakefile.js$/) > -1)
+      .filter(m => m.search(jakefilePattern) > -1)
       .map(MakeRelative)
       .map(f => f.replace(/\\/g, "/"))
     ;
   var tsJakeFiles =
     jsJakeFiles
-      .map(f => f.replace("Jakefile.js", "Jakefile.ts"))
+      .map(f => f.replace(jakefilePattern, "$1.ts"))
     ;
 
   var jakeFileMkDependency = tsJakeFiles.concat(makefile);

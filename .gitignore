@@ -1,0 +1,4 @@
+.node_modules_updated
+node_modules/
+typings/
+Jakefile.js*

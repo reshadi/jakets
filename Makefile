@@ -62,7 +62,7 @@ $(JAKETS__DIR)/typings/jake/jake.d.ts: $(TSD)
 	./node_modules/.bin/tsd install jake
 	touch $@
 
-NODE_MODULES_UPDATED__FILE_ := $(JAKETS__DIR)/.npm_modules_updated
+NODE_MODULES_UPDATED__FILE_ := $(JAKETS__DIR)/.node_modules_updated
 $(TSC) $(TSD) $(JAKE): $(NODE_MODULES_UPDATED__FILE_)
 
 $(NODE_MODULES_UPDATED__FILE_): $(JAKETS__DIR)/package.json
