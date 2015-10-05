@@ -40,11 +40,14 @@ j-%: compile
 
 compile: setup Jakefile.js
 
-#We use the filter function to allow other makefiles to add more .ts files if they need to
-Jakefile.js: Jakefile.ts
-	$(TSC) --module commonjs --sourceMap Jakefile.ts
-	for f in $(filter %.ts, $^); do echo $$f && $(TSC) --module commonjs --sourceMap $$f; done
-	$(JAKE) CreateDependencies
+Jakefile.js:
+	if [ -f Jakefile.ts ]; then $(TSC) --module commonjs --sourceMap Jakefile.ts; fi
+
+# #We use the filter function to allow other makefiles to add more .ts files if they need to
+# Jakefile.js: Jakefile.ts
+# 	$(TSC) --module commonjs --sourceMap Jakefile.ts
+# 	for f in $(filter %.ts, $^); do echo $$f && $(TSC) --module commonjs --sourceMap $$f; done
+# 	$(JAKE) CreateDependencies
 
 #
 ###################################################################################################
@@ -54,7 +57,10 @@ Jakefile.js: Jakefile.ts
 # setup in jakets directory
 #
 
-setup: $(TSC) $(JAKE) $(JAKETS__DIR)/typings/jake/jake.d.ts
+setup: $(TSC) $(JAKE) $(JAKETS__DIR)/Jakefile.js 
+
+$(JAKETS__DIR)/Jakefile.js: $(JAKETS__DIR)/Jakefile.ts $(JAKETS__DIR)/typings/jake/jake.d.ts
+	$(TSC) --module commonjs --sourceMap $^
 
 #In the following we have to run tsd in the $(JAKETS__DIR), so we use the actual tsd path instead of $(TSD)
 $(JAKETS__DIR)/typings/jake/jake.d.ts: $(TSD)
