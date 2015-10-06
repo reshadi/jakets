@@ -38,10 +38,13 @@ j-%: compile
 #The following it auto generated to make sure local Jakefile.ts dependencies are captured properly
 -include Jakefile.mk
 
-compile: setup Jakefile.js
-
-Jakefile.js:
+compile: setup
 	if [ -f Jakefile.ts ]; then $(TSC) --module commonjs --sourceMap Jakefile.ts; fi
+
+# compile: setup Jakefile.js
+
+# Jakefile.js:
+# 	if [ -f Jakefile.ts ]; then $(TSC) --module commonjs --sourceMap Jakefile.ts; fi
 
 # #We use the filter function to allow other makefiles to add more .ts files if they need to
 # Jakefile.js: Jakefile.ts
@@ -59,13 +62,14 @@ Jakefile.js:
 
 setup: $(TSC) $(JAKE) $(JAKETS__DIR)/Jakefile.js 
 
-$(JAKETS__DIR)/Jakefile.js: $(JAKETS__DIR)/Jakefile.ts $(JAKETS__DIR)/typings/jake/jake.d.ts
+$(JAKETS__DIR)/Jakefile.js: $(JAKETS__DIR)/Jakefile.ts $(JAKETS__DIR)/typings/tsd.d.ts
 	$(TSC) --module commonjs --sourceMap $^
 
 #In the following we have to run tsd in the $(JAKETS__DIR), so we use the actual tsd path instead of $(TSD)
-$(JAKETS__DIR)/typings/jake/jake.d.ts: $(TSD)
+#$(JAKETS__DIR)/typings/jake/jake.d.ts: $(TSD)
+$(JAKETS__DIR)/typings/tsd.d.ts: $(TSD) $(JAKETS__DIR)/package.json
 	cd $(JAKETS__DIR) && \
-	./node_modules/.bin/tsd install jake
+	./node_modules/.bin/tsd install jake bower
 	touch $@
 
 NODE_MODULES_UPDATED__FILE_ := $(JAKETS__DIR)/.node_modules_updated

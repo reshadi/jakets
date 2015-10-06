@@ -1,0 +1,30 @@
+###################################################################################################
+# setup jakets and basic tools
+#
+
+JAKETS__DIR = ../jakets
+
+# Optionally, we can uncomment this one if we want to check multiple
+# ifeq ("$(wildcard $(JAKETS__DIR))","")
+# JAKETS__DIR = ./jakets
+# endif
+
+ifeq ("$(wildcard $(JAKETS__DIR))","")
+$(shell git clone https://github.com/reshadi/jakets.git $(JAKETS__DIR))
+endif
+
+include $(JAKETS__DIR)/Makefile
+
+#
+###################################################################################################
+
+
+###################################################################################################
+# normal rules
+#
+
+# all: $(JAKE)
+# 	$(JAKE)
+
+#
+###################################################################################################
