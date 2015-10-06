@@ -21,7 +21,36 @@ function MakeRelative(fullpath: string): string {
 
 export var BuildDir = process.env.BUILD__DIR || MakeRelative("./build");
 
-var TSC = path.join(__dirname, "node_modules", ".bin", "tsc");
+export function exec(cmd: string[], callback, isSilent?: boolean) {
+  isSilent || console.log(cmd);
+  jake.exec(cmd, callback, { printStdout: true, printStderr: true });
+}
+
+// var TSC = path.join(__dirname, "node_modules", ".bin", "tsc");
+export var tsc = (function() {
+  let localTypescript = path.join(process.cwd(), "node_modules/typescript/lib/tsc.js");
+  let jaketsTypescript = path.join(__dirname, "node_modules/typescript/lib/tsc.js");
+  let tscCmd = "tsc"; //default is the one in the path
+  try {
+    if (fs.statSync(localTypescript)) {
+      tscCmd = "node " + localTypescript;
+    } else {
+      let execSync = require('child_process').execSync;
+      execSync("tsc --version "); //Confirms the global one exists
+    }
+  } catch (e) {
+    tscCmd = "node " + jaketsTypescript;
+  }
+
+  return function(args, callback) {
+    //var args = Array.prototype.join(arguments, " ");
+    if (!Array.isArray(args)) {
+      args = [args];
+    }
+    var cmd = args.map(function(arg) { return tscCmd + " " + arg; });
+    exec(cmd, callback);
+  };
+})();
 
 interface IOutputOptions {
   OutDir?: string;
@@ -187,7 +216,7 @@ function Compile(conf: ICompileConfig): string {
 
   var outputDir = outputOptions.OutDir;
   var outputFile = outputOptions.OutFile || path.join(outputDir, "__compiled_" + conf.Name);
-console.log("out:"+outputFile);
+  console.log("out:" + outputFile);
   var options = "";
 
   if (tscOptions.Target) {
@@ -216,13 +245,10 @@ console.log("out:"+outputFile);
 
   file(outputFile, dependencies, function() {
     console.log("compiling " + outputFile + " : " + dependencies.join(" "));
-    var cmd = [
-      TSC + " " + options + " " + conf.Files.join(" "),
+    tsc(options + " " + conf.Files.join(" "), () => exec([
       "printf '\\n//" + (new Date()) + "\\n' >> " + outputFile
       // "echo //" + (new Date()) + " >> " + outputFile
-    ];
-    console.log(cmd + "\n");
-    jake.exec(cmd, () => this.complete(), { printStdout: true });
+    ], () => this.complete()));
   }, { async: true });
 
   return outputFile;
@@ -288,8 +314,7 @@ file("tsd.json", ["package.json"], () => {
     TSD + " init --overwrite",
     TSD + " install " + pkgNames.join(" ") + " --save --overwrite"
   ];
-  console.log(cmds);
-  jake.exec(cmds, complete, { printStdout: true });
+  exec(cmds, complete);
   console.log(pkg.dependencies);
 }, { async: true });
 
@@ -297,7 +322,7 @@ file("tsd.json", ["package.json"], () => {
 file("package.json", [], () => {
   console.error("Generating package.json")
   var NPM = path.join("npm");
-  jake.exec([NPM + " init"], complete, { printStdout: true });
+  exec([NPM + " init"], complete);
 }, { async: true });
 
 // 

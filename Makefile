@@ -84,7 +84,7 @@ $(NODE_MODULES_UPDATED__FILE_): $(JAKETS__DIR)/package.json
 $(JAKETS__DIR)/package.json:
 	cd $(JAKETS__DIR) && \
 	$(NPM) init && \
-	$(NPM) install typescript tsd jake --save
+	$(NPM) install typescript tsd jake bower --save
 
 #
 ###################################################################################################
