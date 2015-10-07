@@ -79,7 +79,7 @@ $(NODE_MODULES_UPDATED__FILE_): $(JAKETS__DIR)/package.json
 	mkdir -p $(@D) && \
 	touch $@
 	cd $(JAKETS__DIR) && \
-	$(NPM) install typescript tsd jake
+	$(NPM) install
 
 $(JAKETS__DIR)/package.json:
 	cd $(JAKETS__DIR) && \
