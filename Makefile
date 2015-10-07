@@ -40,6 +40,7 @@ j-%: compile
 
 compile: setup
 	if [ -f Jakefile.ts ]; then $(TSC) --module commonjs --sourceMap Jakefile.ts; fi
+	$(JAKE) CreateDependencies
 
 # compile: setup Jakefile.js
 
