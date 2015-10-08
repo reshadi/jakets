@@ -10,6 +10,22 @@ JAKETS__INCLUDE_BARRIER_ = 1
 # thre relpace // with nothing.
 JAKETS__DIR := $(subst //,,$(dir $(lastword $(MAKEFILE_LIST)))/)
 
+NODE__VERSION=v4.1.1 
+
+###################################################################################################
+# setup platform dependent variables
+#
+SHELL := /bin/bash
+UNAME := $(shell uname)
+
+ifeq ($(UNAME), Linux)
+	NULL = /dev/null
+else
+	NULL = Out-Null
+endif
+#
+###################################################################################################
+
 
 NODE := node
 NPM := npm
@@ -40,7 +56,10 @@ j-%: compile
 
 compile: setup
 	if [ -f Jakefile.ts ]; then $(TSC) --module commonjs --sourceMap Jakefile.ts; fi
-	$(JAKE) CreateDependencies
+	if [ "`$(JAKE) -T | grep CreateDependencies`" == "" ]; \
+		then $(JAKE) CreateDependencies -f $(JAKETS__DIR)/Jakefile.js; \
+		else $(JAKE) CreateDependencies; \
+	fi
 
 # compile: setup Jakefile.js
 
@@ -73,7 +92,7 @@ $(JAKETS__DIR)/typings/tsd.d.ts: $(TSD) $(JAKETS__DIR)/package.json
 	./node_modules/.bin/tsd install jake bower
 	touch $@
 
-NODE_MODULES_UPDATED__FILE_ := $(JAKETS__DIR)/.node_modules_updated
+NODE_MODULES_UPDATED__FILE_ := $(JAKETS__DIR)/node_modules/.node_modules_updated
 $(TSC) $(TSD) $(JAKE): $(NODE_MODULES_UPDATED__FILE_)
 
 $(NODE_MODULES_UPDATED__FILE_): $(JAKETS__DIR)/package.json

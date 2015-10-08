@@ -12,11 +12,15 @@ declare module jake {
   }
 }
 
+//We use the following to better clarity what we are using/checking
+var LocalDir = process.cwd();
+var JaketsDir = __dirname;
+
 function MakeRelative(fullpath: string): string {
   if (!fullpath) {
     return fullpath;
   }
-  return path.relative(process.cwd(), fullpath);
+  return path.relative(LocalDir, fullpath);
 }
 
 export var BuildDir = process.env.BUILD__DIR || MakeRelative("./build");
@@ -26,8 +30,7 @@ export function exec(cmd: string[], callback, isSilent?: boolean) {
   jake.exec(cmd, callback, { printStdout: true, printStderr: true });
 }
 
-// var TSC = path.join(__dirname, "node_modules", ".bin", "tsc");
-export var tsc = (function() {
+var TSC = (function() {
   let localTypescript = path.join(process.cwd(), "node_modules/typescript/lib/tsc.js");
   let jaketsTypescript = path.join(__dirname, "node_modules/typescript/lib/tsc.js");
   let tscCmd = "tsc"; //default is the one in the path
@@ -41,16 +44,17 @@ export var tsc = (function() {
   } catch (e) {
     tscCmd = "node " + jaketsTypescript;
   }
+  return tscCmd;
+})(); //path.join(__dirname, "node_modules", ".bin", "tsc");
 
-  return function(args, callback) {
-    //var args = Array.prototype.join(arguments, " ");
-    if (!Array.isArray(args)) {
-      args = [args];
-    }
-    var cmd = args.map(function(arg) { return tscCmd + " " + arg; });
-    exec(cmd, callback);
-  };
-})();
+export function tsc(args, callback) {
+  //var args = Array.prototype.join(arguments, " ");
+  if (!Array.isArray(args)) {
+    args = [args];
+  }
+  var cmd = args.map(function(arg) { return TSC + " " + arg; });
+  exec(cmd, callback);
+}
 
 interface IOutputOptions {
   OutDir?: string;
@@ -260,6 +264,7 @@ function Compile(conf: ICompileConfig): string {
 //////////////////////////////////////////////////////////////////////////////////////////
 // Dependencies 
 
+desc("Creates all dependencies");
 task("CreateDependencies", [], () => {
   task("temp", GetExtraDependencies()).invoke();
 }, { async: true });
