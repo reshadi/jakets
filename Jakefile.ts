@@ -316,6 +316,7 @@ file("tsd.json", ["package.json"], () => {
   var pkgNames = Object.keys(dependencies);
   var TSD = path.join(__dirname, "node_modules", ".bin", "tsd");
   var cmds = [
+    "npm install",
     TSD + " init --overwrite",
     TSD + " install " + pkgNames.join(" ") + " --save --overwrite"
   ];
