@@ -89,7 +89,7 @@ $(JAKETS__DIR)/Jakefile.js: $(JAKETS__DIR)/Jakefile.ts $(JAKETS__DIR)/typings/ts
 #$(JAKETS__DIR)/typings/jake/jake.d.ts: $(TSD)
 $(JAKETS__DIR)/typings/tsd.d.ts: $(TSD) $(JAKETS__DIR)/package.json
 	cd $(JAKETS__DIR) && \
-	./node_modules/.bin/tsd install jake bower
+	./node_modules/.bin/tsd install jake bower browserify shelljs --save --overwrite
 	touch $@
 
 NODE_MODULES_UPDATED__FILE_ := $(JAKETS__DIR)/node_modules/.node_modules_updated

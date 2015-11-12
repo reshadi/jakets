@@ -1,60 +1,39 @@
-/// <reference path="typings/jake/jake.d.ts" />
+import * as fs from "fs";
+import * as path from "path";
 
-import fs = require("fs");
-import path = require("path");
+import * as jake from "./Jake";
+export let exec = jake.Exec;
+export let shell = jake.Shell;
+
+import * as Bower from "./Bower";
+export let bower = Bower.Exec;
+
+import * as Tsc from "./Tsc";
+export let  tsc = Tsc.Exec;
+
+import * as Browserify from "./Browserify";
+export let browserify = Browserify.Exec;
+
+import * as Closure from "./Closure";
+export let closure = Closure.Exec;
+
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Types and utils
-
-declare module jake {
-  export interface TaskOptions {
-    parallelLimit?: number;
-  }
-}
 
 //We use the following to better clarity what we are using/checking
 var LocalDir = process.cwd();
 var JaketsDir = __dirname;
 
-function MakeRelative(fullpath: string): string {
+export function MakeRelative(fullpath: string): string {
   if (!fullpath) {
     return fullpath;
   }
   return path.relative(LocalDir, fullpath);
 }
 
-export var BuildDir = process.env.BUILD__DIR || MakeRelative("./build");
+export var BuildDir: string = process.env.BUILD__DIR || MakeRelative("./build");
 
-export function exec(cmd: string[], callback, isSilent?: boolean) {
-  isSilent || console.log(cmd);
-  jake.exec(cmd, callback, { printStdout: true, printStderr: true });
-}
-
-var TSC = (function() {
-  let localTypescript = path.join(process.cwd(), "node_modules/typescript/lib/tsc.js");
-  let jaketsTypescript = path.join(__dirname, "node_modules/typescript/lib/tsc.js");
-  let tscCmd = "tsc"; //default is the one in the path
-  try {
-    if (fs.statSync(localTypescript)) {
-      tscCmd = "node " + localTypescript;
-    } else {
-      let execSync = require('child_process').execSync;
-      execSync("tsc --version "); //Confirms the global one exists
-    }
-  } catch (e) {
-    tscCmd = "node " + jaketsTypescript;
-  }
-  return tscCmd;
-})(); //path.join(__dirname, "node_modules", ".bin", "tsc");
-
-export function tsc(args, callback) {
-  //var args = Array.prototype.join(arguments, " ");
-  if (!Array.isArray(args)) {
-    args = [args];
-  }
-  var cmd = args.map(function(arg) { return TSC + " " + arg; });
-  exec(cmd, callback);
-}
 
 interface IOutputOptions {
   OutDir?: string;
@@ -120,7 +99,7 @@ export var DefaultClosureOptions: IClosureOptions = {
 };
 
 export function Extend<T>(base: T): T {
-  return <T> Object.create(base);
+  return <T>Object.create(base);
 }
 
 
@@ -195,14 +174,12 @@ function Minify(conf: ICompileConfig): string {
 
   file(minifiedFile, [outputDir, compilerOutput], function() {
     var cmd = minifyCmds;
-    console.log(cmd);
-    jake.exec(cmd, () => this.complete());
+    jake.Exec(cmd, () => this.complete());
   }, { async: true });
 
   file(zippedFile, [minifiedFile], function() {
     var cmd = "gzip --best < " + minifiedFile + " > " + zippedFile;
-    console.log(cmd);
-    jake.exec([cmd], () => this.complete());
+    jake.Exec(cmd, () => this.complete());
   }, { async: true });
 
   return zippedFile;
