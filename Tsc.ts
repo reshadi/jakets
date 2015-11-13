@@ -2,8 +2,8 @@ import * as Node from "./Node";
 
 export var Exec = Node.CreateNodeExec(
   "tsc",
-  "typescript/lib/tsc.js",
-  "tsc --version "
+  "tsc --version ",
+  "typescript/lib/tsc.js"
 );
 
 // import fs = require("fs");

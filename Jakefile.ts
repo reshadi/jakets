@@ -251,8 +251,12 @@ function GetExtraDependencies(): string[] {
 
   var dependencies: string[] = [];// [makefile];
 
+  if (fs.existsSync("bower.json")){
+    dependencies.push("bower");
+  }
+
   if (fs.existsSync("package.json")) {
-    dependencies = dependencies.concat("tsd.json");
+    dependencies.push("tsd.json");
   }
 
   var jakefilePattern = /(Jakefile.*)\.js$/;
@@ -280,10 +284,14 @@ function GetExtraDependencies(): string[] {
       ;
     fs.writeFile(jakeFileMk, content, complete);
   }, { async: true });
-  dependencies = dependencies.concat(jakeFileMk);
+  dependencies.push(jakeFileMk);
 
   return dependencies;
 }
+
+task("bower", [], function() {
+  bower("update --force-latest", () => this.complete());
+}, { async: true })
 
 // desc("update the TSD info");
 file("tsd.json", ["package.json"], () => {
