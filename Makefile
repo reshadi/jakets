@@ -35,6 +35,7 @@ NODE_MODULES__DIR=$(JAKETS__DIR)/node_modules
 TSD = $(NODE_MODULES__DIR)/.bin/tsd
 TSC = $(NODE_MODULES__DIR)/.bin/tsc
 JAKE = $(NODE_MODULES__DIR)/.bin/jake
+BOWER = $(NODE_MODULES__DIR)/.bin/bower
 
 #One can use the following local file to overwrite the above settings
 -include LocalPaths.mk
@@ -55,6 +56,7 @@ j-%: compile
 -include Jakefile.mk
 
 compile: setup
+	#if [ -f bower.json ]; then pushd $(JAKETS__DIR); $(BOWER) link; popd; $(BOWER) link jakets; $(BOWER) update; fi
 	if [ -f Jakefile.ts ]; then $(TSC) --module commonjs --sourceMap Jakefile.ts; fi
 	if [ "`$(JAKE) -T | grep CreateDependencies`" == "" ]; \
 		then $(JAKE) CreateDependencies -f $(JAKETS__DIR)/Jakefile.js; \
@@ -80,7 +82,7 @@ compile: setup
 # setup in jakets directory
 #
 
-setup: $(TSC) $(JAKE) $(JAKETS__DIR)/Jakefile.js 
+setup: $(BOWER) $(TSC) $(JAKE) $(JAKETS__DIR)/Jakefile.js 
 
 $(JAKETS__DIR)/Jakefile.js: $(JAKETS__DIR)/Jakefile.ts $(JAKETS__DIR)/typings/tsd.d.ts
 	$(TSC) --module commonjs --sourceMap $^
@@ -93,7 +95,7 @@ $(JAKETS__DIR)/typings/tsd.d.ts: $(TSD) $(JAKETS__DIR)/package.json
 	touch $@
 
 NODE_MODULES_UPDATED__FILE_ := $(JAKETS__DIR)/node_modules/.node_modules_updated
-$(TSC) $(TSD) $(JAKE): $(NODE_MODULES_UPDATED__FILE_)
+$(TSC) $(TSD) $(JAKE) $(BOWER): $(NODE_MODULES_UPDATED__FILE_)
 
 $(NODE_MODULES_UPDATED__FILE_): $(JAKETS__DIR)/package.json
 	mkdir -p $(@D) && \

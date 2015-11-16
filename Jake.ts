@@ -1,7 +1,8 @@
 /// <reference path="typings/jake/jake.d.ts" />
 
 /// <reference path="typings/shelljs/shelljs.d.ts" />
-export let Shell = require("shelljs");
+import * as ShellJs from "shelljs";
+export let Shell = ShellJs;//require("shelljs");
 
 declare module jake {
   export interface TaskOptions {
