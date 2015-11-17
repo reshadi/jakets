@@ -5,11 +5,13 @@ import * as jake from "./Jake";
 export let exec = jake.Exec;
 export let shell = jake.Shell;
 
+import * as Node from "./Node";
+
 import * as Bower from "./Bower";
 export let bower = Bower.Exec;
 
 import * as Tsc from "./Tsc";
-export let  tsc = Tsc.Exec;
+export let tsc = Tsc.Exec;
 
 import * as Browserify from "./Browserify";
 export let browserify = Browserify.Exec;
@@ -251,12 +253,12 @@ function GetExtraDependencies(): string[] {
 
   var dependencies: string[] = [];// [makefile];
 
-  if (fs.existsSync("bower.json")){
+  if (fs.existsSync("bower.json")) {
     dependencies.push("bower");
   }
 
-  if (fs.existsSync("package.json")) {
-    dependencies.push("tsd.json");
+  if (fs.existsSync("package.json") || fs.existsSync("tsd.json")) {
+    dependencies.push("typings/tsd.d.ts");
   }
 
   var jakefilePattern = /(Jakefile.*)\.js$/;
@@ -293,20 +295,47 @@ task("bower", [], function() {
   bower("update --force-latest", () => this.complete());
 }, { async: true })
 
-// desc("update the TSD info");
-file("tsd.json", ["package.json"], () => {
+var tsd = Node.CreateNodeExec(
+  "tsd",
+  "tsd --version ",
+  ".bin/tsd"
+);
+
+file("typings/tsd.d.ts", ["tsd.json"], function() {
   var pkgStr: string = fs.readFileSync("package.json", 'utf8');
   var pkg = JSON.parse(pkgStr);
   var dependencies = pkg["dependencies"] || {};
   var pkgNames = Object.keys(dependencies);
-  var TSD = path.join(__dirname, "node_modules", ".bin", "tsd");
-  var cmds = [
-    "npm install",
-    TSD + " init --overwrite",
-    TSD + " install " + pkgNames.join(" ") + " --save --overwrite"
-  ];
-  exec(cmds, complete);
+  tsd([
+    "install --save " + pkgNames.join(" "),
+    "reinstall --clean",
+    "rebundle"
+  ], () => {
+    shell.echo("typings/tsd.d.ts");
+    this.complete()
+  });
   console.log(pkg.dependencies);
+}, { async: true });
+
+// desc("update the TSD info");
+file("tsd.json", ["package.json"], function() {
+  exec("npm install", () => {
+    if (!shell.test("-f", "tsd.json")) {
+      tsd("init", this.complete());
+    }
+  });
+  // var pkgStr: string = fs.readFileSync("package.json", 'utf8');
+  // var pkg = JSON.parse(pkgStr);
+  // var dependencies = pkg["dependencies"] || {};
+  // var pkgNames = Object.keys(dependencies);
+  // var TSD = path.join(__dirname, "node_modules", ".bin", "tsd");
+  // var cmds = [
+  //   "npm install",
+  //   TSD + " init --overwrite",
+  //   TSD + " install " + pkgNames.join(" ") + " --save --overwrite"
+  // ];
+  // exec(cmds, complete);
+  // console.log(pkg.dependencies);
 }, { async: true });
 
 // desc("create empty package.json if missing");
