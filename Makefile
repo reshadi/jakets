@@ -10,7 +10,7 @@ JAKETS__INCLUDE_BARRIER_ = 1
 # thre relpace // with nothing.
 JAKETS__DIR := $(subst //,,$(dir $(lastword $(MAKEFILE_LIST)))/)
 
-NODE__VERSION=v4.1.1 
+EXPECTED_NODE_VERSION=v5.0.0
 
 ###################################################################################################
 # setup platform dependent variables
@@ -31,6 +31,18 @@ NODE := node
 NPM := npm
 
 NODE_MODULES__DIR=$(JAKETS__DIR)/node_modules
+
+NODE__DIR =
+NODE__BIN = 
+NODE_VERSION = $(shell $(NODE) --verison 2>$(NULL))
+ifneq "$(NODE_VERSION)" "$(EXPECTED_NODE_VERSION)"
+  NODE_VERSION = $(EXPECTED_NODE_VERSION)
+  NODE__DIR = $(NODE_MODULES__DIR)/node-$(NODE_VERSION)
+  NODE__BIN_DIR = $(NODE__DIR)/bin
+  NODE__BIN = $(NODE__BIN_DIR)/$(NODE)
+  NODE__DIST_NAME = node-$(NODE_VERSION)-linux-x64.tar.gz
+  export PATH := $(NODE__BIN_DIR):$(PATH) 
+endif
 
 TSD = $(NODE_MODULES__DIR)/.bin/tsd
 TSC = $(NODE_MODULES__DIR)/.bin/tsc
@@ -57,7 +69,7 @@ j-%: compile
 
 compile: setup
 	#if [ -f bower.json ]; then pushd $(JAKETS__DIR); $(BOWER) link; popd; $(BOWER) link jakets; $(BOWER) update; fi
-	if [ -f Jakefile.ts ]; then $(TSC) --module commonjs --sourceMap Jakefile.ts; fi
+	if [ -f Jakefile.ts ]; then $(TSC) --module commonjs --sourceMap Jakefile.ts; fi && \
 	if [ "`$(JAKE) -T | grep CreateDependencies`" == "" ]; \
 		then $(JAKE) CreateDependencies -f $(JAKETS__DIR)/Jakefile.js; \
 		else $(JAKE) CreateDependencies; \
@@ -97,7 +109,7 @@ $(JAKETS__DIR)/typings/tsd.d.ts: $(TSD) $(JAKETS__DIR)/package.json
 NODE_MODULES_UPDATED__FILE_ := $(JAKETS__DIR)/node_modules/.node_modules_updated
 $(TSC) $(TSD) $(JAKE) $(BOWER): $(NODE_MODULES_UPDATED__FILE_)
 
-$(NODE_MODULES_UPDATED__FILE_): $(JAKETS__DIR)/package.json
+$(NODE_MODULES_UPDATED__FILE_): $(JAKETS__DIR)/package.json $(NODE__BIN)
 	mkdir -p $(@D) && \
 	touch $@
 	cd $(JAKETS__DIR) && \
@@ -107,6 +119,17 @@ $(JAKETS__DIR)/package.json:
 	cd $(JAKETS__DIR) && \
 	$(NPM) init && \
 	$(NPM) install typescript tsd jake bower --save
+
+get_node: $(NODE__BIN)
+
+$(NODE__BIN): $(NODE__DIR)/$(NODE__DIST_NAME)
+	cd $(NODE__DIR) && \
+	tar xvf * --strip-components=1
+	touch $@
+
+$(NODE__DIR)/$(NODE__DIST_NAME):
+	mkdir -p $(NODE__DIR)
+	wget --directory-prefix=$(NODE__DIR) https://nodejs.org/dist/$(NODE_VERSION)/$(NODE__DIST_NAME)
 
 #
 ###################################################################################################
@@ -123,11 +146,17 @@ $(JAKETS__DIR)/package.json:
 .PHONY: show_vars
 show_vars: $(patsubst %,print-%, \
           JAKETS__DIR \
+          NODE__DIR \
+          NODE__BIN \
+          NODE_VERSION \
+          NODE__DIST_NAME \
           NODE \
           NPM \
           TSC \
           TSD \
-          JOKE \
+          JAKE \
+          BOWER \
+          PATH \
           )
 	@echo ----------------------------------------------------------------^^^jakets^^^
 
