@@ -24,6 +24,7 @@ export function GetNodeCommand(
   } catch (e) {
     cmd = Node + " " + jaketsCli;
   }
+  Jake.Log("Node command: " + cmd);
   return cmd;
 }
 

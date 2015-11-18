@@ -244,11 +244,13 @@ function Compile(conf: ICompileConfig): string {
 // Dependencies 
 
 desc("Creates all dependencies");
-task("CreateDependencies", [], () => {
+task("CreateDependencies", [], function() {
+  jake.Log(this.name);
   task("temp", GetExtraDependencies()).invoke();
 }, { async: true });
 
 function GetExtraDependencies(): string[] {
+  jake.Log("CreateDependencies");
   var makefile = MakeRelative(path.join(__dirname, "Makefile")).replace(/\\/g, "/");
 
   var dependencies: string[] = [];// [makefile];
@@ -292,6 +294,7 @@ function GetExtraDependencies(): string[] {
 }
 
 task("bower", [], function() {
+  jake.Log(this.name);
   bower("update --force-latest", () => this.complete());
 }, { async: true })
 
@@ -302,6 +305,7 @@ var tsd = Node.CreateNodeExec(
 );
 
 file("typings/tsd.d.ts", ["tsd.json"], function() {
+  jake.Log(this.name);
   var pkgStr: string = fs.readFileSync("package.json", 'utf8');
   var pkg = JSON.parse(pkgStr);
   var dependencies = pkg["dependencies"] || {};
@@ -319,9 +323,10 @@ file("typings/tsd.d.ts", ["tsd.json"], function() {
 
 // desc("update the TSD info");
 file("tsd.json", ["package.json"], function() {
+  jake.Log(this.name);
   exec("npm install", () => {
     if (!shell.test("-f", "tsd.json")) {
-      tsd("init", () => this.complete());
+      tsd("init", () => jake.Exec("touch tsd.json", ()=> this.complete()));
     } else {
       this.complete();
     }
@@ -341,7 +346,8 @@ file("tsd.json", ["package.json"], function() {
 }, { async: true });
 
 // desc("create empty package.json if missing");
-file("package.json", [], () => {
+file("package.json", [], function() {
+  jake.Log(this.name);
   console.error("Generating package.json")
   var NPM = path.join("npm");
   exec([NPM + " init"], complete);

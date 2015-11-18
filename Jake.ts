@@ -10,6 +10,10 @@ declare module jake {
   }
 }
 
+export function Log(msg){
+  console.log(msg);
+}
+
 export function Exec(cmd: string|string[], callback, isSilent?: boolean) {
   let cmdArray: string[];
   if (Array.isArray(cmd)) {
@@ -18,5 +22,6 @@ export function Exec(cmd: string|string[], callback, isSilent?: boolean) {
     cmdArray = [cmd];
   }
   isSilent || console.log(cmd);
+  Log("Running " + cmdArray.join(" , "));
   jake.exec(cmdArray, callback, { printStdout: true, printStderr: true });
 }
