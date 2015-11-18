@@ -321,7 +321,9 @@ file("typings/tsd.d.ts", ["tsd.json"], function() {
 file("tsd.json", ["package.json"], function() {
   exec("npm install", () => {
     if (!shell.test("-f", "tsd.json")) {
-      tsd("init", this.complete());
+      tsd("init", () => this.complete());
+    } else {
+      this.complete();
     }
   });
   // var pkgStr: string = fs.readFileSync("package.json", 'utf8');
