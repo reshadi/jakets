@@ -249,6 +249,7 @@ task("CreateDependencies", [], function() {
   task("temp", GetExtraDependencies()).invoke();
 }, { async: true });
 
+let NodeModulesUpdateIndicator = "node_modules/.node_modules_updated";
 function GetExtraDependencies(): string[] {
   jake.Log("CreateDependencies");
   var makefile = MakeRelative(path.join(__dirname, "Makefile")).replace(/\\/g, "/");
@@ -259,7 +260,12 @@ function GetExtraDependencies(): string[] {
     dependencies.push("bower");
   }
 
-  if (fs.existsSync("package.json") || fs.existsSync("tsd.json")) {
+  let HasPackageJson = fs.existsSync("package.json");
+  if (HasPackageJson) {
+    dependencies.push(NodeModulesUpdateIndicator);
+  }
+
+  if (HasPackageJson || fs.existsSync("tsd.json")) {
     dependencies.push("typings/tsd.d.ts");
   }
 
@@ -324,25 +330,17 @@ file("typings/tsd.d.ts", ["tsd.json"], function() {
 // desc("update the TSD info");
 file("tsd.json", ["package.json"], function() {
   jake.Log(this.name);
-  exec("npm install", () => {
-    if (!shell.test("-f", "tsd.json")) {
-      tsd("init", () => jake.Exec("touch tsd.json", ()=> this.complete()));
-    } else {
-      this.complete();
-    }
-  });
-  // var pkgStr: string = fs.readFileSync("package.json", 'utf8');
-  // var pkg = JSON.parse(pkgStr);
-  // var dependencies = pkg["dependencies"] || {};
-  // var pkgNames = Object.keys(dependencies);
-  // var TSD = path.join(__dirname, "node_modules", ".bin", "tsd");
-  // var cmds = [
-  //   "npm install",
-  //   TSD + " init --overwrite",
-  //   TSD + " install " + pkgNames.join(" ") + " --save --overwrite"
-  // ];
-  // exec(cmds, complete);
-  // console.log(pkg.dependencies);
+  if (!shell.test("-f", "tsd.json")) {
+    tsd("init", () => jake.Exec("touch tsd.json", () => this.complete()));
+  }
+}, { async: true });
+
+file(NodeModulesUpdateIndicator, ["package.json"], function() {
+  jake.Log(this.name);
+  jake.Exec([
+    "npm install",
+    "touch " + NodeModulesUpdateIndicator
+  ], () => this.complete());
 }, { async: true });
 
 // desc("create empty package.json if missing");
