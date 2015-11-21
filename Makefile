@@ -35,7 +35,7 @@ NODE_MODULES__DIR=$(JAKETS__DIR)/node_modules
 
 NODE__DIR =
 NODE__BIN = 
-NODE_VERSION = $(shell $(NODE) --verison 2>$(NULL))
+NODE_VERSION = $(shell $(NODE) --version 2>$(NULL))
 ifneq "$(NODE_VERSION)" "$(EXPECTED_NODE_VERSION)"
   NODE_VERSION = $(EXPECTED_NODE_VERSION)
   NODE__DIR = $(NODE_MODULES__DIR)/node-$(NODE_VERSION)
