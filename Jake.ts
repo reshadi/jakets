@@ -1,4 +1,5 @@
 /// <reference path="typings/jake/jake.d.ts" />
+// declare function rule(pattern: RegExp, srouce: string | { (name: string): string; }, prereqs?: string[], action?: () => void, opts?: jake.TaskOptions): void;
 
 /// <reference path="typings/shelljs/shelljs.d.ts" />
 import * as ShellJs from "shelljs";
@@ -10,11 +11,11 @@ declare module jake {
   }
 }
 
-export function Log(msg){
-  console.log(msg);
+export function Log(msg) {
+  // console.log(msg);
 }
 
-export function Exec(cmd: string|string[], callback, isSilent?: boolean) {
+export function Exec(cmd: string | string[], callback, isSilent?: boolean) {
   let cmdArray: string[];
   if (Array.isArray(cmd)) {
     cmdArray = cmd;

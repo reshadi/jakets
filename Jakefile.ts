@@ -36,210 +36,7 @@ export function MakeRelative(fullpath: string): string {
 
 export var BuildDir: string = process.env.BUILD__DIR || MakeRelative("./build");
 
-
-interface IOutputOptions {
-  OutDir?: string;
-  OutFile?: string;
-  OutDirName?: string;
-  OutFileName?: string;
-}
-
-interface ITscOptions extends IOutputOptions {
-  Module?: string;
-  SourceMap?: boolean;
-  Target?: string; //enum {ES3, ES5, ES6};
-}
-
-interface IClosureOptions extends IOutputOptions {
-}
-
-export interface ICompileConfig {
-  BuildDir?: string;
-  OutFileName?: string;
-  Name: string;
-  Files: string[];
-
-  TscOptions?: ITscOptions;
-  ClosureOptions?: IClosureOptions;
-}
-
-function GetOutputOptions(outputOptions: IOutputOptions, conf: ICompileConfig): IOutputOptions {
-  outputOptions = outputOptions || {};
-  let outDir = outputOptions.OutDir;
-  if (!outDir) {
-    let buildDir = conf.BuildDir || BuildDir;
-    let outDirName = outputOptions.OutDirName || "";
-    outDir = path.join(buildDir, outDirName, conf.Name); //TODO: let's fix this
-  }
-
-  let outFile = outputOptions.OutFile;
-  let outFileName = outputOptions.OutFileName || conf.OutFileName;
-  if (!outFile && outFile !== null && outFileName) {
-    outFile = path.join(outDir, outFileName);
-  }
-
-  return {
-    OutDir: MakeRelative(outDir),
-    OutFile: MakeRelative(outFile),
-    OutFileName: outFileName,
-  };
-}
-
-//Default values that others can use for convenience
-export var DefaultClientTscOptions: ITscOptions = {
-  Target: "ES5",
-  OutDirName: "debug",
-};
-
-export var DefaultServerTscOptions: ITscOptions = {
-  Target: "ES5",
-  OutDirName: "release",
-  Module: "commonjs",
-};
-export var DefaultClosureOptions: IClosureOptions = {
-  OutDirName: "release"
-};
-
-export function Extend<T>(base: T): T {
-  return <T>Object.create(base);
-}
-
-
-function RunAll(configs: ICompileConfig[], processor?: (conf: ICompileConfig) => string) {
-  var outputs = configs.map(processor || Minify);
-  console.log(outputs);
-  task("run", outputs, () => {
-  }, <any>{ async: true, parallelLimit: outputs.length }).invoke();
-}
-
-var Configs: ICompileConfig[] = [];
-
-export function AddConfig(config: ICompileConfig): void {
-  Configs.push(config);
-}
-
-export function Configure(configs: ICompileConfig[]) {
-  Configs = configs;
-}
-
-// 
-//////////////////////////////////////////////////////////////////////////////////////////
-
-desc("publish targets");
-task("publish", [], () => RunAll(Configs, Publish));
-
-desc("minify targets");
-task("minify", [], () => RunAll(Configs, Minify));
-
-desc("compile targets");
-task("compile", [], () => RunAll(Configs, Compile));
-
-//////////////////////////////////////////////////////////////////////////////////////////
-// PUblish
-
-function Publish(conf: ICompileConfig): string {
-  return "";
-}
-
-// 
-//////////////////////////////////////////////////////////////////////////////////////////
-
-
-//////////////////////////////////////////////////////////////////////////////////////////
-// Minify
-
-export var GetMinifyCommands = function(minifiedFile: string, outputDir: string, files: string[]): string[] {
-  var cmd = [
-    "printf '\\n//" + (new Date()) + " " + files.join(" ") + "\\n' >> " + minifiedFile
-  ];
-  return cmd;
-}
-
-function Minify(conf: ICompileConfig): string {
-  var compilerOutput = Compile(conf);
-
-  var clOptions = conf.ClosureOptions || DefaultClosureOptions;
-
-  var outputOptions = GetOutputOptions(clOptions, conf);
-
-  var outputDir = outputOptions.OutDir;
-  var minifiedFile = outputOptions.OutFile || path.join(outputDir, compilerOutput + ".min.js");
-  var zippedFile = minifiedFile + ".gz";
-
-  var minifyCmds = GetMinifyCommands(minifiedFile, outputDir, [compilerOutput]);
-
-  if (conf.ClosureOptions === null || !minifyCmds) {
-    return compilerOutput;
-  }
-
-  directory(outputDir);
-
-  file(minifiedFile, [outputDir, compilerOutput], function() {
-    var cmd = minifyCmds;
-    jake.Exec(cmd, () => this.complete());
-  }, { async: true });
-
-  file(zippedFile, [minifiedFile], function() {
-    var cmd = "gzip --best < " + minifiedFile + " > " + zippedFile;
-    jake.Exec(cmd, () => this.complete());
-  }, { async: true });
-
-  return zippedFile;
-}
-
-// 
-//////////////////////////////////////////////////////////////////////////////////////////
-
-
-//////////////////////////////////////////////////////////////////////////////////////////
-// Compile 
-function Compile(conf: ICompileConfig): string {
-  var tscOptions = conf.TscOptions || (conf.OutFileName === null ? DefaultServerTscOptions : DefaultClientTscOptions);
-  var outputOptions = GetOutputOptions(tscOptions, conf);
-
-  var outputDir = outputOptions.OutDir;
-  var outputFile = outputOptions.OutFile || path.join(outputDir, "__compiled_" + conf.Name);
-  console.log("out:" + outputFile);
-  var options = "";
-
-  if (tscOptions.Target) {
-    options += " --target " + tscOptions.Target;
-  }
-
-  options += " --outDir " + outputOptions.OutDir;
-
-  if (tscOptions.Module === "commonjs") {
-    options += " --module commonjs";
-  } else if (outputOptions.OutFile) {
-    options += " --outFile " + outputFile;
-  }
-
-  if (tscOptions.SourceMap) {
-    options += " --sourceMap"
-  }
-
-  var dependencies =
-    [outputDir]
-      .concat(conf.Files)
-      .concat(GetExtraDependencies())
-      .map(MakeRelative);
-
-  directory(outputDir);
-
-  file(outputFile, dependencies, function() {
-    console.log("compiling " + outputFile + " : " + dependencies.join(" "));
-    tsc(options + " " + conf.Files.join(" "), () => exec([
-      "printf '\\n//" + (new Date()) + "\\n' >> " + outputFile
-      // "echo //" + (new Date()) + " >> " + outputFile
-    ], () => this.complete()));
-  }, { async: true });
-
-  return outputFile;
-}
-// 
-//////////////////////////////////////////////////////////////////////////////////////////
-
-
+  
 //////////////////////////////////////////////////////////////////////////////////////////
 // Dependencies 
 
@@ -262,7 +59,7 @@ function GetExtraDependencies(): string[] {
 
   let HasPackageJson = fs.existsSync("package.json");
   if (HasPackageJson) {
-    dependencies.push(NodeModulesUpdateIndicator);
+    // dependencies.push(NodeModulesUpdateIndicator);
   }
 
   if (HasPackageJson || fs.existsSync("tsd.json")) {
@@ -284,15 +81,21 @@ function GetExtraDependencies(): string[] {
   var jakeFileMkDependency = tsJakeFiles.concat(makefile);
 
   var jakeFileMk = "Jakefile.mk";
-  file(jakeFileMk, jakeFileMkDependency, () => {
+  file(jakeFileMk, jakeFileMkDependency, function() {
+    let jakeCmd = Node.GetNodeCommand("jake", "jake --version", ".bin/jake");
+    let taskListRaw = jake.Shell.exec(jakeCmd + " -T").output;
+    let taskList = taskListRaw.match(/^jake (\w*)/gm).map(t => t.match(/\s.*/)[0]);
+
     var content = ""
+      + "JAKE_TASKS = " + taskList.join(" ") + "\n"
+      + "\n"
       + "Jakefile.js: " + jakeFileMkDependency.join(" ") + "\n"
       + "\n"
       + "clean:\n"
       + "\trm -f " + jsJakeFiles.join(" ") + "\n"
       + "\trm -f " + jsJakeFiles.map(f => f + ".map").join(" ") + "\n"
       ;
-    fs.writeFile(jakeFileMk, content, complete);
+    fs.writeFile(jakeFileMk, content, () => this.complete());
   }, { async: true });
   dependencies.push(jakeFileMk);
 
@@ -304,51 +107,74 @@ task("bower", [], function() {
   bower("update --force-latest", () => this.complete());
 }, { async: true })
 
-var tsd = Node.CreateNodeExec(
+var tsd = Node.GetNodeCommand(//  Node.CreateNodeExec(
   "tsd",
   "tsd --version ",
   ".bin/tsd"
 );
 
-file("typings/tsd.d.ts", ["tsd.json"], function() {
+rule(/typings\/tsd[.]d[.]ts/, name=> path.join(path.dirname(name), "..", "package.json"), [], function() {
   jake.Log(this.name);
-  var pkgStr: string = fs.readFileSync("package.json", 'utf8');
+  jake.Log(this.source);
+
+  let packageJson = this.source;
+  let dir = path.dirname(packageJson);
+  var pkgStr: string = fs.readFileSync(packageJson, 'utf8');
   var pkg = JSON.parse(pkgStr);
   var dependencies = pkg["dependencies"] || {};
   var pkgNames = Object.keys(dependencies);
-  tsd([
-    "install --save " + pkgNames.join(" "),
-    "reinstall --clean",
-    "rebundle"
+  console.log(pkg.dependencies);
+
+  jake.Exec([
+    "cd " + dir
+    + " && npm install"
+    + " && " + tsd + " install " + pkgNames.join(" ") + " --save"
+    + " && " + tsd + " reinstall --clean"
+    + " && " + tsd + " rebundle"
   ], () => {
     shell.echo("typings/tsd.d.ts");
     this.complete()
   });
-  console.log(pkg.dependencies);
 }, { async: true });
 
-// desc("update the TSD info");
-file("tsd.json", ["package.json"], function() {
-  jake.Log(this.name);
-  if (!shell.test("-f", "tsd.json")) {
-    tsd("init", () => jake.Exec("touch tsd.json", () => this.complete()));
-  }
-}, { async: true });
-
-file(NodeModulesUpdateIndicator, ["package.json"], function() {
-  jake.Log(this.name);
-  jake.Exec([
-    "npm install",
-    "touch " + NodeModulesUpdateIndicator
-  ], () => this.complete());
-}, { async: true });
+// file("typings/tsd.d.ts", ["tsd.json"], function() {
+//   jake.Log(this.name);
+//   var pkgStr: string = fs.readFileSync("package.json", 'utf8');
+//   var pkg = JSON.parse(pkgStr);
+//   var dependencies = pkg["dependencies"] || {};
+//   var pkgNames = Object.keys(dependencies);
+//   tsd([
+//     "install --save " + pkgNames.join(" "),
+//     "reinstall --clean",
+//     "rebundle"
+//   ], () => {
+//     shell.echo("typings/tsd.d.ts");
+//     this.complete()
+//   });
+//   console.log(pkg.dependencies);
+// }, { async: true });
+// 
+// file("tsd.json", ["package.json"], function() {
+//   jake.Log(this.name);
+//   if (!shell.test("-f", "tsd.json")) {
+//     tsd("init", () => jake.Exec("touch tsd.json", () => this.complete()));
+//   }
+// }, { async: true });
+// 
+// file(NodeModulesUpdateIndicator, ["package.json"], function() {
+//   jake.Log(this.name);
+//   jake.Exec([
+//     "npm install",
+//     "touch " + NodeModulesUpdateIndicator
+//   ], () => this.complete());
+// }, { async: true });
 
 // desc("create empty package.json if missing");
 file("package.json", [], function() {
   jake.Log(this.name);
   console.error("Generating package.json")
   var NPM = path.join("npm");
-  exec([NPM + " init"], complete);
+  exec([NPM + " init"], () => this.complete());
 }, { async: true });
 
 // 

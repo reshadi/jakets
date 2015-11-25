@@ -57,18 +57,20 @@ BOWER = $(NODE_MODULES__DIR)/.bin/bower
 # setup and rules in the current working directory
 #
 
-default: run
+# default: run_jake
 
-run: compile
+jts_run_jake: jts_compile_jake
 	$(JAKE)
 
-j-%: compile
+j-%: jts_compile_jake
 	$(JAKE) $*
 
 #The following it auto generated to make sure local Jakefile.ts dependencies are captured properly
 -include Jakefile.mk
 
-compile: setup
+$(JAKE_TASKS):%: j-%
+
+jts_compile_jake: jts_setup
 	#if [ -f bower.json ]; then pushd $(JAKETS__DIR); $(BOWER) link; popd; $(BOWER) link jakets; $(BOWER) update; fi
 	if [ -f Jakefile.ts ]; then $(TSC) --module commonjs --sourceMap Jakefile.ts; fi && \
 	if [ "`$(JAKE) -T | grep CreateDependencies`" == "" ]; \
@@ -95,7 +97,7 @@ compile: setup
 # setup in jakets directory
 #
 
-setup: $(BOWER) $(TSC) $(JAKE) $(JAKETS__DIR)/Jakefile.js 
+jts_setup: $(BOWER) $(TSC) $(JAKE) $(JAKETS__DIR)/Jakefile.js 
 
 $(JAKETS__DIR)/Jakefile.js: $(JAKETS__DIR)/Jakefile.ts $(JAKETS__DIR)/typings/tsd.d.ts
 	$(TSC) --module commonjs --sourceMap $^
@@ -121,7 +123,7 @@ $(JAKETS__DIR)/package.json:
 	$(NPM) init && \
 	$(NPM) install typescript tsd jake bower --save
 
-get_node: $(NODE__BIN)
+_jts_get_node: $(NODE__BIN)
 
 $(NODE__BIN): $(NODE__DIR)/$(NODE__DIST_NAME)
 	cd $(NODE__DIR) && \
