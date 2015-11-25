@@ -1,4 +1,5 @@
-/// <reference path="typings/jake/jake.d.ts" />
+/// <reference path="./ExternalTypings.d.ts" />
+/// <ref erence path="typings/jake/jake.d.ts" />
 // declare function rule(pattern: RegExp, srouce: string | { (name: string): string; }, prereqs?: string[], action?: () => void, opts?: jake.TaskOptions): void;
 
 /// <reference path="typings/shelljs/shelljs.d.ts" />
