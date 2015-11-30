@@ -19,6 +19,9 @@ export let browserify = Browserify.Exec;
 import * as Closure from "./Closure";
 export let closure = Closure.Exec;
 
+let tsdCmd = Node.GetNodeCommand("tsd", "tsd --version ", "tsd/build/cli.js");
+
+let jakeCmd = Node.GetNodeCommand("jake", "jake --version", "jake/bin/cli.js");
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Types and utils
@@ -82,7 +85,6 @@ function GetExtraDependencies(): string[] {
 
   var jakeFileMk = "Jakefile.mk";
   file(jakeFileMk, jakeFileMkDependency, function() {
-    let jakeCmd = Node.GetNodeCommand("jake", "jake --version", ".bin/jake");
     let taskListRaw = jake.Shell.exec(jakeCmd + " -T").output;
     let taskList = taskListRaw.match(/^jake (\w*)/gm).map(t => t.match(/\s.*/)[0]);
 
@@ -107,12 +109,6 @@ task("bower", [], function() {
   bower("update --force-latest", () => this.complete());
 }, { async: true })
 
-var tsd = Node.GetNodeCommand(//  Node.CreateNodeExec(
-  "tsd",
-  "tsd --version ",
-  ".bin/tsd"
-);
-
 rule(/typings\/tsd[.]d[.]ts/, name=> path.join(path.dirname(name), "..", "package.json"), [], function() {
   jake.Log(this.name);
   jake.Log(this.source);
@@ -128,9 +124,9 @@ rule(/typings\/tsd[.]d[.]ts/, name=> path.join(path.dirname(name), "..", "packag
   jake.Exec([
     "cd " + dir
     + " && npm install"
-    + " && " + tsd + " install " + pkgNames.join(" ") + " --save"
-    + " && " + tsd + " reinstall --clean"
-    + " && " + tsd + " rebundle"
+    + " && " + tsdCmd + " install " + pkgNames.join(" ") + " --save"
+    + " && " + tsdCmd + " reinstall --clean"
+    + " && " + tsdCmd + " rebundle"
   ], () => {
     shell.echo("typings/tsd.d.ts");
     this.complete()
