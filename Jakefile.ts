@@ -34,7 +34,7 @@ export function MakeRelative(fullpath: string): string {
   if (!fullpath) {
     return fullpath;
   }
-  return path.relative(LocalDir, fullpath);
+  return path.relative(LocalDir, fullpath) || '.';
 }
 
 export var BuildDir: string = process.env.BUILD__DIR || MakeRelative("./build");
