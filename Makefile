@@ -10,8 +10,7 @@ JAKETS__INCLUDE_BARRIER_ = 1
 # thre relpace // with nothing.
 JAKETS__DIR := $(subst //,,$(dir $(lastword $(MAKEFILE_LIST)))/)
 
-# EXPECTED_NODE_VERSION=v5.0.0
-EXPECTED_NODE_VERSION=v4.2.2
+EXPECTED_NODE_VERSION=v5.3.0
 
 ###################################################################################################
 # setup platform dependent variables
