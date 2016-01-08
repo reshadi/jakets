@@ -109,24 +109,28 @@ task("bower", [], function() {
   bower("update --force-latest", () => this.complete());
 }, { async: true })
 
-rule(/typings\/tsd[.]d[.]ts/, name=> path.join(path.dirname(name), "..", "package.json"), [], function() {
-  jake.Log(this.name);
-  jake.Log(this.source);
+rule(/typings\/tsd[.]d[.]ts/, name => path.join(path.dirname(name), "..", "package.json"), [], function() {
+  let tsdDeclarations: string = this.name;
+  let packageJson: string = this.source;
+  jake.Log(`updating file ${tsdDeclarations} from package file ${packageJson}`);
 
-  let packageJson = this.source;
-  let dir = path.dirname(packageJson);
+  let typingsDir = path.dirname(tsdDeclarations);
+  let currDir = path.dirname(packageJson);
+  
   var pkgStr: string = fs.readFileSync(packageJson, 'utf8');
   var pkg = JSON.parse(pkgStr);
   var dependencies = pkg["dependencies"] || {};
   var pkgNames = Object.keys(dependencies);
-  console.log(pkg.dependencies);
+  console.log(dependencies);
 
   jake.Exec([
-    "cd " + dir
+    "cd " + currDir
     + " && npm install"
     + " && " + tsdCmd + " install " + pkgNames.join(" ") + " --save"
     + " && " + tsdCmd + " reinstall --clean"
     + " && " + tsdCmd + " rebundle"
+    + " && " + "mkdir -p " + typingsDir
+    + " && " + "touch " + tsdDeclarations
   ], () => {
     shell.echo("typings/tsd.d.ts");
     this.complete()
