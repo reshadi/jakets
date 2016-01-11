@@ -71,6 +71,7 @@ $(JAKE_TASKS):%: j-%
 
 jts_compile_jake: jts_setup
 	#if [ -f bower.json ]; then pushd $(JAKETS__DIR); $(BOWER) link; popd; $(BOWER) link jakets; $(BOWER) update; fi
+	#if [ -f package.json -a ! -f node_modules/.node_modules_updated ]; then $(NPM) install; fi && \
 	if [ -f Jakefile.ts ]; then $(TSC) --module commonjs --sourceMap Jakefile.ts; fi && \
 	if [ "`$(JAKE) -T | grep CreateDependencies`" == "" ]; \
 		then $(JAKE) CreateDependencies -f $(JAKETS__DIR)/Jakefile.js; \

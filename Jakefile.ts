@@ -123,13 +123,13 @@ rule(/typings\/tsd[.]d[.]ts/, name => path.join(path.dirname(name), "..", "packa
   var pkgNames = Object.keys(dependencies);
   console.log(dependencies);
 
+  shell.mkdir("-p", typingsDir);
   jake.Exec([
     "cd " + currDir
     + " && npm install"
     + " && " + tsdCmd + " install " + pkgNames.join(" ") + " --save"
     + " && " + tsdCmd + " reinstall --clean"
     + " && " + tsdCmd + " rebundle"
-    + " && " + "mkdir -p " + typingsDir
     + " && " + "touch " + tsdDeclarations
   ], () => {
     shell.echo("typings/tsd.d.ts");
