@@ -27,7 +27,7 @@ let jakeCmd = Node.GetNodeCommand("jake", "jake --version", "jake/bin/cli.js");
 // Types and utils
 
 //We use the following to better clarity what we are using/checking
-var LocalDir = process.cwd();
+export var LocalDir = process.cwd();
 var JaketsDir = __dirname;
 
 export function MakeRelative(fullpath: string): string {
