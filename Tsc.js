@@ -27,4 +27,3 @@ exports.Exec = Node.CreateNodeExec("tsc", "tsc --version ", "typescript/lib/tsc.
 //   var cmd = args.map(function(arg) { return TSC + " " + arg; });
 //   jake.Exec(cmd, callback);
 // }
-//# sourceMappingURL=Tsc.js.map

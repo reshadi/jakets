@@ -72,7 +72,7 @@ rule(new RegExp(TypingsTsdDefs.replace(".", "[.]")), name => path.join(path.dirn
     + " && " + tsdCmd + " install " + pkgNames.join(" ") + " --save"
     + " && " + tsdCmd + " reinstall --clean"
     + " && " + tsdCmd + " rebundle"
-    + " && " + "touch " + tsdDeclarations
+    + " && touch " + TypingsTsdDefs //We already CD to this folder, so use the short name
   ], () => {
     shell.echo(tsdDeclarations);
     this.complete()
@@ -91,8 +91,8 @@ rule(new RegExp(NodeModulesUpdateIndicator), name => path.join(path.dirname(name
   var pkgStr: string = fs.readFileSync(packageJson, 'utf8');
   jake.Exec([
     "cd " + packageDir
-    + " && npm install"
-    + " && touch " + indicator
+    + " && npm update"
+    + " && touch " + NodeModulesUpdateIndicator //We already CD to this folder, so use the short name
   ], () => {
     shell.echo(indicator);
     this.complete()

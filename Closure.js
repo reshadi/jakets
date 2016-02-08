@@ -24,4 +24,3 @@ function Exec(inputs, output, callback, options) {
     });
 }
 exports.Exec = Exec;
-//# sourceMappingURL=Closure.js.map

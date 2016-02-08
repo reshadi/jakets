@@ -55,7 +55,7 @@ rule(new RegExp(TypingsTsdDefs.replace(".", "[.]")), function (name) { return pa
             + " && " + tsdCmd + " install " + pkgNames.join(" ") + " --save"
             + " && " + tsdCmd + " reinstall --clean"
             + " && " + tsdCmd + " rebundle"
-            + " && " + "touch " + tsdDeclarations
+            + " && touch " + TypingsTsdDefs //We already CD to this folder, so use the short name
     ], function () {
         exports.shell.echo(tsdDeclarations);
         _this.complete();
@@ -71,8 +71,8 @@ rule(new RegExp(NodeModulesUpdateIndicator), function (name) { return path.join(
     var pkgStr = fs.readFileSync(packageJson, 'utf8');
     jake.Exec([
         "cd " + packageDir
-            + " && npm install"
-            + " && touch " + indicator
+            + " && npm update"
+            + " && touch " + NodeModulesUpdateIndicator //We already CD to this folder, so use the short name
     ], function () {
         exports.shell.echo(indicator);
         _this.complete();
@@ -182,4 +182,3 @@ namespace("jts", function () {
 });
 // 
 //////////////////////////////////////////////////////////////////////////////////////////
-//# sourceMappingURL=Jakefile.js.map

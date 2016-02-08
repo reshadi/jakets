@@ -18,4 +18,3 @@ function Exec(cmd, callback, isSilent) {
     jake.exec(cmdArray, callback, { printStdout: true, printStderr: true });
 }
 exports.Exec = Exec;
-//# sourceMappingURL=Jake.js.map
