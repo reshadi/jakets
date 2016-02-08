@@ -41,7 +41,7 @@ ifneq "$(NODE_VERSION)" "$(EXPECTED_NODE_VERSION)"
   NODE__BIN_DIR = $(NODE__DIR)/bin
   NODE__BIN = $(NODE__BIN_DIR)/$(NODE)
   NODE__DIST_NAME = node-$(NODE_VERSION)-linux-x64.tar.gz
-  export PATH := $(NODE__BIN_DIR):$(PATH) 
+  export PATH := $(PWD)/$(NODE__BIN_DIR):$(PATH) 
 endif
 
 TSD = $(NODE_MODULES__DIR)/.bin/tsd
