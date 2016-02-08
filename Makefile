@@ -105,7 +105,8 @@ jts_setup: $(JAKE)
 
 $(JAKE): $(NODE__BIN)
 	cd $(JAKETS__DIR) && \
-	$(NPM) install jake
+	$(NPM) install jake && \
+	touch $@
 
 #jts_setup: $(BOWER) $(TSC) $(JAKE) $(JAKETS__DIR)/Jakefile.js 
 #

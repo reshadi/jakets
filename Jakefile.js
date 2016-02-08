@@ -38,7 +38,7 @@ exports.BuildDir = process.env.BUILD__DIR || MakeRelative("./build");
 //   jake.Log(this.name);
 //   task("temp", GetExtraDependencies()).invoke();
 // }, { async: true });
-var NodeModulesUpdateIndicator = "node_modules/node_modules_updated";
+var NodeModulesUpdateIndicator = "node_modules/.node_modules_updated";
 var TypingsTsdDefs = "typings/tsd.d.ts";
 var JakefileDependencies = "Jakefile.dep.json";
 // function GetExtraDependencies(): string[] {

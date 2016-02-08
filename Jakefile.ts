@@ -53,7 +53,7 @@ export var BuildDir: string = process.env.BUILD__DIR || MakeRelative("./build");
 //   task("temp", GetExtraDependencies()).invoke();
 // }, { async: true });
 
-let NodeModulesUpdateIndicator = "node_modules/node_modules_updated";
+let NodeModulesUpdateIndicator = "node_modules/.node_modules_updated";
 let TypingsTsdDefs = "typings/tsd.d.ts";
 let JakefileDependencies = "Jakefile.dep.json";
 
