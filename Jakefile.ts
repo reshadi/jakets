@@ -47,77 +47,11 @@ export var BuildDir: string = process.env.BUILD__DIR || MakeRelative("./build");
 //////////////////////////////////////////////////////////////////////////////////////////
 // Dependencies 
 
-// desc("Creates all dependencies");
-// task("CreateDependencies", [], function() {
-//   jake.Log(this.name);
-//   task("temp", GetExtraDependencies()).invoke();
-// }, { async: true });
-
 let NodeModulesUpdateIndicator = "node_modules/.node_modules_updated";
 let TypingsTsdDefs = "typings/tsd.d.ts";
 let JakefileDependencies = "Jakefile.dep.json";
 
-// function GetExtraDependencies(): string[] {
-//   jake.Log("CreateDependencies");
-//   var makefile = MakeRelative(path.join(__dirname, "Makefile")).replace(/\\/g, "/");
-
-//   var dependencies: string[] = [];// [makefile];
-
-//   if (fs.existsSync("bower.json")) {
-//     dependencies.push("bower");
-//   }
-
-//   let HasPackageJson = fs.existsSync("package.json");
-//   if (HasPackageJson) {
-//     // dependencies.push(NodeModulesUpdateIndicator);
-//   }
-
-//   if (HasPackageJson || fs.existsSync("tsd.json")) {
-//     dependencies.push(TypingsTsdDefs);
-//   }
-
-//   var jakefilePattern = /(Jakefile.*)\.js$/;
-//   var jsJakeFiles =
-//     Object.keys(require('module')._cache)
-//       .filter(m => m.search(jakefilePattern) > -1)
-//       .map(MakeRelative)
-//       .map(f => f.replace(/\\/g, "/"))
-//     ;
-//   var tsJakeFiles =
-//     jsJakeFiles
-//       .map(f => f.replace(jakefilePattern, "$1.ts"))
-//     ;
-
-//   var jakeFileMkDependency = tsJakeFiles.concat(makefile);
-
-//   var jakeFileMk = "Jakefile.mk";
-//   file(jakeFileMk, jakeFileMkDependency, function() {
-//     let taskListRaw = jake.Shell.exec(jakeCmd + " -T").output;
-//     let taskList = taskListRaw.match(/^jake (\w*)/gm).map(t => t.match(/\s.*/)[0]);
-
-//     var content = ""
-//       + "JAKE_TASKS = " + taskList.join(" ") + "\n"
-//       + "\n"
-//       + "Jakefile.js: " + jakeFileMkDependency.join(" ") + "\n"
-//       + "\n"
-//       + "clean:\n"
-//       + "\trm -f " + jsJakeFiles.join(" ") + "\n"
-//       + "\trm -f " + jsJakeFiles.map(f => f + ".map").join(" ") + "\n"
-//       ;
-//     fs.writeFile(jakeFileMk, content, () => this.complete());
-//   }, { async: true });
-//   dependencies.push(jakeFileMk);
-
-//   return dependencies;
-// }
-
-// task("bower", [], function() {
-//   jake.Log(this.name);
-//   bower("update --force-latest", () => this.complete());
-// }, { async: true })
-
 desc("update typings/tsd.d.ts from package.json");
-// rule(/typings\/tsd[.]d[.]ts/, name => path.join(path.dirname(name), "..", "package.json"), [], function() {
 rule(new RegExp(TypingsTsdDefs.replace(".", "[.]")), name => path.join(path.dirname(name), "..", "package.json"), [], function() {
   let tsdDeclarations: string = this.name;
   let packageJson: string = this.source;
@@ -148,7 +82,6 @@ rule(new RegExp(TypingsTsdDefs.replace(".", "[.]")), name => path.join(path.dirn
 
 
 desc("update node_modules from package.json");
-// rule(/node_modules\/node_modules_updated/, name => path.join(path.dirname(name), "..", "package.json"), [], function() {
 rule(new RegExp(NodeModulesUpdateIndicator), name => path.join(path.dirname(name), "..", "package.json"), [], function() {
   let indicator: string = this.name;
   let packageJson: string = this.source;
@@ -176,14 +109,6 @@ file("package.json", [], function() {
   exec([NPM + " init"], () => this.complete());
 }, { async: true });
 
-// desc("update typings/tsd.d.ts from package.json");
-// rule(/Jakefile[.]dep[.]js/, name => name.replace(".dep.js", ".js"), [], function() {
-//   let jakefileDep: string = this.name;
-//   let jakefile: string = this.source;
-//   jake.Log(`updating file ${jakefileDep} from ${jakefile}`);
-//   jake.Exec(`cd ${path.dirname(jakefile)} && ${jakeCmd} jts:genDep`, () => this.complete());
-// }, { async: true });
-
 // 
 //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -204,7 +129,7 @@ namespace("jts", function() {
 
     if (MakeRelative(targetDir) !== MakeRelative(JaketsDir)) {
       //Let's first make sure the jakets itself is fully done and ready
-      //dependencies.push(CompileJakefile(path.join(JaketsDir, "Jakefile.js")));
+      dependencies.push(CompileJakefile(path.join(JaketsDir, "Jakefile.js")));
     }
 
     var makefile = MakeRelative(path.join(targetDir, "Makefile"));
@@ -216,7 +141,9 @@ namespace("jts", function() {
     dependencies.push(jakefileTs);
 
     let hasPackageJson = fs.existsSync(path.join(targetDir, "package.json"));
-    if (hasPackageJson) {
+    if (hasPackageJson
+      && path.dirname(path.join(targetDir, "..")) !== "node_modules" //Don't run npm install if this is cheched out as part of another npm install
+    ) {
       dependencies.push(path.join(targetDir, NodeModulesUpdateIndicator));
     }
 
@@ -257,13 +184,6 @@ namespace("jts", function() {
 
     jake.Log(dependencies);
     return resultTarget;
-    
-    // file(targetJakefileDependencies, [resultTarget], function() {
-    //   jake.Log(`Updating file ${targetJakefileDependencies} from ${resultTarget}`);
-    //   jake.Exec(`cd ${targetDir} && ${jakeCmd} jts:genDep`, () => this.complete());
-    // }, { async: true });
-
-    // return targetJakefileDependencies;
   }
 
   task("default", [CompileJakefile("Jakefile.js")], function() {

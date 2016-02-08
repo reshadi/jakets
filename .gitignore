@@ -8,4 +8,4 @@ typings/
 #Jakefile.js*
 #*.js
 *.js.map
-
+*.dep.json

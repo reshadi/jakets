@@ -45,10 +45,7 @@ ifneq "$(NODE_VERSION)" "$(EXPECTED_NODE_VERSION)"
   export PATH := $(NODE__BIN_DIR):$(PATH) 
 endif
 
-# TSD = $(NODE_MODULES__DIR)/.bin/tsd
-# TSC = $(NODE_MODULES__DIR)/.bin/tsc
 JAKE = $(NODE_MODULES__DIR)/.bin/jake
-# BOWER = $(NODE_MODULES__DIR)/.bin/bower
 
 #One can use the following local file to overwrite the above settings
 -include LocalPaths.mk
@@ -71,24 +68,6 @@ j-%: jts_compile_jake
 $(JAKE_TASKS):%: j-%
 
 jts_compile_jake: jts_setup
-	#if [ -f bower.json ]; then pushd $(JAKETS__DIR); $(BOWER) link; popd; $(BOWER) link jakets; $(BOWER) update; fi
-	#if [ -f package.json -a ! -f node_modules/.node_modules_updated ]; then $(NPM) install; fi &&
-	# if [ -f Jakefile.ts ]; then $(TSC) --module commonjs --sourceMap Jakefile.ts; fi && \
-	#if [ "`$(JAKE) -T | grep CreateDependencies`" == "" ]; \
-	#	then $(JAKE) CreateDependencies -f $(JAKETS__DIR)/Jakefile.js; \
-	#	else $(JAKE) CreateDependencies; \
-	#fi
-
-# compile: setup Jakefile.js
-
-# Jakefile.js:
-# 	if [ -f Jakefile.ts ]; then $(TSC) --module commonjs --sourceMap Jakefile.ts; fi
-
-# #We use the filter function to allow other makefiles to add more .ts files if they need to
-# Jakefile.js: Jakefile.ts
-# 	$(TSC) --module commonjs --sourceMap Jakefile.ts
-# 	for f in $(filter %.ts, $^); do echo $$f && $(TSC) --module commonjs --sourceMap $$f; done
-# 	$(JAKE) CreateDependencies
 
 #
 ###################################################################################################
@@ -107,32 +86,6 @@ $(JAKE): $(NODE__BIN)
 	cd $(JAKETS__DIR) && \
 	$(NPM) install jake && \
 	touch $@
-
-#jts_setup: $(BOWER) $(TSC) $(JAKE) $(JAKETS__DIR)/Jakefile.js 
-#
-#$(JAKETS__DIR)/Jakefile.js: $(JAKETS__DIR)/Jakefile.ts $(JAKETS__DIR)/typings/tsd.d.ts
-#	$(TSC) --module commonjs --sourceMap $^
-#
-##In the following we have to run tsd in the $(JAKETS__DIR), so we use the actual tsd path instead of $(TSD)
-##$(JAKETS__DIR)/typings/jake/jake.d.ts: $(TSD)
-#$(JAKETS__DIR)/typings/tsd.d.ts: $(TSD) $(JAKETS__DIR)/package.json
-#	cd $(JAKETS__DIR) && \
-#	./node_modules/.bin/tsd install jake bower browserify shelljs --save --overwrite
-#	touch $@
-#
-#NODE_MODULES_UPDATED__FILE_ := $(JAKETS__DIR)/node_modules/.node_modules_updated
-#$(TSC) $(TSD) $(JAKE) $(BOWER): $(NODE_MODULES_UPDATED__FILE_)
-#
-#$(NODE_MODULES_UPDATED__FILE_): $(JAKETS__DIR)/package.json $(NODE__BIN)
-#	mkdir -p $(@D) && \
-#	touch $@
-#	cd $(JAKETS__DIR) && \
-#	$(NPM) install
-#
-#$(JAKETS__DIR)/package.json:
-#	cd $(JAKETS__DIR) && \
-#	$(NPM) init && \
-#	$(NPM) install typescript tsd jake bower --save
 
 _jts_get_node: $(NODE__BIN)
 

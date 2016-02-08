@@ -163,8 +163,6 @@ namespace("jts", function () {
         var targetDir = path.dirname(jakefileJs);
         var dependencies = [];
         if (MakeRelative(targetDir) !== MakeRelative(JaketsDir)) {
-            //Let's first make sure the jakets itself is fully done and ready
-            dependencies.push(CompileJakefile(path.join(JaketsDir, "Jakefile.js")));
         }
         var makefile = MakeRelative(path.join(targetDir, "Makefile"));
         if (fs.existsSync(makefile)) {
