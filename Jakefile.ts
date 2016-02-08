@@ -69,7 +69,6 @@ rule(new RegExp(TypingsTsdDefs.replace(".", "[.]")), name => path.join(path.dirn
   shell.mkdir("-p", typingsDir);
   jake.Exec([
     "cd " + currDir
-    + " && npm install"
     + " && " + tsdCmd + " install " + pkgNames.join(" ") + " --save"
     + " && " + tsdCmd + " reinstall --clean"
     + " && " + tsdCmd + " rebundle"
@@ -142,7 +141,7 @@ namespace("jts", function() {
 
     let hasPackageJson = fs.existsSync(path.join(targetDir, "package.json"));
     if (hasPackageJson
-      && path.dirname(path.join(targetDir, "..")) !== "node_modules" //Don't run npm install if this is cheched out as part of another npm install
+      && targetDir.indexOf("node_modules") === -1 //Don't run npm install if this is checked out as part of another npm install
     ) {
       dependencies.push(path.join(targetDir, NodeModulesUpdateIndicator));
     }

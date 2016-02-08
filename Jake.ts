@@ -4,7 +4,7 @@ import * as ShellJs from "shelljs";
 export let Shell = ShellJs;//require("shelljs");
 
 export function Log(msg) {
-  // console.log(msg);
+  console.log(msg);
 }
 
 export function Exec(cmd: string | string[], callback, isSilent?: boolean) {

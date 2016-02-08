@@ -84,7 +84,7 @@ jts_setup: $(JAKE)
 
 $(JAKE): $(NODE__BIN)
 	cd $(JAKETS__DIR) && \
-	$(NPM) install jake && \
+	$(NPM) install jake shelljs && \
 	touch $@
 
 _jts_get_node: $(NODE__BIN)
