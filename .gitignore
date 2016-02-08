@@ -1,5 +1,10 @@
 node_modules/
+
 typings/
+!typings/node/
+!typings/jake/
+!typings/shelljs/
+
 #Jakefile.js*
 #*.js
 *.js.map
