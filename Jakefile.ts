@@ -186,10 +186,10 @@ namespace("jts", function() {
     return resultTarget;
   }
 
-  task("default", [CompileJakefile("Jakefile.js")], function() {
+  task("setup", [CompileJakefile("Jakefile.js")], function() {
   });
 
-  task("genDep", [JakefileDependencies], function() { });
+  task("generate_dependencies", [JakefileDependencies], function() { });
   file(JakefileDependencies, ["Jakefile.js"], function() {
     //We will add all imported Jakefile.js file as well as any local .js files that each one might be referencing.
     //Also we assumt his rule is called from a local directory and it will create the files in that directory.

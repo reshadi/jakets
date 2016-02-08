@@ -78,8 +78,8 @@ jts_compile_jake: jts_setup
 #
 
 jts_setup: $(JAKE)
-	$(JAKE) --jakefile $(JAKETS__DIR)/Jakefile.js jts:default
-	$(JAKE) jts:genDep
+	$(JAKE) --jakefile $(JAKETS__DIR)/Jakefile.js jts:setup
+	$(JAKE) jts:generate_dependencies
 
 
 $(JAKE): $(NODE__BIN)
