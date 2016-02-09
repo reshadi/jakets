@@ -71,6 +71,7 @@ rule(new RegExp(NodeModulesUpdateIndicator), function (name) { return path.join(
     var pkgStr = fs.readFileSync(packageJson, 'utf8');
     jake.Exec([
         "cd " + packageDir
+            + " && npm install"
             + " && npm update"
             + " && touch " + NodeModulesUpdateIndicator //We already CD to this folder, so use the short name
     ], function () {
