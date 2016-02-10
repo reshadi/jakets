@@ -1,10 +1,18 @@
 import * as Path from "path";
+import * as Fs from "fs";
 import * as Zlib from "zlib";
 
 import * as Jake from "./Jake";
 import * as Node from "./Node";
 
 let ClosureJar = Path.join(__dirname, "node_modules/google-closure-compiler/compiler.jar");
+if (!Fs.existsSync(ClosureJar)){
+  //We might be checked out in someone elses node_modules, so try the parent dir
+  ClosureJar = Path.join(__dirname, "../google-closure-compiler/compiler.jar");
+  if (!Fs.existsSync(ClosureJar)){
+    console.error("Could not find google closure");
+  }
+}
 
 let RawExec = Node.CreateExec("java -jar " + ClosureJar);
 

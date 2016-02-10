@@ -1,7 +1,15 @@
 var Path = require("path");
+var Fs = require("fs");
 var Jake = require("./Jake");
 var Node = require("./Node");
 var ClosureJar = Path.join(__dirname, "node_modules/google-closure-compiler/compiler.jar");
+if (!Fs.existsSync(ClosureJar)) {
+    //We might be checked out in someone elses node_modules, so try the parent dir
+    ClosureJar = Path.join(__dirname, "../google-closure-compiler/compiler.jar");
+    if (!Fs.existsSync(ClosureJar)) {
+        console.error("Could not find google closure");
+    }
+}
 var RawExec = Node.CreateExec("java -jar " + ClosureJar);
 function Exec(inputs, output, callback, options) {
     var args = "";
