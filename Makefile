@@ -38,7 +38,8 @@ NODE__BIN =
 NODE_VERSION = $(shell $(NODE) --version 2>$(NULL))
 ifneq "$(NODE_VERSION)" "$(EXPECTED_NODE_VERSION)"
   NODE_VERSION = $(EXPECTED_NODE_VERSION)
-  NODE__DIR = $(NODE_MODULES__DIR)/node-$(NODE_VERSION)
+  NODE__DIR = $(NODE_MODULES__DIR)/nodejs
+  # NODE__DIR = $(NODE_MODULES__DIR)/node-$(NODE_VERSION)
   NODE__BIN_DIR = $(NODE__DIR)/bin
   NODE__BIN = $(NODE__BIN_DIR)/$(NODE)
   NODE__DIST_NAME = node-$(NODE_VERSION)-linux-x64.tar.gz
@@ -94,9 +95,11 @@ $(NODE__BIN): $(NODE__DIR)/$(NODE__DIST_NAME)
 	tar xvf * --strip-components=1
 	touch $@
 
-$(NODE__DIR)/$(NODE__DIST_NAME):
+$(NODE__DIR)/$(NODE__DIST_NAME): $(JAKETS__DIR)/Makefile
+	rm -rf $(NODE__DIR)
 	mkdir -p $(NODE__DIR)
 	wget --directory-prefix=$(NODE__DIR) https://nodejs.org/dist/$(NODE_VERSION)/$(NODE__DIST_NAME)
+	touch $@
 
 #
 ###################################################################################################
