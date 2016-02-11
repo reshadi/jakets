@@ -2,8 +2,10 @@ var Path = require("path");
 var Jake = require("./Jake");
 var Node = require("./Node");
 var RawExec = Node.CreateNodeExec("browserify", "browserify --help", "browserify/bin/cmd.js");
-var Tsify = "tsify"; // Path.join(__dirname, "node_modules/tsify");
-var Collapser = "bundle-collapser/plugin"; // Path.join(__dirname, "node_modules/bundle-collapser/plugin");
+var Tsify = "tsify";
+Tsify = Node.FindModulePath(Tsify) || Tsify;
+var Collapser = "bundle-collapser/plugin";
+Collapser = Node.FindModulePath(Collapser) || Collapser;
 function Exec(inputs, output, callback, isRelease, tsargs, options) {
     var args = inputs;
     args += " -p [ " + Tsify + " " + (tsargs || "") + " ]";

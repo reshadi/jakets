@@ -8,8 +8,11 @@ let RawExec = Node.CreateNodeExec(
   "browserify/bin/cmd.js"
 );
 
-let Tsify = "tsify";// Path.join(__dirname, "node_modules/tsify");
-let Collapser = "bundle-collapser/plugin";// Path.join(__dirname, "node_modules/bundle-collapser/plugin");
+let Tsify = "tsify";
+Tsify = Node.FindModulePath(Tsify) || Tsify;
+
+let Collapser = "bundle-collapser/plugin";
+Collapser = Node.FindModulePath(Collapser) || Collapser;
 
 export function Exec(inputs: string, output: string, callback, isRelease?: boolean, tsargs?: string, options?: string) {
   let args = inputs;

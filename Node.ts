@@ -7,6 +7,22 @@ import * as Jake from "./Jake";
 var NodeDir = ""; //TODO: try to detect the correct path
 var Node = NodeDir + "node";
 
+let DefaultSearchPath = [process.cwd(), __dirname];
+export function FindModulePath(modulePath: string, additionalLocations?: string[]): string {
+  let searchDirs = DefaultSearchPath;
+  if (additionalLocations) {
+    searchDirs = searchDirs.concat(additionalLocations)
+  }
+  for (let i = 0; i < searchDirs.length; ++i) {
+    let dir = searchDirs[i];
+    let fullpath = path.join(dir, "node_modules", modulePath);
+    if (fs.existsSync(fullpath)) {
+      return fullpath;
+    }    
+  }
+  return null;
+}
+
 export function GetNodeCommand(
   cmdName: string, //default command line
   testCmd: string, //command to test if there is one installed locally
