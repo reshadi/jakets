@@ -11,7 +11,7 @@ let RawExec = Node.CreateNodeExec(
 let Tsify = "tsify";
 Tsify = Node.FindModulePath(Tsify) || Tsify;
 
-let Collapser = "bundle-collapser/plugin";
+let Collapser = "bundle-collapser/plugin.js";
 Collapser = Node.FindModulePath(Collapser) || Collapser;
 
 export function Exec(inputs: string, output: string, callback, isRelease?: boolean, tsargs?: string, options?: string) {
