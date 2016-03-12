@@ -1,3 +1,4 @@
+"use strict";
 var Path = require("path");
 var Jake = require("./Jake");
 var Node = require("./Node");

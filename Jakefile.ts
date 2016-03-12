@@ -19,7 +19,7 @@ export let browserify = Browserify.Exec;
 import * as Closure from "./Closure";
 export let closure = Closure.Exec;
 
-let tsdCmd = Node.GetNodeCommand("tsd", "tsd --version ", "tsd/build/cli.js");
+let tsdCmd = Node.GetNodeCommand("typings", "typings --version ", "typings/dist/bin.js");
 
 let jakeCmd = Node.GetNodeCommand("jake", "jake --version", "jake/bin/cli.js");
 
@@ -48,16 +48,18 @@ export var BuildDir: string = process.env.BUILD__DIR || MakeRelative("./build");
 // Dependencies 
 
 let NodeModulesUpdateIndicator = "node_modules/.node_modules_updated";
-let TypingsTsdDefs = "typings/tsd.d.ts";
+let TypingsTsdDefs = "typings/main.d.ts";
+let TypingsJson = "typings.json";
 let JakefileDependencies = "Jakefile.dep.json";
 
-desc("update typings/tsd.d.ts from package.json");
+desc("update typings/main.d.ts from package.json");
 rule(new RegExp(TypingsTsdDefs.replace(".", "[.]")), name => path.join(path.dirname(name), "..", "package.json"), [], function() {
   // Temprorarily freeze tsd
   /**
   let tsdDeclarations: string = this.name;
   let packageJson: string = this.source;
   jake.Log(`updating file ${tsdDeclarations} from package file ${packageJson}`);
+  jake.Log(`${packageJson}`);
 
   let typingsDir = path.dirname(tsdDeclarations);
   let currDir = path.dirname(packageJson);
@@ -66,14 +68,15 @@ rule(new RegExp(TypingsTsdDefs.replace(".", "[.]")), name => path.join(path.dirn
   var pkg = JSON.parse(pkgStr);
   var dependencies = pkg["dependencies"] || {};
   var pkgNames = Object.keys(dependencies);
+  pkgNames.unshift("", "node");
   jake.Log(dependencies);
+  var command = pkgNames.reduce((fullcmd, pkgName) => fullcmd + " && ( " + tsdCmd + " install " + pkgName + " --ambient --save || true ) ", "");
 
   shell.mkdir("-p", typingsDir);
   jake.Exec([
     "cd " + currDir
-    + " && " + tsdCmd + " install " + pkgNames.join(" ") + " --save"
-    + " && " + tsdCmd + " reinstall --clean"
-    + " && " + tsdCmd + " rebundle"
+    + " && touch " + TypingsJson
+    + command
     + " && touch " + TypingsTsdDefs //We already CD to this folder, so use the short name
   ], () => {
     shell.echo(tsdDeclarations);
@@ -150,7 +153,7 @@ namespace("jts", function() {
       dependencies.push(path.join(targetDir, NodeModulesUpdateIndicator));
     }
 
-    if (hasPackageJson || fs.existsSync(path.join(targetDir, "tsd.json"))) {
+    if (hasPackageJson || fs.existsSync(path.join(targetDir, "typings.json"))) {
       dependencies.push(path.join(targetDir, TypingsTsdDefs));
     }
 

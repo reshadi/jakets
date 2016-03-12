@@ -1,3 +1,4 @@
+"use strict";
 var fs = require("fs");
 var path = require("path");
 var jake = require("./Jake");
@@ -12,7 +13,7 @@ var Browserify = require("./Browserify");
 exports.browserify = Browserify.Exec;
 var Closure = require("./Closure");
 exports.closure = Closure.Exec;
-var tsdCmd = Node.GetNodeCommand("tsd", "tsd --version ", "tsd/build/cli.js");
+var tsdCmd = Node.GetNodeCommand("typings", "typings --version ", "typings/dist/bin.js");
 var jakeCmd = Node.GetNodeCommand("jake", "jake --version", "jake/bin/cli.js");
 //////////////////////////////////////////////////////////////////////////////////////////
 // Types and utils
@@ -34,27 +35,30 @@ exports.BuildDir = process.env.BUILD__DIR || MakeRelative("./build");
 //////////////////////////////////////////////////////////////////////////////////////////
 // Dependencies 
 var NodeModulesUpdateIndicator = "node_modules/.node_modules_updated";
-var TypingsTsdDefs = "typings/tsd.d.ts";
+var TypingsTsdDefs = "typings/main.d.ts";
+var TypingsJson = "typings.json";
 var JakefileDependencies = "Jakefile.dep.json";
-desc("update typings/tsd.d.ts from package.json");
+desc("update typings/main.d.ts from package.json");
 rule(new RegExp(TypingsTsdDefs.replace(".", "[.]")), function (name) { return path.join(path.dirname(name), "..", "package.json"); }, [], function () {
     var _this = this;
     var tsdDeclarations = this.name;
     var packageJson = this.source;
     jake.Log("updating file " + tsdDeclarations + " from package file " + packageJson);
+    jake.Log("" + packageJson);
     var typingsDir = path.dirname(tsdDeclarations);
     var currDir = path.dirname(packageJson);
     var pkgStr = fs.readFileSync(packageJson, 'utf8');
     var pkg = JSON.parse(pkgStr);
     var dependencies = pkg["dependencies"] || {};
     var pkgNames = Object.keys(dependencies);
+    pkgNames.unshift("", "node");
     jake.Log(dependencies);
+    var command = pkgNames.reduce(function (fullcmd, pkgName) { return fullcmd + " && ( " + tsdCmd + " install " + pkgName + " --ambient --save || true ) "; }, "");
     exports.shell.mkdir("-p", typingsDir);
     jake.Exec([
         "cd " + currDir
-            + " && " + tsdCmd + " install " + pkgNames.join(" ") + " --save"
-            + " && " + tsdCmd + " reinstall --clean"
-            + " && " + tsdCmd + " rebundle"
+            + " && touch " + TypingsJson
+            + command
             + " && touch " + TypingsTsdDefs //We already CD to this folder, so use the short name
     ], function () {
         exports.shell.echo(tsdDeclarations);
@@ -116,7 +120,7 @@ namespace("jts", function () {
         ) {
             dependencies.push(path.join(targetDir, NodeModulesUpdateIndicator));
         }
-        if (hasPackageJson || fs.existsSync(path.join(targetDir, "tsd.json"))) {
+        if (hasPackageJson || fs.existsSync(path.join(targetDir, "typings.json"))) {
             dependencies.push(path.join(targetDir, TypingsTsdDefs));
         }
         dependencies = dependencies.map(MakeRelative);

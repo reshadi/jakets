@@ -1,4 +1,5 @@
 /// <reference path="./ExternalTypings.d.ts" />
+"use strict";
 var ShellJs = require("shelljs");
 exports.Shell = ShellJs; //require("shelljs");
 function Log(msg) {

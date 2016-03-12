@@ -1,3 +1,4 @@
+"use strict";
 var Node = require("./Node");
 exports.Exec = Node.CreateNodeExec("tsc", "tsc --version ", "typescript/lib/tsc.js");
 // import fs = require("fs");
