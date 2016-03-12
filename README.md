@@ -8,4 +8,4 @@ Because it is powerful
 Despite JavaScript problems, it is still better than make and shell! :)
 
 # Why JakeTs
-Typed scripts are easier to undrestand, maintain, validate ...
+Typed scripts are easier to undrestand, maintain, validate and other things.
