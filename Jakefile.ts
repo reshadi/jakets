@@ -53,6 +53,8 @@ let JakefileDependencies = "Jakefile.dep.json";
 
 desc("update typings/tsd.d.ts from package.json");
 rule(new RegExp(TypingsTsdDefs.replace(".", "[.]")), name => path.join(path.dirname(name), "..", "package.json"), [], function() {
+  // Temprorarily freeze tsd
+  /**
   let tsdDeclarations: string = this.name;
   let packageJson: string = this.source;
   jake.Log(`updating file ${tsdDeclarations} from package file ${packageJson}`);
@@ -77,6 +79,7 @@ rule(new RegExp(TypingsTsdDefs.replace(".", "[.]")), name => path.join(path.dirn
     shell.echo(tsdDeclarations);
     this.complete()
   });
+  */
 }, { async: true });
 
 
