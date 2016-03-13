@@ -13,7 +13,7 @@ var Browserify = require("./Browserify");
 exports.browserify = Browserify.Exec;
 var Closure = require("./Closure");
 exports.closure = Closure.Exec;
-var tsdCmd = Node.GetNodeCommand("typings", "typings --version ", "typings/dist/bin.js");
+var typingsCmd = Node.GetNodeCommand("typings", "typings --version ", "typings/dist/bin.js");
 var jakeCmd = Node.GetNodeCommand("jake", "jake --version", "jake/bin/cli.js");
 //////////////////////////////////////////////////////////////////////////////////////////
 // Types and utils
@@ -35,17 +35,17 @@ exports.BuildDir = process.env.BUILD__DIR || MakeRelative("./build");
 //////////////////////////////////////////////////////////////////////////////////////////
 // Dependencies 
 var NodeModulesUpdateIndicator = "node_modules/.node_modules_updated";
-var TypingsTsdDefs = "typings/main.d.ts";
+var TypingsDefs = "typings/main.d.ts";
 var TypingsJson = "typings.json";
 var JakefileDependencies = "Jakefile.dep.json";
 desc("update typings/main.d.ts from package.json");
-rule(new RegExp(TypingsTsdDefs.replace(".", "[.]")), function (name) { return path.join(path.dirname(name), "..", "package.json"); }, [], function () {
+rule(new RegExp(TypingsDefs.replace(".", "[.]")), function (name) { return path.join(path.dirname(name), "..", "package.json"); }, [], function () {
     var _this = this;
-    var tsdDeclarations = this.name;
+    var typingsDeclarations = this.name;
     var packageJson = this.source;
-    jake.Log("updating file " + tsdDeclarations + " from package file " + packageJson);
+    jake.Log("updating file " + typingsDeclarations + " from package file " + packageJson);
     jake.Log("" + packageJson);
-    var typingsDir = path.dirname(tsdDeclarations);
+    var typingsDir = path.dirname(typingsDeclarations);
     var currDir = path.dirname(packageJson);
     var pkgStr = fs.readFileSync(packageJson, 'utf8');
     var pkg = JSON.parse(pkgStr);
@@ -53,15 +53,15 @@ rule(new RegExp(TypingsTsdDefs.replace(".", "[.]")), function (name) { return pa
     var pkgNames = Object.keys(dependencies);
     pkgNames.unshift("", "node");
     jake.Log(dependencies);
-    var command = pkgNames.reduce(function (fullcmd, pkgName) { return fullcmd + " && ( " + tsdCmd + " install " + pkgName + " --ambient --save || true ) "; }, "");
+    var command = pkgNames.reduce(function (fullcmd, pkgName) { return fullcmd + " && ( " + typingsCmd + " install " + pkgName + " --ambient --save || true ) "; }, "");
     exports.shell.mkdir("-p", typingsDir);
     jake.Exec([
         "cd " + currDir
             + " && touch " + TypingsJson
             + command
-            + " && touch " + TypingsTsdDefs //We already CD to this folder, so use the short name
+            + " && touch " + TypingsDefs //We already CD to this folder, so use the short name
     ], function () {
-        exports.shell.echo(tsdDeclarations);
+        exports.shell.echo(typingsDeclarations);
         _this.complete();
     });
 }, { async: true });
@@ -121,7 +121,7 @@ namespace("jts", function () {
             dependencies.push(path.join(targetDir, NodeModulesUpdateIndicator));
         }
         if (hasPackageJson || fs.existsSync(path.join(targetDir, "typings.json"))) {
-            dependencies.push(path.join(targetDir, TypingsTsdDefs));
+            dependencies.push(path.join(targetDir, TypingsDefs));
         }
         dependencies = dependencies.map(MakeRelative);
         var resultTarget;
@@ -187,4 +187,3 @@ namespace("jts", function () {
 });
 // 
 //////////////////////////////////////////////////////////////////////////////////////////
-//# sourceMappingURL=Jakefile.js.map
