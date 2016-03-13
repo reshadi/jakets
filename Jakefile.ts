@@ -19,7 +19,7 @@ export let browserify = Browserify.Exec;
 import * as Closure from "./Closure";
 export let closure = Closure.Exec;
 
-let tsdCmd = Node.GetNodeCommand("typings", "typings --version ", "typings/dist/bin.js");
+let typingsCmd = Node.GetNodeCommand("typings", "typings --version ", "typings/dist/bin.js");
 
 let jakeCmd = Node.GetNodeCommand("jake", "jake --version", "jake/bin/cli.js");
 
@@ -48,18 +48,18 @@ export var BuildDir: string = process.env.BUILD__DIR || MakeRelative("./build");
 // Dependencies 
 
 let NodeModulesUpdateIndicator = "node_modules/.node_modules_updated";
-let TypingsTsdDefs = "typings/main.d.ts";
+let TypingsDefs = "typings/main.d.ts";
 let TypingsJson = "typings.json";
 let JakefileDependencies = "Jakefile.dep.json";
 
 desc("update typings/main.d.ts from package.json");
-rule(new RegExp(TypingsTsdDefs.replace(".", "[.]")), name => path.join(path.dirname(name), "..", "package.json"), [], function() {
-  let tsdDeclarations: string = this.name;
+rule(new RegExp(TypingsDefs.replace(".", "[.]")), name => path.join(path.dirname(name), "..", "package.json"), [], function() {
+  let typingsDeclarations: string = this.name;
   let packageJson: string = this.source;
-  jake.Log(`updating file ${tsdDeclarations} from package file ${packageJson}`);
+  jake.Log(`updating file ${typingsDeclarations} from package file ${packageJson}`);
   jake.Log(`${packageJson}`);
 
-  let typingsDir = path.dirname(tsdDeclarations);
+  let typingsDir = path.dirname(typingsDeclarations);
   let currDir = path.dirname(packageJson);
 
   var pkgStr: string = fs.readFileSync(packageJson, 'utf8');
@@ -68,16 +68,16 @@ rule(new RegExp(TypingsTsdDefs.replace(".", "[.]")), name => path.join(path.dirn
   var pkgNames = Object.keys(dependencies);
   pkgNames.unshift("", "node");
   jake.Log(dependencies);
-  var command = pkgNames.reduce((fullcmd, pkgName) => fullcmd + " && ( " + tsdCmd + " install " + pkgName + " --ambient --save || true ) ", "");
+  var command = pkgNames.reduce((fullcmd, pkgName) => fullcmd + " && ( " + typingsCmd + " install " + pkgName + " --ambient --save || true ) ", "");
 
   shell.mkdir("-p", typingsDir);
   jake.Exec([
     "cd " + currDir
     + " && touch " + TypingsJson
     + command
-    + " && touch " + TypingsTsdDefs //We already CD to this folder, so use the short name
+    + " && touch " + TypingsDefs //We already CD to this folder, so use the short name
   ], () => {
-    shell.echo(tsdDeclarations);
+    shell.echo(typingsDeclarations);
     this.complete()
   });
 }, { async: true });
@@ -151,7 +151,7 @@ namespace("jts", function() {
     }
 
     if (hasPackageJson || fs.existsSync(path.join(targetDir, "typings.json"))) {
-      dependencies.push(path.join(targetDir, TypingsTsdDefs));
+      dependencies.push(path.join(targetDir, TypingsDefs));
     }
 
     dependencies = dependencies.map(MakeRelative);
