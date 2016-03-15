@@ -65,7 +65,7 @@ rule(new RegExp(TypingsDefs.replace(".", "[.]")), name => path.join(path.dirname
   var pkgStr: string = fs.readFileSync(packageJson, 'utf8');
   var pkg = JSON.parse(pkgStr);
   var dependencies = pkg["dependencies"] || {};
-  var additionalTypings = pkg["typings"] || {};
+  var additionalTypings = pkg["addTypings"] || {};
   var typingNames = Object.keys(additionalTypings);
   var pkgNames = Object.keys(dependencies);
   pkgNames.concat(typingNames);
