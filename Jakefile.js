@@ -50,7 +50,10 @@ rule(new RegExp(TypingsDefs.replace(".", "[.]")), function (name) { return path.
     var pkgStr = fs.readFileSync(packageJson, 'utf8');
     var pkg = JSON.parse(pkgStr);
     var dependencies = pkg["dependencies"] || {};
+    var additionalTypings = pkg["typings"] || {};
+    var typingNames = Object.keys(additionalTypings);
     var pkgNames = Object.keys(dependencies);
+    pkgNames.concat(typingNames);
     pkgNames.unshift("", "node");
     jake.Log(dependencies);
     var command = pkgNames.reduce(function (fullcmd, pkgName) { return fullcmd + " && ( " + typingsCmd + " install " + pkgName + " --ambient --save || true ) "; }, "");
@@ -187,3 +190,4 @@ namespace("jts", function () {
 });
 // 
 //////////////////////////////////////////////////////////////////////////////////////////
+//# sourceMappingURL=Jakefile.js.map
