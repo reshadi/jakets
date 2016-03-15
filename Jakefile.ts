@@ -68,7 +68,7 @@ rule(new RegExp(TypingsDefs.replace(".", "[.]")), name => path.join(path.dirname
   var additionalTypings = pkg["addTypings"] || {};
   var typingNames = Object.keys(additionalTypings);
   var pkgNames = Object.keys(dependencies);
-  pkgNames.concat(typingNames);
+  pkgNames = pkgNames.concat(typingNames);
   pkgNames.unshift("", "node");
   jake.Log(dependencies);
   var command = pkgNames.reduce((fullcmd, pkgName) => fullcmd + " && ( " + typingsCmd + " install " + pkgName + " --ambient --save || true ) ", "");
