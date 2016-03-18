@@ -17,9 +17,13 @@ EXPECTED_NODE_VERSION=v5.8.0
 #
 SHELL := /bin/bash
 UNAME := $(shell uname)
+PLATFORM := linux-x64
 
 ifeq ($(UNAME), Linux)
 	NULL = /dev/null
+else ifeq ($(UNAME), Darwin)
+	NULL = /dev/null
+	PLATFORM = darwin-x64
 else 
 # ifeq($(UNAME), MINGW32_NT-6.2)
 	NULL = Out-Null
@@ -42,7 +46,7 @@ ifneq "$(NODE_VERSION)" "$(EXPECTED_NODE_VERSION)"
   # NODE__DIR = $(NODE_MODULES__DIR)/node-$(NODE_VERSION)
   NODE__BIN_DIR = $(NODE__DIR)/bin
   NODE__BIN = $(NODE__BIN_DIR)/$(NODE)
-  NODE__DIST_NAME = node-$(NODE_VERSION)-linux-x64.tar.gz
+  NODE__DIST_NAME = node-$(NODE_VERSION)-$(PLATFORM).tar.gz
   export PATH := $(PWD)/$(NODE__BIN_DIR):$(PATH) 
 endif
 
