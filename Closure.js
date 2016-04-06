@@ -1,9 +1,9 @@
 "use strict";
 var Path = require("path");
 var Jake = require("./Jake");
-var Node = require("./Node");
-var ClosureJar = Node.FindModulePath("google-closure-compiler/compiler.jar", [".."]);
-var RawExec = Node.CreateExec("java -jar " + ClosureJar);
+var NodeUtil = require("./NodeUtil");
+var ClosureJar = NodeUtil.FindModulePath("google-closure-compiler/compiler.jar", [".."]);
+var RawExec = NodeUtil.CreateExec("java -jar " + ClosureJar);
 function Exec(inputs, output, callback, options) {
     var args = "";
     //Default arguments that can be overwritten via options

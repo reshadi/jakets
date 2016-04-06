@@ -4,7 +4,7 @@ var path = require("path");
 var jake = require("./Jake");
 exports.exec = jake.Exec;
 exports.shell = jake.Shell;
-var Node = require("./Node");
+var NodeUtil = require("./NodeUtil");
 var Bower = require("./Bower");
 exports.bower = Bower.Exec;
 var Tsc = require("./Tsc");
@@ -13,8 +13,8 @@ var Browserify = require("./Browserify");
 exports.browserify = Browserify.Exec;
 var Closure = require("./Closure");
 exports.closure = Closure.Exec;
-var typingsCmd = Node.GetNodeCommand("typings", "typings --version ", "typings/dist/bin.js");
-var jakeCmd = Node.GetNodeCommand("jake", "jake --version", "jake/bin/cli.js");
+var typingsCmd = NodeUtil.GetNodeCommand("typings", "typings --version ", "typings/dist/bin.js");
+var jakeCmd = NodeUtil.GetNodeCommand("jake", "jake --version", "jake/bin/cli.js");
 //////////////////////////////////////////////////////////////////////////////////////////
 // Types and utils
 //We use the following to better clarity what we are using/checking

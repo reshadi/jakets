@@ -3,11 +3,11 @@ import * as Fs from "fs";
 import * as Zlib from "zlib";
 
 import * as Jake from "./Jake";
-import * as Node from "./Node";
+import * as NodeUtil from "./NodeUtil";
 
-let ClosureJar = Node.FindModulePath("google-closure-compiler/compiler.jar", [".."]);
+let ClosureJar = NodeUtil.FindModulePath("google-closure-compiler/compiler.jar", [".."]);
 
-let RawExec = Node.CreateExec("java -jar " + ClosureJar);
+let RawExec = NodeUtil.CreateExec("java -jar " + ClosureJar);
 
 export function Exec(inputs: string, output: string, callback, options?: string) {
   let args = "";

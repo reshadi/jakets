@@ -1,6 +1,6 @@
-import * as Node from "./Node";
+import * as NodeUtil from "./NodeUtil";
 
-export let Exec = Node.CreateNodeExec(
+export let Exec = NodeUtil.CreateNodeExec(
   "bower",
   "bower --version",
   "bower/bin/bower"

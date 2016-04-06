@@ -1,18 +1,18 @@
 import * as Path from "path";
 import * as Jake from "./Jake";
-import * as Node from "./Node";
+import * as NodeUtil from "./NodeUtil";
 
-let RawExec = Node.CreateNodeExec(
+let RawExec = NodeUtil.CreateNodeExec(
   "browserify",
   "browserify --help",
   "browserify/bin/cmd.js"
 );
 
 let Tsify = "tsify";
-Tsify = Node.FindModulePath(Tsify) || Tsify;
+Tsify = NodeUtil.FindModulePath(Tsify) || Tsify;
 
 let Collapser = "bundle-collapser/plugin.js";
-Collapser = Node.FindModulePath(Collapser) || Collapser;
+Collapser = NodeUtil.FindModulePath(Collapser) || Collapser;
 
 export function Exec(inputs: string, output: string, callback, isRelease?: boolean, tsargs?: string, options?: string) {
   let args = inputs;

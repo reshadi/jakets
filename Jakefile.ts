@@ -5,7 +5,7 @@ import * as jake from "./Jake";
 export let exec = jake.Exec;
 export let shell = jake.Shell;
 
-import * as Node from "./Node";
+import * as NodeUtil from "./NodeUtil";
 
 import * as Bower from "./Bower";
 export let bower = Bower.Exec;
@@ -19,9 +19,9 @@ export let browserify = Browserify.Exec;
 import * as Closure from "./Closure";
 export let closure = Closure.Exec;
 
-let typingsCmd = Node.GetNodeCommand("typings", "typings --version ", "typings/dist/bin.js");
+let typingsCmd = NodeUtil.GetNodeCommand("typings", "typings --version ", "typings/dist/bin.js");
 
-let jakeCmd = Node.GetNodeCommand("jake", "jake --version", "jake/bin/cli.js");
+let jakeCmd = NodeUtil.GetNodeCommand("jake", "jake --version", "jake/bin/cli.js");
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Types and utils

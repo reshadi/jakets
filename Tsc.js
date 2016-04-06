@@ -1,6 +1,6 @@
 "use strict";
-var Node = require("./Node");
-exports.Exec = Node.CreateNodeExec("tsc", "tsc --version ", "typescript/lib/tsc.js");
+var NodeUtil = require("./NodeUtil");
+exports.Exec = NodeUtil.CreateNodeExec("tsc", "tsc --version ", "typescript/lib/tsc.js");
 // import fs = require("fs");
 // import path = require("path");
 // var TSC = (function() {

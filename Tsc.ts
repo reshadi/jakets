@@ -1,6 +1,6 @@
-import * as Node from "./Node";
+import * as NodeUtil from "./NodeUtil";
 
-export var Exec = Node.CreateNodeExec(
+export var Exec = NodeUtil.CreateNodeExec(
   "tsc",
   "tsc --version ",
   "typescript/lib/tsc.js"
