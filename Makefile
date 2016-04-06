@@ -94,13 +94,12 @@ $(JAKE): $(NODE__BIN)
 
 _jts_get_node: $(NODE__BIN)
 
-$(NODE__BIN): $(NODE__DIR)/$(NODE__DIST_NAME)
+$(NODE__BIN): $(NODE__DIR)/$(NODE__DIST_NAME) $(JAKETS__DIR)/Makefile
 	cd $(NODE__DIR) && \
-	tar xvf * --strip-components=1
+	tar xvf $(NODE__DIST_NAME) --strip-components=1
 	touch $@
 
-$(NODE__DIR)/$(NODE__DIST_NAME): $(JAKETS__DIR)/Makefile
-	rm -rf $(NODE__DIR)
+$(NODE__DIR)/$(NODE__DIST_NAME):
 	mkdir -p $(NODE__DIR)
 	wget --directory-prefix=$(NODE__DIR) https://nodejs.org/dist/$(NODE_VERSION)/$(NODE__DIST_NAME)
 	touch $@
