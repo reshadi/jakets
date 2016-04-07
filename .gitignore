@@ -6,6 +6,6 @@ typings/
 !typings/shelljs/
 
 #Jakefile.js*
-#*.js
+*.js
 *.js.map
 *.dep.json
