@@ -19,7 +19,6 @@ var jakeCmd = NodeUtil.GetNodeCommand("jake", "jake --version", "jake/bin/cli.js
 // Types and utils
 //We use the following to better clarity what we are using/checking
 exports.LocalDir = process.cwd();
-var JaketsDir = __dirname;
 function MakeRelative(fullpath) {
     if (!fullpath) {
         return fullpath;
@@ -31,6 +30,7 @@ function MakeRelative(fullpath) {
     // return path.relative(LocalDir, fullpath) || '.';
 }
 exports.MakeRelative = MakeRelative;
+var JaketsDir = MakeRelative(__dirname.replace("bootstrap", ""));
 exports.BuildDir = process.env.BUILD__DIR || MakeRelative("./build");
 //////////////////////////////////////////////////////////////////////////////////////////
 // Dependencies 
@@ -106,6 +106,7 @@ namespace("jts", function () {
     function CompileJakefile(jakefileJs) {
         jakefileJs = MakeRelative(jakefileJs);
         var targetDir = path.dirname(jakefileJs);
+        jake.Log("LocalDir=" + exports.LocalDir + " jakefileJs=" + jakefileJs + " targetDir=" + targetDir + " JaketsDir=" + JaketsDir);
         var dependencies = [];
         if (MakeRelative(targetDir) !== MakeRelative(JaketsDir)) {
             //Let's first make sure the jakets itself is fully done and ready

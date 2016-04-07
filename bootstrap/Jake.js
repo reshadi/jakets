@@ -3,7 +3,7 @@
 var ShellJs = require("shelljs");
 exports.Shell = ShellJs; //require("shelljs");
 function Log(msg) {
-    console.log(msg);
+    // console.log(msg);
 }
 exports.Log = Log;
 function Exec(cmd, callback, isSilent) {

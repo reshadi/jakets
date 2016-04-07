@@ -28,7 +28,6 @@ let jakeCmd = NodeUtil.GetNodeCommand("jake", "jake --version", "jake/bin/cli.js
 
 //We use the following to better clarity what we are using/checking
 export var LocalDir = process.cwd();
-var JaketsDir = __dirname;
 
 export function MakeRelative(fullpath: string): string {
   if (!fullpath) {
@@ -40,6 +39,8 @@ export function MakeRelative(fullpath: string): string {
     ;
   // return path.relative(LocalDir, fullpath) || '.';
 }
+
+var JaketsDir = MakeRelative(__dirname.replace("bootstrap", ""));
 
 export var BuildDir: string = process.env.BUILD__DIR || MakeRelative("./build");
 
@@ -130,6 +131,8 @@ namespace("jts", function() {
     jakefileJs = MakeRelative(jakefileJs);
 
     let targetDir = path.dirname(jakefileJs);
+
+    jake.Log(`LocalDir=${LocalDir} jakefileJs=${jakefileJs} targetDir=${targetDir} JaketsDir=${JaketsDir}`);
 
     let dependencies: string[] = [];
 

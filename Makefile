@@ -82,10 +82,18 @@ jts_compile_jake: jts_setup
 # setup in jakets directory
 #
 
-jts_setup: $(JAKE)
+jts_setup: $(JAKE) $(JAKETS__DIR)/Jakefile.js
 	$(JAKE) --jakefile $(JAKETS__DIR)/Jakefile.js jts:setup
 	$(JAKE) jts:generate_dependencies
 
+$(JAKETS__DIR)/Jakefile.js: $(JAKE) $(wildcard $(JAKETS__DIR)/*.ts $(JAKETS__DIR)/bootstrap/*.js)
+	cd $(JAKETS__DIR) && \
+	$(JAKE) --jakefile ./bootstrap/Jakefile.js jts:setup && \
+	touch $@ && \
+	echo ************** MAKE SURE YOU CALL make jts_update_bootstrap **************
+
+jts_update_bootstrap:
+	cp $(JAKETS__DIR)/*.js $(JAKETS__DIR)/bootstrap/
 
 $(JAKE): $(NODE__BIN)
 	cd $(JAKETS__DIR) && \
