@@ -5,7 +5,9 @@ var child_process_1 = require("child_process");
 var Jake = require("./Jake");
 var NodeDir = ""; //TODO: try to detect the correct path
 var Node = NodeDir + "node";
-var DefaultSearchPath = [process.cwd(), __dirname];
+var LocalDir = process.cwd();
+var JaketsDir = path.relative(LocalDir, __dirname.replace("bootstrap", "")).replace(/\\/g, "/");
+var DefaultSearchPath = [LocalDir, JaketsDir];
 function FindModulePath(modulePath, additionalLocations) {
     var searchDirs = DefaultSearchPath;
     if (additionalLocations) {
@@ -25,8 +27,8 @@ function GetNodeCommand(cmdName, //default command line
     testCmd, //command to test if there is one installed locally
     nodeCli //path to node file
     ) {
-    var localCli = path.join(process.cwd(), "node_modules", nodeCli);
-    var jaketsCli = path.join(__dirname, "node_modules", nodeCli);
+    var localCli = path.join(LocalDir, "node_modules", nodeCli);
+    var jaketsCli = path.join(JaketsDir, "node_modules", nodeCli);
     var cmd = cmdName;
     try {
         if (fs.statSync(localCli)) {

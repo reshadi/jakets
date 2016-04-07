@@ -7,7 +7,10 @@ import * as Jake from "./Jake";
 var NodeDir = ""; //TODO: try to detect the correct path
 var Node = NodeDir + "node";
 
-let DefaultSearchPath = [process.cwd(), __dirname];
+var LocalDir = process.cwd();
+var JaketsDir = path.relative(LocalDir, __dirname.replace("bootstrap", "")).replace(/\\/g, "/");
+
+let DefaultSearchPath = [LocalDir, JaketsDir];
 export function FindModulePath(modulePath: string, additionalLocations?: string[]): string {
   let searchDirs = DefaultSearchPath;
   if (additionalLocations) {
@@ -28,8 +31,8 @@ export function GetNodeCommand(
   testCmd: string, //command to test if there is one installed locally
   nodeCli: string //path to node file
 ) {
-  let localCli = path.join(process.cwd(), "node_modules", nodeCli);
-  let jaketsCli = path.join(__dirname, "node_modules", nodeCli);
+  let localCli = path.join(LocalDir, "node_modules", nodeCli);
+  let jaketsCli = path.join(JaketsDir, "node_modules", nodeCli);
   let cmd = cmdName;
   try {
     if (fs.statSync(localCli)) {

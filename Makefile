@@ -88,7 +88,8 @@ jts_setup: $(JAKE) $(JAKETS__DIR)/Jakefile.js
 
 $(JAKETS__DIR)/Jakefile.js: $(JAKE) $(wildcard $(JAKETS__DIR)/*.ts $(JAKETS__DIR)/bootstrap/*.js)
 	cd $(JAKETS__DIR) && \
-	$(JAKE) --jakefile ./bootstrap/Jakefile.js jts:setup && \
+	cp bootstrap/*.js . && \
+	$(JAKE) --jakefile ./Jakefile.js jts:setup && \
 	touch $@ && \
 	echo ************** MAKE SURE YOU CALL make jts_update_bootstrap **************
 

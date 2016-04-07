@@ -34,7 +34,7 @@ export function MakeRelative(fullpath: string): string {
     return fullpath;
   }
   return path.relative(LocalDir, fullpath)
-    .replace(/\\/g, "/") //Contert \ to / on windows
+    .replace(/\\/g, "/") //Convert \ to / on windows
     || '.' //in case the answer is empty
     ;
   // return path.relative(LocalDir, fullpath) || '.';
@@ -48,10 +48,10 @@ export var BuildDir: string = process.env.BUILD__DIR || MakeRelative("./build");
 //////////////////////////////////////////////////////////////////////////////////////////
 // Dependencies 
 
-let NodeModulesUpdateIndicator = "node_modules/.node_modules_updated";
-let TypingsDefs = "typings/main.d.ts";
-let TypingsJson = "typings.json";
-let JakefileDependencies = "Jakefile.dep.json";
+let NodeModulesUpdateIndicator = MakeRelative("node_modules/.node_modules_updated");
+let TypingsDefs = MakeRelative("typings/main.d.ts");
+let TypingsJson = MakeRelative("typings.json");
+let JakefileDependencies = MakeRelative("Jakefile.dep.json");
 
 desc("update typings/main.d.ts from package.json");
 rule(new RegExp(TypingsDefs.replace(".", "[.]")), name => path.join(path.dirname(name), "..", "package.json"), [], function() {

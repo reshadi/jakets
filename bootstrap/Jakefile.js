@@ -24,7 +24,7 @@ function MakeRelative(fullpath) {
         return fullpath;
     }
     return path.relative(exports.LocalDir, fullpath)
-        .replace(/\\/g, "/") //Contert \ to / on windows
+        .replace(/\\/g, "/") //Convert \ to / on windows
         || '.' //in case the answer is empty
     ;
     // return path.relative(LocalDir, fullpath) || '.';
@@ -34,10 +34,10 @@ var JaketsDir = MakeRelative(__dirname.replace("bootstrap", ""));
 exports.BuildDir = process.env.BUILD__DIR || MakeRelative("./build");
 //////////////////////////////////////////////////////////////////////////////////////////
 // Dependencies 
-var NodeModulesUpdateIndicator = "node_modules/.node_modules_updated";
-var TypingsDefs = "typings/main.d.ts";
-var TypingsJson = "typings.json";
-var JakefileDependencies = "Jakefile.dep.json";
+var NodeModulesUpdateIndicator = MakeRelative("node_modules/.node_modules_updated");
+var TypingsDefs = MakeRelative("typings/main.d.ts");
+var TypingsJson = MakeRelative("typings.json");
+var JakefileDependencies = MakeRelative("Jakefile.dep.json");
 desc("update typings/main.d.ts from package.json");
 rule(new RegExp(TypingsDefs.replace(".", "[.]")), function (name) { return path.join(path.dirname(name), "..", "package.json"); }, [], function () {
     var _this = this;
