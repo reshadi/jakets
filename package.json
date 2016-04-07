@@ -26,5 +26,13 @@
     "tsify": "^0.14.1",
     "typescript": "1.8.9",
     "typings": "^0.7.8"
+  },
+  "addTypings": {
+    "bower": false,
+    "bundle-collapser": false,
+    "google-closure-compiler": "-",
+    "tsify": false,
+    "typescript": false,
+    "typings": false
   }
 }

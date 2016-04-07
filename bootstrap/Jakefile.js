@@ -51,9 +51,24 @@ rule(new RegExp(TypingsDefs.replace(".", "[.]")), function (name) { return path.
     var pkg = JSON.parse(pkgStr);
     var dependencies = pkg["dependencies"] || {};
     var additionalTypings = pkg["addTypings"] || {};
-    var typingNames = Object.keys(additionalTypings);
     var pkgNames = Object.keys(dependencies);
-    pkgNames = pkgNames.concat(typingNames);
+    for (var typename in additionalTypings) {
+        var typeSelector = additionalTypings[typename];
+        var typeIndex = pkgNames.indexOf(typename);
+        if (typeSelector === false || typeSelector === "-") {
+            if (typeIndex !== -1) {
+                //Remove this typing from the list
+                pkgNames[typeIndex] = pkgNames[pkgNames.length - 1];
+                --pkgNames.length;
+            }
+        }
+        else {
+            if (typeIndex === -1) {
+                //add this missing type
+                pkgNames.push(typename);
+            }
+        }
+    }
     pkgNames.unshift("", "node");
     jake.Log(dependencies);
     var command = pkgNames.reduce(function (fullcmd, pkgName) { return fullcmd + " && ( " + typingsCmd + " install " + pkgName + " --ambient --save || true ) "; }, "");

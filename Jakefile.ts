@@ -44,7 +44,7 @@ var JaketsDir = MakeRelative(__dirname.replace("bootstrap", ""));
 
 export var BuildDir: string = process.env.BUILD__DIR || MakeRelative("./build");
 
-  
+
 //////////////////////////////////////////////////////////////////////////////////////////
 // Dependencies 
 
@@ -67,9 +67,23 @@ rule(new RegExp(TypingsDefs.replace(".", "[.]")), name => path.join(path.dirname
   var pkg = JSON.parse(pkgStr);
   var dependencies = pkg["dependencies"] || {};
   var additionalTypings = pkg["addTypings"] || {};
-  var typingNames = Object.keys(additionalTypings);
   var pkgNames = Object.keys(dependencies);
-  pkgNames = pkgNames.concat(typingNames);
+  for (let typename in additionalTypings) {
+    let typeSelector = additionalTypings[typename];
+    let typeIndex = pkgNames.indexOf(typename);
+    if (typeSelector === false || typeSelector === "-") {
+      if (typeIndex !== -1) {
+        //Remove this typing from the list
+        pkgNames[typeIndex] = pkgNames[pkgNames.length - 1];
+        --pkgNames.length;
+      }
+    } else {
+      if (typeIndex === -1) {
+        //add this missing type
+        pkgNames.push(typename);
+      }
+    }
+  }
   pkgNames.unshift("", "node");
   jake.Log(dependencies);
   var command = pkgNames.reduce((fullcmd, pkgName) => fullcmd + " && ( " + typingsCmd + " install " + pkgName + " --ambient --save || true ) ", "");
@@ -168,7 +182,7 @@ namespace("jts", function() {
     let hasDependency = fs.existsSync(targetJakefileDependencies);
     if (!hasDependency) {
       //Compile unconditionally since it seems file was never compiled before and need to be sure
-     
+
       let compileJakefileTaskName = `compile_Jakefile_in_${path.basename(targetDir)}`;
       task(compileJakefileTaskName, [], function() {
         tsc(`--module commonjs --sourceMap ${jakefileTs}`, () => this.complete());
