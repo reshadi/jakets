@@ -23,7 +23,7 @@
     "google-closure-compiler": "^20151015.7.0",
     "jake": "^8.0.12",
     "shelljs": "^0.5.3",
-    "tsify": "^0.14.1",
+    "tsify": "0.14.2",
     "typescript": "1.8.9",
     "typings": "^0.7.8"
   },
