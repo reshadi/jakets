@@ -2,12 +2,16 @@
 # setup jakets and basic tools
 #
 
-JAKETS__DIR = ../jakets
-
 # Optionally, we can uncomment this one if we want to check multiple
-# ifeq ("$(wildcard $(JAKETS__DIR))","")
-# JAKETS__DIR = ./jakets
-# endif
+#JAKETS__DIRS = $(word 1, $(wildcard ./node_modules/jakets ../jakets ./jakets))
+#ifeq ("$(JAKETS__DIRS)","")
+#	JAKETS__DIR = ../jakets
+#else
+#	JAKETS__DIR = $(JAKETS__DIRS)
+#endif
+
+JAKETS__DIR = ../jakets
+$(info JAKETS__DIR="$(JAKETS__DIR)" )
 
 ifeq ("$(wildcard $(JAKETS__DIR))","")
 $(shell git clone https://github.com/reshadi/jakets.git $(JAKETS__DIR))
