@@ -54,7 +54,7 @@ let TypingsJson = MakeRelative("typings.json");
 let JakefileDependencies = MakeRelative("Jakefile.dep.json");
 
 desc("update typings/main.d.ts from package.json");
-rule(new RegExp(TypingsDefs.replace(".", "[.]")), name => path.join(path.dirname(name), "..", "package.json"), [], function() {
+rule(new RegExp(TypingsDefs.replace(".", "[.]")), name => path.join(path.dirname(name), "..", "package.json"), [], function () {
   let typingsDeclarations: string = this.name;
   let packageJson: string = this.source;
   jake.Log(`updating file ${typingsDeclarations} from package file ${packageJson}`);
@@ -102,7 +102,7 @@ rule(new RegExp(TypingsDefs.replace(".", "[.]")), name => path.join(path.dirname
 
 
 desc("update node_modules from package.json");
-rule(new RegExp(NodeModulesUpdateIndicator), name => path.join(path.dirname(name), "..", "package.json"), [], function() {
+rule(new RegExp(NodeModulesUpdateIndicator), name => path.join(path.dirname(name), "..", "package.json"), [], function () {
   let indicator: string = this.name;
   let packageJson: string = this.source;
   jake.Log(`updating file ${indicator} from package file ${packageJson}`);
@@ -123,7 +123,7 @@ rule(new RegExp(NodeModulesUpdateIndicator), name => path.join(path.dirname(name
 
 
 // desc("create empty package.json if missing");
-file("package.json", [], function() {
+file("package.json", [], function () {
   jake.Log(this.name);
   console.error("Generating package.json")
   var NPM = path.join("npm");
@@ -135,13 +135,13 @@ file("package.json", [], function() {
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // setup
-namespace("jts", function() {
+namespace("jts", function () {
 
   /**
    * Calculates all the necessary dependencies for compiling the given Jakefile.js
    * The dependencies are added only if they exists.
    */
-  function CompileJakefile(jakefileJs: string): string {
+  function CompileJakefile(jakefileJs: string, compileJaketsDependencies: boolean): string {
     jakefileJs = MakeRelative(jakefileJs);
 
     let targetDir = path.dirname(jakefileJs);
@@ -150,9 +150,20 @@ namespace("jts", function() {
 
     let dependencies: string[] = [];
 
-    if (MakeRelative(targetDir) !== MakeRelative(JaketsDir)) {
+    if (
+      compileJaketsDependencies
+      || MakeRelative(targetDir) !== MakeRelative(JaketsDir)
+    ) {
       //Let's first make sure the jakets itself is fully done and ready
-      dependencies.push(CompileJakefile(path.join(JaketsDir, "Jakefile.js")));
+      [
+        path.join(JaketsDir, "Jakefile.js")
+        , path.join(LocalDir, "node_modules/jakets/Jakefile.js")
+      ].forEach(f => {
+        if (fs.existsSync(f)) {
+          console.log(`Adding ${f} to dependencies`);
+          dependencies.push(CompileJakefile(f, false));
+        }
+      });
     }
 
     var makefile = MakeRelative(path.join(targetDir, "Makefile"));
@@ -184,14 +195,14 @@ namespace("jts", function() {
       //Compile unconditionally since it seems file was never compiled before and need to be sure
 
       let compileJakefileTaskName = `compile_Jakefile_in_${path.basename(targetDir)}`;
-      task(compileJakefileTaskName, [], function() {
+      task(compileJakefileTaskName, [], function () {
         tsc(`--module commonjs --sourceMap ${jakefileTs}`, () => this.complete());
       }, { async: true });
 
       dependencies.push(compileJakefileTaskName);
 
       resultTarget = `setup_all_for_${path.basename(targetDir)}`;
-      task(resultTarget, dependencies, function() {
+      task(resultTarget, dependencies, function () {
         jake.Log("Done with setup");
       });
     } else {
@@ -200,7 +211,7 @@ namespace("jts", function() {
       dependencies = dependencies.concat(JSON.parse(depStr));
 
       resultTarget = jakefileJs;
-      file(jakefileJs, dependencies, function() {
+      file(jakefileJs, dependencies, function () {
         tsc(`--module commonjs --sourceMap ${jakefileTs}`, () => this.complete());
       }, { async: true });
     }
@@ -209,11 +220,11 @@ namespace("jts", function() {
     return resultTarget;
   }
 
-  task("setup", [CompileJakefile("Jakefile.js")], function() {
+  task("setup", [CompileJakefile("Jakefile.js", true)], function () {
   });
 
-  task("generate_dependencies", [JakefileDependencies], function() { });
-  file(JakefileDependencies, ["Jakefile.js"], function() {
+  task("generate_dependencies", [JakefileDependencies], function () { });
+  file(JakefileDependencies, ["Jakefile.js"], function () {
     //We will add all imported Jakefile.js file as well as any local .js files that each one might be referencing.
     //Also we assumt his rule is called from a local directory and it will create the files in that directory.
 

@@ -118,14 +118,23 @@ namespace("jts", function () {
      * Calculates all the necessary dependencies for compiling the given Jakefile.js
      * The dependencies are added only if they exists.
      */
-    function CompileJakefile(jakefileJs) {
+    function CompileJakefile(jakefileJs, compileJaketsDependencies) {
         jakefileJs = MakeRelative(jakefileJs);
         var targetDir = path.dirname(jakefileJs);
         jake.Log("LocalDir=" + exports.LocalDir + " jakefileJs=" + jakefileJs + " targetDir=" + targetDir + " JaketsDir=" + JaketsDir);
         var dependencies = [];
-        if (MakeRelative(targetDir) !== MakeRelative(JaketsDir)) {
+        if (compileJaketsDependencies
+            || MakeRelative(targetDir) !== MakeRelative(JaketsDir)) {
             //Let's first make sure the jakets itself is fully done and ready
-            dependencies.push(CompileJakefile(path.join(JaketsDir, "Jakefile.js")));
+            [
+                path.join(JaketsDir, "Jakefile.js"),
+                path.join(exports.LocalDir, "node_modules/jakets/Jakefile.js")
+            ].forEach(function (f) {
+                if (fs.existsSync(f)) {
+                    console.log("Adding " + f + " to dependencies");
+                    dependencies.push(CompileJakefile(f, false));
+                }
+            });
         }
         var makefile = MakeRelative(path.join(targetDir, "Makefile"));
         if (fs.existsSync(makefile)) {
@@ -172,7 +181,7 @@ namespace("jts", function () {
         jake.Log(dependencies);
         return resultTarget;
     }
-    task("setup", [CompileJakefile("Jakefile.js")], function () {
+    task("setup", [CompileJakefile("Jakefile.js", true)], function () {
     });
     task("generate_dependencies", [JakefileDependencies], function () { });
     file(JakefileDependencies, ["Jakefile.js"], function () {

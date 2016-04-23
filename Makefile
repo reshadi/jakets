@@ -9,8 +9,9 @@ JAKETS__INCLUDE_BARRIER_ = 1
 # and extra / at the end to differentiate it from / in the middle of the path
 # thre relpace // with nothing.
 JAKETS__DIR := $(subst //,,$(dir $(lastword $(MAKEFILE_LIST)))/)
+CURRENT__DIR := $(subst //,,$(dir $(firstword $(MAKEFILE_LIST)))/)
 
-EXPECTED_NODE_VERSION=v5.10.1
+EXPECTED_NODE_VERSION?=v5.10.1
 
 ###################################################################################################
 # setup platform dependent variables
@@ -89,9 +90,14 @@ jts_setup: $(JAKE) $(JAKETS__DIR)/Jakefile.js
 $(JAKETS__DIR)/Jakefile.js: $(JAKE) $(wildcard $(JAKETS__DIR)/*.ts $(JAKETS__DIR)/bootstrap/*.js)
 	cd $(JAKETS__DIR) && \
 	cp bootstrap/*.js . && \
-	$(JAKE) --jakefile ./Jakefile.js jts:setup && \
 	touch $@ && \
 	echo ************** MAKE SURE YOU CALL make jts_update_bootstrap **************
+
+
+	# $(JAKE) --jakefile $(JAKETS__DIR)/Jakefile.js jts:setup
+	# $(JAKE) --jakefile ./Jakefile.js jts:setup && \
+	# touch $@ && \
+	# echo ************** MAKE SURE YOU CALL make jts_update_bootstrap **************
 
 jts_update_bootstrap:
 	cp $(JAKETS__DIR)/*.js $(JAKETS__DIR)/bootstrap/
@@ -128,6 +134,7 @@ $(NODE__DIR)/$(NODE__DIST_NAME):
 .PHONY: show_vars
 show_vars: $(patsubst %,print-%, \
           JAKETS__DIR \
+          CURRENT__DIR \
           NODE__DIR \
           NODE__BIN \
           NODE_VERSION \
