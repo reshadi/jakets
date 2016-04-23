@@ -10,3 +10,4 @@ typings.json
 *.js
 *.js.map
 *.dep.json
+!bootstrap/*
