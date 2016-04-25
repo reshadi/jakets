@@ -1,0 +1,38 @@
+{
+  "name": "jakets",
+  "version": "2.0.1",
+  "description": "Jake with TypeScript.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/reshadi/jakets.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/reshadi/jakets/issues"
+  },
+  "homepage": "https://github.com/reshadi/jakets",
+  "dependencies": {
+    "bower": "^1.7.2",
+    "browserify": "^12.0.1",
+    "bundle-collapser": "^1.2.1",
+    "google-closure-compiler": "^20151015.7.0",
+    "jake": "^8.0.12",
+    "shelljs": "^0.5.3",
+    "tsify": "0.14.2",
+    "typescript": "1.8.9",
+    "typings": "^0.7.8"
+  },
+  "addTypings": {
+    "bower": false,
+    "bundle-collapser": false,
+    "google-closure-compiler": "-",
+    "tsify": false,
+    "typescript": false,
+    "typings": false
+  }
+}
