@@ -152,18 +152,19 @@ namespace("jts", function () {
 
     if (
       compileJaketsDependencies
-      || MakeRelative(targetDir) !== MakeRelative(JaketsDir)
+      && MakeRelative(targetDir) !== MakeRelative(JaketsDir)
     ) {
       //Let's first make sure the jakets itself is fully done and ready
       [
-        path.join(JaketsDir, "Jakefile.js")
-        , path.join(LocalDir, "node_modules/jakets/Jakefile.js")
-      ].forEach(f => {
-        if (fs.existsSync(f)) {
-          console.log(`Adding ${f} to dependencies`);
-          dependencies.push(CompileJakefile(f, false));
-        }
-      });
+        MakeRelative(path.join(JaketsDir, "Jakefile.js"))
+        , MakeRelative(path.join(LocalDir, "node_modules/jakets/Jakefile.js"))
+      ].filter((f, index, array) => array.indexOf(f) === index)
+        .forEach(f => {
+          if (fs.existsSync(f)) {
+            jake.Log(`Adding ${f} to dependencies`);
+            dependencies.push(CompileJakefile(f, false));
+          }
+        });
     }
 
     var makefile = MakeRelative(path.join(targetDir, "Makefile"));

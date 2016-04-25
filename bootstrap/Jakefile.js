@@ -124,14 +124,15 @@ namespace("jts", function () {
         jake.Log("LocalDir=" + exports.LocalDir + " jakefileJs=" + jakefileJs + " targetDir=" + targetDir + " JaketsDir=" + JaketsDir);
         var dependencies = [];
         if (compileJaketsDependencies
-            || MakeRelative(targetDir) !== MakeRelative(JaketsDir)) {
+            && MakeRelative(targetDir) !== MakeRelative(JaketsDir)) {
             //Let's first make sure the jakets itself is fully done and ready
             [
-                path.join(JaketsDir, "Jakefile.js"),
-                path.join(exports.LocalDir, "node_modules/jakets/Jakefile.js")
-            ].forEach(function (f) {
+                MakeRelative(path.join(JaketsDir, "Jakefile.js")),
+                MakeRelative(path.join(exports.LocalDir, "node_modules/jakets/Jakefile.js"))
+            ].filter(function (f, index, array) { return array.indexOf(f) === index; })
+                .forEach(function (f) {
                 if (fs.existsSync(f)) {
-                    console.log("Adding " + f + " to dependencies");
+                    jake.Log("Adding " + f + " to dependencies");
                     dependencies.push(CompileJakefile(f, false));
                 }
             });
