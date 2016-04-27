@@ -27,8 +27,8 @@ function GetNodeCommand(cmdName, //default command line
     testCmd, //command to test if there is one installed locally
     nodeCli //path to node file
     ) {
-    var localCli = path.join(LocalDir, "node_modules", nodeCli);
-    var jaketsCli = path.join(JaketsDir, "node_modules", nodeCli);
+    var localCli = path.resolve(path.join(LocalDir, "node_modules", nodeCli));
+    var jaketsCli = path.resolve(path.join(JaketsDir, "node_modules", nodeCli));
     var cmd = cmdName;
     try {
         if (fs.statSync(localCli)) {
