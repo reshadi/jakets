@@ -19,8 +19,6 @@ export let browserify = Browserify.Exec;
 import * as Closure from "./Closure";
 export let closure = Closure.Exec;
 
-let typingsCmd = NodeUtil.GetNodeCommand("typings", "typings --version ", "typings/dist/bin.js");
-
 let jakeCmd = NodeUtil.GetNodeCommand("jake", "jake --version", "jake/bin/cli.js");
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -49,7 +47,7 @@ export var BuildDir: string = process.env.BUILD__DIR || MakeRelative("./build");
 // Dependencies 
 
 let NodeModulesUpdateIndicator = MakeRelative("node_modules/.node_modules_updated");
-let TypingsDefs = MakeRelative("typings/main.d.ts");
+let TypingsDefs = "typings/main.d.ts";
 let TypingsJson = MakeRelative("typings.json");
 let JakefileDependencies = MakeRelative("Jakefile.dep.json");
 
@@ -86,6 +84,9 @@ rule(new RegExp(TypingsDefs.replace(".", "[.]")), name => path.join(path.dirname
   }
   pkgNames.unshift("", "node");
   jake.Log(dependencies);
+  
+  //We need to look this up the last moment to make sure correct path is picked up
+  let typingsCmd = NodeUtil.GetNodeCommand("typings", "typings --version ", "typings/dist/bin.js");
   var command = pkgNames.reduce((fullcmd, pkgName) => fullcmd + " && ( " + typingsCmd + " install " + pkgName + " --ambient --save || true ) ", "");
 
   shell.mkdir("-p", typingsDir);
@@ -137,92 +138,114 @@ file("package.json", [], function () {
 // setup
 namespace("jts", function () {
 
-  /**
-   * Calculates all the necessary dependencies for compiling the given Jakefile.js
-   * The dependencies are added only if they exists.
-   */
-  function CompileJakefile(jakefileJs: string, compileJaketsDependencies: boolean): string {
-    jakefileJs = MakeRelative(jakefileJs);
+  function CreatePlaceHolderTask(taskName: string, dependencies: string[]): string {
+    let t = task(taskName, dependencies, function () {
+      jake.LogTask(this);
+    });
+    jake.LogTask(t);
 
-    let targetDir = path.dirname(jakefileJs);
-
-    jake.Log(`LocalDir=${LocalDir} jakefileJs=${jakefileJs} targetDir=${targetDir} JaketsDir=${JaketsDir}`);
-
-    let dependencies: string[] = [];
-
-    if (
-      compileJaketsDependencies
-      && MakeRelative(targetDir) !== MakeRelative(JaketsDir)
-    ) {
-      //Let's first make sure the jakets itself is fully done and ready
-      [
-        MakeRelative(path.join(JaketsDir, "Jakefile.js"))
-        , MakeRelative(path.join(LocalDir, "node_modules/jakets/Jakefile.js"))
-      ].filter((f, index, array) => array.indexOf(f) === index)
-        .forEach(f => {
-          if (fs.existsSync(f)) {
-            jake.Log(`Adding ${f} to dependencies`);
-            dependencies.push(CompileJakefile(f, false));
-          }
-        });
+    if (t["name"] !== taskName) {
+      jake.Log(taskName + " != " + t["name"]);
     }
 
-    var makefile = MakeRelative(path.join(targetDir, "Makefile"));
-    if (fs.existsSync(makefile)) {
-      dependencies.push(makefile);
-    }
-
-    let jakefileTs = jakefileJs.replace(".js", ".ts");
-    dependencies.push(jakefileTs);
-
-    let hasPackageJson = fs.existsSync(path.join(targetDir, "package.json"));
-    if (hasPackageJson
-      && targetDir.indexOf("node_modules") === -1 //Don't run npm install if this is checked out as part of another npm install
-    ) {
-      dependencies.push(path.join(targetDir, NodeModulesUpdateIndicator));
-    }
-
-    if (hasPackageJson || fs.existsSync(path.join(targetDir, "typings.json"))) {
-      dependencies.push(path.join(targetDir, TypingsDefs));
-    }
-
-    dependencies = dependencies.map(MakeRelative);
-
-    let resultTarget: string;
-
-    let targetJakefileDependencies = path.join(targetDir, JakefileDependencies);
-    let hasDependency = fs.existsSync(targetJakefileDependencies);
-    if (!hasDependency) {
-      //Compile unconditionally since it seems file was never compiled before and need to be sure
-
-      let compileJakefileTaskName = `compile_Jakefile_in_${path.basename(targetDir)}`;
-      task(compileJakefileTaskName, [], function () {
-        tsc(`--module commonjs --sourceMap ${jakefileTs}`, () => this.complete());
-      }, { async: true });
-
-      dependencies.push(compileJakefileTaskName);
-
-      resultTarget = `setup_all_for_${path.basename(targetDir)}`;
-      task(resultTarget, dependencies, function () {
-        jake.Log("Done with setup");
-      });
-    } else {
-      //Compile conditionally since it seems file was already compiled before and we know what it depends on
-      let depStr: string = fs.readFileSync(targetJakefileDependencies, 'utf8');
-      dependencies = dependencies.concat(JSON.parse(depStr));
-
-      resultTarget = jakefileJs;
-      file(jakefileJs, dependencies, function () {
-        tsc(`--module commonjs --sourceMap ${jakefileTs}`, () => this.complete());
-      }, { async: true });
-    }
-
-    jake.Log(dependencies);
-    return resultTarget;
+    return taskName;
   }
 
-  task("setup", [CompileJakefile("Jakefile.js", true)], function () {
-  });
+  function UpdatePackages(directories: string[]): string {
+    let dependencies = directories
+      .filter(targetDir =>
+        targetDir.indexOf("node_modules") === -1 //Don't run npm install if this is checked out as part of another npm install
+        && fs.existsSync(path.join(targetDir, "package.json"))
+      )
+      .map(targetDir =>
+        path.join(targetDir, NodeModulesUpdateIndicator)
+      )
+      .concat(directories
+        .map(targetDir => path.join(targetDir, "Makefile"))
+        .filter(targetDir => fs.existsSync(targetDir))
+      )
+      ;
+    return CreatePlaceHolderTask("update_packages", dependencies);
+  }
+
+  function UpdateTypings(directories: string[]): string {
+    let taskName = "update_typings";
+    let updateTask = task(taskName, [UpdatePackages(directories)], function () {
+      //At this point we know that all package.json files are already installed
+      //So, we can safely look for folders inside of node_modules folders as well
+      let dependencies = directories
+        .filter(targetDir => fs.existsSync(path.join(targetDir, "package.json")) || fs.existsSync(path.join(targetDir, "typings.json")))
+        .map(targetDir => path.join(targetDir, TypingsDefs))
+        ;
+      //Now we need to invoke all these files
+      let depTask = task(taskName + "_dependencies", dependencies, function () {
+        this.complete();
+        jake.LogTask(this);
+      }, { async: true });
+      depTask.addListener("complete", () => {
+        this.complete();
+        jake.LogTask(this);
+      });
+      depTask.invoke();
+
+      jake.LogTask(this);
+    }, { async: true });
+    jake.LogTask(updateTask);
+    return taskName;
+  }
+
+  function CompileJakefiles() {
+    let directories = [LocalDir];
+    if (MakeRelative(JaketsDir) !== ".") {
+      directories.push(JaketsDir);
+      directories.push(path.join(LocalDir, "node_modules/jakets"));
+    }
+
+    directories = directories.filter((d, index, array) => array.indexOf(d) === index); //Remove repeates in case later we add more
+
+    jake.Log(`LocalDir=${LocalDir}  - JaketsDir=${JaketsDir} - Dirs=[${directories.join(",")}]`);
+
+    let updateTypingsTaskName = UpdateTypings(directories);
+    let dependencies = directories
+      .filter(targetDir => fs.existsSync(targetDir))
+      .map(targetDir => {
+        let jakefileTs = path.join(targetDir, "Jakefile.ts");
+        let jakefileJs = jakefileTs.replace(".ts", ".js");
+        let resultTarget: string;
+        let dependencies: string[] = [updateTypingsTaskName];
+
+        let targetJakefileDependencies = path.join(targetDir, JakefileDependencies);
+        let hasDependency = fs.existsSync(targetJakefileDependencies);
+        if (!hasDependency) {
+          //Compile unconditionally since it seems file was never compiled before and need to be sure
+          let compileJakefileTaskName = `compile_Jakefile_in_${path.basename(targetDir)}`;
+          task(compileJakefileTaskName, [updateTypingsTaskName], function () {
+            tsc(`--module commonjs --sourceMap ${jakefileTs}`, () => { this.complete(); jake.LogTask(this); });
+          }, { async: true });
+
+          dependencies.push(compileJakefileTaskName);
+
+          resultTarget = `setup_all_for_${path.basename(targetDir)}`;
+          task(resultTarget, dependencies, function () {
+            jake.LogTask(this);
+          });
+        } else {
+          //Compile conditionally since it seems file was already compiled before and we know what it depends on
+          let depStr: string = fs.readFileSync(targetJakefileDependencies, 'utf8');
+          dependencies = dependencies.concat(JSON.parse(depStr));
+
+          resultTarget = jakefileJs;
+          file(jakefileJs, dependencies, function () {
+            tsc(`--module commonjs --sourceMap ${jakefileTs}`, () => { this.complete(); jake.LogTask(this); });
+          }, { async: true });
+        }
+        return resultTarget;
+      })
+      ;
+    return CreatePlaceHolderTask("compile_jakefiles", dependencies);
+  }
+
+  CreatePlaceHolderTask("setup", [CompileJakefiles()]);
 
   task("generate_dependencies", [JakefileDependencies], function () { });
   file(JakefileDependencies, ["Jakefile.js"], function () {

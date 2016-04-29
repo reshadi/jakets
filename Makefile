@@ -12,6 +12,7 @@ JAKETS__DIR := $(subst //,,$(dir $(lastword $(MAKEFILE_LIST)))/)
 CURRENT__DIR := $(subst //,,$(dir $(firstword $(MAKEFILE_LIST)))/)
 
 EXPECTED_NODE_VERSION?=v5.10.1
+ENABLE_LOG?=false
 
 ###################################################################################################
 # setup platform dependent variables
@@ -52,6 +53,7 @@ ifneq "$(NODE_VERSION)" "$(EXPECTED_NODE_VERSION)"
 endif
 
 JAKE = $(NODE_MODULES__DIR)/.bin/jake
+JAKE__PARAMS = enableLog=$(ENABLE_LOG)
 
 #One can use the following local file to overwrite the above settings
 -include LocalPaths.mk
@@ -63,10 +65,10 @@ JAKE = $(NODE_MODULES__DIR)/.bin/jake
 # default: run_jake
 
 jts_run_jake: jts_compile_jake
-	$(JAKE)
+	$(JAKE) $(JAKE__PARAMS)
 
 j-%: jts_compile_jake
-	$(JAKE) $*
+	$(JAKE) $*  $(JAKE__PARAMS)
 
 #The following is auto generated to make sure local Jakefile.ts dependencies are captured properly
 -include Jakefile.mk
@@ -84,13 +86,13 @@ jts_compile_jake: jts_setup
 #
 
 jts_setup: $(JAKE) $(JAKETS__DIR)/Jakefile.js
-	$(JAKE) --jakefile $(JAKETS__DIR)/Jakefile.js jts:setup
-	$(JAKE) jts:generate_dependencies
+	$(JAKE) --jakefile $(JAKETS__DIR)/Jakefile.js jts:setup $(JAKE__PARAMS)
+	$(JAKE) jts:generate_dependencies $(JAKE__PARAMS)
 
 $(JAKETS__DIR)/Jakefile.js: $(JAKE) $(wildcard $(JAKETS__DIR)/*.ts $(JAKETS__DIR)/bootstrap/*.js)
 	cd $(JAKETS__DIR) && \
 	cp bootstrap/*.js .
-	$(JAKE) --jakefile $(JAKETS__DIR)/Jakefile.js jts:setup
+	$(JAKE) --jakefile $(JAKETS__DIR)/Jakefile.js jts:setup $(JAKE__PARAMS)
 	touch $@
 	echo ************** MAKE SURE YOU CALL make jts_update_bootstrap **************
 
