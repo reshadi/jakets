@@ -195,10 +195,10 @@ namespace("jts", function () {
   }
 
   function CompileJakefiles() {
-    let directories = [LocalDir];
+    let directories = ["."];
     if (MakeRelative(JaketsDir) !== ".") {
       directories.push(JaketsDir);
-      directories.push(path.join(LocalDir, "node_modules/jakets"));
+      directories.push(MakeRelative("node_modules/jakets"));
     }
 
     directories = directories.filter((d, index, array) => array.indexOf(d) === index); //Remove repeates in case later we add more

@@ -75,7 +75,7 @@ j-%: jts_compile_jake
 
 $(JAKE_TASKS):%: j-%
 
-jts_compile_jake: jts_setup
+jts_compile_jake: jts_setup Jakefile.js
 
 #
 ###################################################################################################
@@ -85,9 +85,9 @@ jts_compile_jake: jts_setup
 # setup in jakets directory
 #
 
-jts_setup: $(JAKE) $(JAKETS__DIR)/Jakefile.js
+jts_setup Jakefile.js: $(JAKE) $(JAKETS__DIR)/Jakefile.js
 	$(JAKE) --jakefile $(JAKETS__DIR)/Jakefile.js jts:setup $(JAKE__PARAMS)
-	$(JAKE) jts:generate_dependencies $(JAKE__PARAMS)
+	$(JAKE) --jakefile Jakefile.js jts:generate_dependencies $(JAKE__PARAMS)
 
 $(JAKETS__DIR)/Jakefile.js: $(JAKE) $(wildcard $(JAKETS__DIR)/*.ts $(JAKETS__DIR)/bootstrap/*.js)
 	cd $(JAKETS__DIR) && \
