@@ -43,7 +43,7 @@ export function GetNodeCommand(
   } catch (e) {
     cmd = Node + " " + jaketsCli;
   }
-  Jake.Log("Node command: " + cmd);
+  Jake.Log("Node command: " + cmd, 3);
   return cmd;
 }
 

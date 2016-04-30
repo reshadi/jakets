@@ -12,7 +12,7 @@ JAKETS__DIR := $(subst //,,$(dir $(lastword $(MAKEFILE_LIST)))/)
 CURRENT__DIR := $(subst //,,$(dir $(firstword $(MAKEFILE_LIST)))/)
 
 EXPECTED_NODE_VERSION?=v5.10.1
-ENABLE_LOG?=false
+LOG_LEVEL?=0
 
 ###################################################################################################
 # setup platform dependent variables
@@ -53,7 +53,7 @@ ifneq "$(NODE_VERSION)" "$(EXPECTED_NODE_VERSION)"
 endif
 
 JAKE = $(NODE_MODULES__DIR)/.bin/jake
-JAKE__PARAMS = enableLog=$(ENABLE_LOG)
+JAKE__PARAMS = logLevel=$(LOG_LEVEL)
 
 #One can use the following local file to overwrite the above settings
 -include LocalPaths.mk
@@ -63,6 +63,10 @@ JAKE__PARAMS = enableLog=$(ENABLE_LOG)
 #
 
 # default: run_jake
+
+ifneq ($(JAKETS__DIR),$(CURRENT__DIR))
+  LOCAL_JAKEFILE__JS=Jakefile.js
+endif
 
 jts_run_jake: jts_compile_jake
 	$(JAKE) $(JAKE__PARAMS)
@@ -75,7 +79,7 @@ j-%: jts_compile_jake
 
 $(JAKE_TASKS):%: j-%
 
-jts_compile_jake: jts_setup Jakefile.js
+jts_compile_jake: jts_setup $(LOCAL_JAKEFILE__JS)
 
 #
 ###################################################################################################
@@ -85,7 +89,7 @@ jts_compile_jake: jts_setup Jakefile.js
 # setup in jakets directory
 #
 
-jts_setup Jakefile.js: $(JAKE) $(JAKETS__DIR)/Jakefile.js
+jts_setup $(LOCAL_JAKEFILE__JS): $(JAKE) $(JAKETS__DIR)/Jakefile.js
 	$(JAKE) --jakefile $(JAKETS__DIR)/Jakefile.js jts:setup $(JAKE__PARAMS)
 	$(JAKE) --jakefile Jakefile.js jts:generate_dependencies $(JAKE__PARAMS)
 

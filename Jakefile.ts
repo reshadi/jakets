@@ -4,6 +4,8 @@ import * as path from "path";
 import * as jake from "./Jake";
 export let exec = jake.Exec;
 export let shell = jake.Shell;
+export let Log = jake.Log;
+export let LogTask = jake.LogTask;
 
 import * as NodeUtil from "./NodeUtil";
 
@@ -55,8 +57,8 @@ desc("update typings/main.d.ts from package.json");
 rule(new RegExp(TypingsDefs.replace(".", "[.]")), name => path.join(path.dirname(name), "..", "package.json"), [], function () {
   let typingsDeclarations: string = this.name;
   let packageJson: string = this.source;
-  jake.Log(`updating file ${typingsDeclarations} from package file ${packageJson}`);
-  jake.Log(`${packageJson}`);
+  jake.Log(`updating file ${typingsDeclarations} from package file ${packageJson}`, 1);
+  jake.Log(`${packageJson}`, 3);
 
   let typingsDir = path.dirname(typingsDeclarations);
   let currDir = path.dirname(packageJson);
@@ -83,7 +85,7 @@ rule(new RegExp(TypingsDefs.replace(".", "[.]")), name => path.join(path.dirname
     }
   }
   pkgNames.unshift("", "node");
-  jake.Log(dependencies);
+  jake.Log(dependencies, 3);
 
   //We need to look this up the last moment to make sure correct path is picked up
   let typingsCmd = NodeUtil.GetNodeCommand("typings", "typings --version ", "typings/dist/bin.js");
@@ -97,7 +99,8 @@ rule(new RegExp(TypingsDefs.replace(".", "[.]")), name => path.join(path.dirname
     + " && touch " + TypingsDefs //We already CD to this folder, so use the short name
   ], () => {
     shell.echo(typingsDeclarations);
-    this.complete()
+    this.complete();
+    jake.LogTask(this, 2);
   });
 }, { async: true });
 
@@ -106,7 +109,7 @@ desc("update node_modules from package.json");
 rule(new RegExp(NodeModulesUpdateIndicator), name => path.join(path.dirname(name), "..", "package.json"), [], function () {
   let indicator: string = this.name;
   let packageJson: string = this.source;
-  jake.Log(`updating file ${indicator} from package file ${packageJson}`);
+  jake.Log(`updating file ${indicator} from package file ${packageJson}`, 1);
 
   let packageDir = path.dirname(packageJson);
 
@@ -118,17 +121,18 @@ rule(new RegExp(NodeModulesUpdateIndicator), name => path.join(path.dirname(name
     + " && touch " + NodeModulesUpdateIndicator //We already CD to this folder, so use the short name
   ], () => {
     shell.echo(indicator);
-    this.complete()
+    this.complete();
+    jake.LogTask(this, 2);
   });
 }, { async: true });
 
 
 // desc("create empty package.json if missing");
 file("package.json", [], function () {
-  jake.Log(this.name);
+  jake.Log(this.name, 3);
   console.error("Generating package.json")
   var NPM = path.join("npm");
-  exec([NPM + " init"], () => this.complete());
+  exec([NPM + " init"], () => { this.complete(); jake.LogTask(this, 2); });
 }, { async: true });
 
 // 
@@ -139,9 +143,9 @@ file("package.json", [], function () {
 
 function CreatePlaceHolderTask(taskName: string, dependencies: string[]): string {
   let t = task(taskName, dependencies, function () {
-    jake.LogTask(this);
+    jake.LogTask(this, 2);
   });
-  jake.LogTask(t);
+  jake.LogTask(t, 2);
 
   if (t["name"] !== taskName) {
     jake.Log(taskName + " != " + t["name"]);
@@ -157,10 +161,10 @@ export function UpdatePackages(directories: string[]): string {
       && fs.existsSync(path.join(targetDir, "package.json"))
     )
     .map(targetDir =>
-      path.join(targetDir, NodeModulesUpdateIndicator)
+      MakeRelative(path.join(targetDir, NodeModulesUpdateIndicator))
     )
     .concat(directories
-      .map(targetDir => path.join(targetDir, "Makefile"))
+      .map(targetDir => MakeRelative(path.join(targetDir, "Makefile")))
       .filter(targetDir => fs.existsSync(targetDir))
     )
     ;
@@ -174,22 +178,22 @@ export function UpdateTypings(directories: string[]): string {
     //So, we can safely look for folders inside of node_modules folders as well
     let dependencies = directories
       .filter(targetDir => fs.existsSync(path.join(targetDir, "package.json")) || fs.existsSync(path.join(targetDir, "typings.json")))
-      .map(targetDir => path.join(targetDir, TypingsDefs))
+      .map(targetDir => path.join(targetDir, TypingsDefs).replace(/\\/g, "/"))
       ;
     //Now we need to invoke all these files
     let depTask = task(taskName + "_dependencies", dependencies, function () {
       this.complete();
-      jake.LogTask(this);
+      jake.LogTask(this, 2);
     }, { async: true });
     depTask.addListener("complete", () => {
       this.complete();
-      jake.LogTask(this);
+      jake.LogTask(this, 2);
     });
     depTask.invoke();
 
-    jake.LogTask(this);
+    jake.LogTask(this, 2);
   }, { async: true });
-  jake.LogTask(updateTask);
+  jake.LogTask(updateTask, 2);
   return taskName;
 }
 
@@ -205,7 +209,7 @@ export function CompileJakefiles(directories: string[]) {
 
   directories = directories.filter((d, index, array) => array.indexOf(d) === index); //Remove repeates in case later we add more
 
-  jake.Log(`LocalDir=${LocalDir}  - JaketsDir=${JaketsDir} - Dirs=[${directories.join(",")}]`);
+  jake.Log(`LocalDir=${LocalDir}  - JaketsDir=${JaketsDir} - Dirs=[${directories.join(",")}]`, 3);
 
   let updateTypingsTaskName = UpdateTypings(directories);
   let dependencies = directories
@@ -222,14 +226,14 @@ export function CompileJakefiles(directories: string[]) {
         //Compile unconditionally since it seems file was never compiled before and need to be sure
         let compileJakefileTaskName = `compile_Jakefile_in_${path.basename(targetDir)}`;
         task(compileJakefileTaskName, [updateTypingsTaskName], function () {
-          tsc(`--module commonjs --sourceMap ${jakefileTs}`, () => { this.complete(); jake.LogTask(this); });
+          tsc(`--module commonjs --sourceMap ${jakefileTs}`, () => { this.complete(); jake.LogTask(this, 2); });
         }, { async: true });
 
         dependencies.push(compileJakefileTaskName);
 
         resultTarget = `setup_all_for_${path.basename(targetDir)}`;
         task(resultTarget, dependencies, function () {
-          jake.LogTask(this);
+          jake.LogTask(this, 2);
         });
       } else {
         //Compile conditionally since it seems file was already compiled before and we know what it depends on
@@ -238,7 +242,7 @@ export function CompileJakefiles(directories: string[]) {
 
         resultTarget = jakefileJs;
         file(jakefileJs, dependencies, function () {
-          tsc(`--module commonjs --sourceMap ${jakefileTs}`, () => { this.complete(); jake.LogTask(this); });
+          tsc(`--module commonjs --sourceMap ${jakefileTs}`, () => { this.complete(); jake.LogTask(this, 2); });
         }, { async: true });
       }
       return resultTarget;
@@ -273,7 +277,7 @@ namespace("jts", function () {
     let taskList = taskListRaw.match(/^jake ([-\w]*)/gm);
     if (taskList) {
       taskList = taskList.map(t => t.match(/\s.*/)[0]);
-      jake.Log(`Found public tasks ${taskList}`);
+      jake.Log(`Found public tasks ${taskList}`, 1);
 
       var content = ""
         + "JAKE_TASKS = " + taskList.join(" ") + "\n"

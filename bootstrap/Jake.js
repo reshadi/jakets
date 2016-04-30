@@ -2,18 +2,17 @@
 "use strict";
 var ShellJs = require("shelljs");
 exports.Shell = ShellJs; //require("shelljs");
-var EnableLog = process.env.enableLog === "true";
-console.log("Logging is " + (EnableLog ? "enabled" : "disabled"));
-function Log(msg) {
-    if (EnableLog) {
+var LogLevel = parseInt(process.env.logLevel) || 0;
+function Log(msg, level) {
+    if (level === void 0) { level = 1; }
+    if (level <= LogLevel) {
         console.log(msg);
     }
 }
 exports.Log = Log;
-function LogTask(t) {
-    if (EnableLog) {
-        Log(t.taskStatus + " => " + t.name + ": ['" + t.prereqs.join("', '") + "']");
-    }
+Log("Logging level is " + LogLevel, 2);
+function LogTask(t, level) {
+    Log(t.taskStatus + " => " + t.name + ": ['" + t.prereqs.join("', '") + "']", level);
 }
 exports.LogTask = LogTask;
 function Exec(cmd, callback, isSilent) {
@@ -25,7 +24,7 @@ function Exec(cmd, callback, isSilent) {
         cmdArray = [cmd];
     }
     isSilent || console.log(cmd);
-    Log("Running " + cmdArray.join(" , "));
+    Log("Running " + cmdArray.join(" , "), 1);
     jake.exec(cmdArray, callback, { printStdout: true, printStderr: true });
 }
 exports.Exec = Exec;

@@ -3,14 +3,15 @@
 import * as ShellJs from "shelljs";
 export let Shell = ShellJs;//require("shelljs");
 
-let EnableLog: boolean = process.env.enableLog === "true";
-console.log("Logging is " + (EnableLog ? "enabled" : "disabled"));
+let LogLevel: number = parseInt(process.env.logLevel) || 0;
 
-export function Log(msg) {
-  if (EnableLog) {
+export function Log(msg, level: number = 1) {
+  if (level <= LogLevel) {
     console.log(msg);
   }
 }
+
+Log("Logging level is " + LogLevel, 2);
 
 interface Task extends jake.Task {
   name?: string;
@@ -18,10 +19,8 @@ interface Task extends jake.Task {
   taskStatus?: string;
 }
 
-export function LogTask(t: Task) {
-  if (EnableLog) {
-    Log(`${t.taskStatus} => ${t.name}: ['${t.prereqs.join("', '")}']`);
-  }
+export function LogTask(t: Task, level?: number) {
+  Log(`${t.taskStatus} => ${t.name}: ['${t.prereqs.join("', '")}']`, level);
 }
 
 export function Exec(cmd: string | string[], callback, isSilent?: boolean) {
@@ -32,6 +31,6 @@ export function Exec(cmd: string | string[], callback, isSilent?: boolean) {
     cmdArray = [cmd];
   }
   isSilent || console.log(cmd);
-  Log("Running " + cmdArray.join(" , "));
+  Log("Running " + cmdArray.join(" , "), 1);
   jake.exec(cmdArray, callback, { printStdout: true, printStderr: true });
 }
