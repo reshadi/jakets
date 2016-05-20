@@ -12,6 +12,7 @@ JAKETS__DIR := $(subst //,,$(dir $(lastword $(MAKEFILE_LIST)))/)
 CURRENT__DIR := $(subst //,,$(dir $(firstword $(MAKEFILE_LIST)))/)
 
 EXPECTED_NODE_VERSION?=v6.2.0
+
 LOG_LEVEL?=0
 
 ###################################################################################################
