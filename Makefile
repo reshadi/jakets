@@ -107,7 +107,7 @@ jts_update_bootstrap:
 
 $(JAKE): $(NODE__BIN)
 	cd $(JAKETS__DIR) && \
-	$(NPM) install jake shelljs && \
+	$(NPM) install jake shelljs
 	touch $@
 
 _jts_get_node: $(NODE__BIN)
