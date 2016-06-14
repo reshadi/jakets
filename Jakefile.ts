@@ -226,7 +226,7 @@ export function CompileJakefiles(directories: string[]) {
         //Compile unconditionally since it seems file was never compiled before and need to be sure
         let compileJakefileTaskName = `compile_Jakefile_in_${path.basename(targetDir)}`;
         task(compileJakefileTaskName, [updateTypingsTaskName], function () {
-          tsc(`--module commonjs --sourceMap ${jakefileTs}`, () => { this.complete(); jake.LogTask(this, 2); });
+          tsc(`--module commonjs --inlineSourceMap ${jakefileTs}`, () => { this.complete(); jake.LogTask(this, 2); });
         }, { async: true });
 
         dependencies.push(compileJakefileTaskName);
@@ -242,7 +242,7 @@ export function CompileJakefiles(directories: string[]) {
 
         resultTarget = jakefileJs;
         file(jakefileJs, dependencies, function () {
-          tsc(`--module commonjs --sourceMap ${jakefileTs}`, () => { this.complete(); jake.LogTask(this, 2); });
+          tsc(`--module commonjs --inlineSourceMap ${jakefileTs}`, () => { this.complete(); jake.LogTask(this, 2); });
         }, { async: true });
       }
       return resultTarget;
@@ -272,7 +272,7 @@ namespace("jts", function () {
     let dependencies = tsJakeFiles; //TODO: add other local modules.
     fs.writeFileSync(JakefileDependencies, JSON.stringify(dependencies));
 
-    var jakeFileMk = "Jakefile.mk";
+    var jakeFileMk = "Jakefile.dep.mk";
     let taskListRaw = jake.Shell.exec(jakeCmd + " -T").output;
     let taskList = taskListRaw.match(/^jake ([-\w]*)/gm);
     if (taskList) {

@@ -77,7 +77,7 @@ j-%: jts_compile_jake
 	$(JAKE) $*  $(JAKE__PARAMS)
 
 #The following is auto generated to make sure local Jakefile.ts dependencies are captured properly
--include Jakefile.mk
+-include Jakefile.dep.mk
 
 $(JAKE_TASKS):%: j-%
 
