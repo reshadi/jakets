@@ -220,14 +220,19 @@ export function CompileJakefiles(directories: string[]) {
       let resultTarget: string;
       let dependencies: string[] = [updateTypingsTaskName];
 
+      let compileJakefileTs = function () {
+        tsc(
+          `--module commonjs --inlineSourceMap ${MakeRelative(path.join(__dirname, TypingsDefs))} ${jakefileTs}`
+          , () => { this.complete(); jake.LogTask(this, 2); }
+        );
+      };
+
       let targetJakefileDependencies = path.join(targetDir, JakefileDependencies);
       let hasDependency = fs.existsSync(targetJakefileDependencies);
       if (!hasDependency) {
         //Compile unconditionally since it seems file was never compiled before and need to be sure
         let compileJakefileTaskName = `compile_Jakefile_in_${path.basename(targetDir)}`;
-        task(compileJakefileTaskName, [updateTypingsTaskName], function () {
-          tsc(`--module commonjs --inlineSourceMap ${jakefileTs}`, () => { this.complete(); jake.LogTask(this, 2); });
-        }, { async: true });
+        task(compileJakefileTaskName, [updateTypingsTaskName], compileJakefileTs, { async: true });
 
         dependencies.push(compileJakefileTaskName);
 
@@ -241,9 +246,7 @@ export function CompileJakefiles(directories: string[]) {
         dependencies = dependencies.concat(JSON.parse(depStr));
 
         resultTarget = jakefileJs;
-        file(jakefileJs, dependencies, function () {
-          tsc(`--module commonjs --inlineSourceMap ${jakefileTs}`, () => { this.complete(); jake.LogTask(this, 2); });
-        }, { async: true });
+        file(jakefileJs, dependencies, compileJakefileTs, { async: true });
       }
       return resultTarget;
     })
