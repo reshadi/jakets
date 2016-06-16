@@ -29,7 +29,7 @@ let jakeCmd = NodeUtil.GetNodeCommand("jake", "jake --version", "jake/bin/cli.js
 //We use the following to better clarity what we are using/checking
 export var LocalDir = process.cwd();
 
-export function MakeRelative(fullpath: string): string {
+export function MakeRelativeToWorkingDir(fullpath: string): string {
   if (!fullpath) {
     return fullpath;
   }
@@ -40,18 +40,21 @@ export function MakeRelative(fullpath: string): string {
   // return path.relative(LocalDir, fullpath) || '.';
 }
 
-var JaketsDir = MakeRelative(__dirname.replace("bootstrap", ""));
+//For backward compatibility
+export var MakeRelative = MakeRelativeToWorkingDir;
 
-export var BuildDir: string = process.env.BUILD__DIR || MakeRelative("./build");
+var JaketsDir = MakeRelativeToWorkingDir(__dirname.replace("bootstrap", ""));
+
+export var BuildDir: string = process.env.BUILD__DIR || MakeRelativeToWorkingDir("./build");
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Dependencies 
 
-let NodeModulesUpdateIndicator = MakeRelative("node_modules/.node_modules_updated");
+let NodeModulesUpdateIndicator = MakeRelativeToWorkingDir("node_modules/.node_modules_updated");
 let TypingsDefs = "typings/main.d.ts";
-let TypingsJson = MakeRelative("typings.json");
-let JakefileDependencies = MakeRelative("Jakefile.dep.json");
+let TypingsJson = MakeRelativeToWorkingDir("typings.json");
+let JakefileDependencies = MakeRelativeToWorkingDir("Jakefile.dep.json");
 
 desc("update typings/main.d.ts from package.json");
 rule(new RegExp(TypingsDefs.replace(".", "[.]")), name => path.join(path.dirname(name), "..", "package.json"), [], function () {
@@ -161,10 +164,10 @@ export function UpdatePackages(directories: string[]): string {
       && fs.existsSync(path.join(targetDir, "package.json"))
     )
     .map(targetDir =>
-      MakeRelative(path.join(targetDir, NodeModulesUpdateIndicator))
+      MakeRelativeToWorkingDir(path.join(targetDir, NodeModulesUpdateIndicator))
     )
     .concat(directories
-      .map(targetDir => MakeRelative(path.join(targetDir, "Makefile")))
+      .map(targetDir => MakeRelativeToWorkingDir(path.join(targetDir, "Makefile")))
       .filter(targetDir => fs.existsSync(targetDir))
     )
     ;
@@ -202,9 +205,9 @@ export function CompileJakefiles(directories: string[]) {
     directories = [];
   }
   directories.push(".");
-  if (MakeRelative(JaketsDir) !== ".") {
+  if (MakeRelativeToWorkingDir(JaketsDir) !== ".") {
     directories.push(JaketsDir);
-    directories.push(MakeRelative("node_modules/jakets"));
+    directories.push(MakeRelativeToWorkingDir("node_modules/jakets"));
   }
 
   directories = directories.filter((d, index, array) => array.indexOf(d) === index); //Remove repeates in case later we add more
@@ -222,7 +225,7 @@ export function CompileJakefiles(directories: string[]) {
 
       let compileJakefileTs = function () {
         tsc(
-          `--module commonjs --inlineSourceMap ${MakeRelative(path.join(__dirname, TypingsDefs))} ${jakefileTs}`
+          `--module commonjs --inlineSourceMap ${MakeRelativeToWorkingDir(path.join(__dirname, TypingsDefs))} ${jakefileTs}`
           , () => { this.complete(); jake.LogTask(this, 2); }
         );
       };
@@ -266,7 +269,7 @@ namespace("jts", function () {
     var jsJakeFiles =
       Object.keys(require('module')._cache)
         .filter(m => m.search(jakefilePattern) > -1)
-        .map(MakeRelative)
+        .map(MakeRelativeToWorkingDir)
       ;
     var tsJakeFiles =
       jsJakeFiles
