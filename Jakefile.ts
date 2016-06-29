@@ -280,7 +280,7 @@ namespace("jts", function () {
 
     var jakeFileMk = "Jakefile.dep.mk";
     let taskListRaw = jake.Shell.exec(jakeCmd + " -T").output;
-    let taskList = taskListRaw.match(/^jake ([-\w]*)/gm);
+    let taskList = taskListRaw && taskListRaw.match(/^jake ([-\w]*)/gm);
     if (taskList) {
       taskList = taskList.map(t => t.match(/\s.*/)[0]);
       jake.Log(`Found public tasks ${taskList}`, 1);
