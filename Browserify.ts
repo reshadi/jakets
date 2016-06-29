@@ -16,7 +16,9 @@ Collapser = NodeUtil.FindModulePath(Collapser) || Collapser;
 
 export function Exec(inputs: string, output: string, callback, isRelease?: boolean, tsargs?: string, options?: string) {
   let args = inputs;
-  args += " -p [ " + Tsify + " " + (tsargs || "") + " ]";
+  if (tsargs !== null) {
+    args += " -p [ " + Tsify + " " + (tsargs || "") + " ]";
+  }
   if (isRelease) {
     args += "  -p [ " + Collapser + " ]";
   } else {
