@@ -1,3 +1,4 @@
+import "@types/index";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -56,7 +57,7 @@ let TypingsDefs = "typings/main.d.ts";
 let TypingsJson = MakeRelativeToWorkingDir("typings.json");
 let JakefileDependencies = MakeRelativeToWorkingDir("Jakefile.dep.json");
 
-desc("update typings/main.d.ts from package.json");
+desc(`update ${TypingsDefs} from package.json`);
 rule(new RegExp(TypingsDefs.replace(".", "[.]")), name => path.join(path.dirname(name), "..", "package.json"), [], function () {
   let typingsDeclarations: string = this.name;
   let packageJson: string = this.source;
@@ -66,11 +67,16 @@ rule(new RegExp(TypingsDefs.replace(".", "[.]")), name => path.join(path.dirname
   let typingsDir = path.dirname(typingsDeclarations);
   let currDir = path.dirname(packageJson);
 
+  let pkgNames: string[];
+
+  //Extract package names from pacakge.json for backward compatibility
   var pkgStr: string = fs.readFileSync(packageJson, 'utf8');
   var pkg = JSON.parse(pkgStr);
   var dependencies = pkg["dependencies"] || {};
+  jake.Log(dependencies, 2);
   var additionalTypings = pkg["addTypings"] || {};
-  var pkgNames = Object.keys(dependencies);
+  pkgNames = Object.keys(dependencies);
+  pkgNames = pkgNames.filter(p => p.lastIndexOf("@types", 6) === -1);
   for (let typename in additionalTypings) {
     let typeSelector = additionalTypings[typename];
     let typeIndex = pkgNames.indexOf(typename);
@@ -87,20 +93,37 @@ rule(new RegExp(TypingsDefs.replace(".", "[.]")), name => path.join(path.dirname
       }
     }
   }
-  pkgNames.unshift("", "node");
-  jake.Log(dependencies, 3);
+  pkgNames.unshift("node");
+
+  //Extract all package names in the node_modules/@types/
+  let typesPkgDir = MakeRelativeToWorkingDir("node_modules/@types");
+  pkgNames = pkgNames.concat(
+    fs.readdirSync(typesPkgDir).filter(
+      f =>
+        pkgNames.indexOf(f) === -1
+        && fs.statSync(path.join(typesPkgDir, f)).isDirectory())
+  );
+
+  jake.Log(pkgNames, 2);
 
   //We need to look this up the last moment to make sure correct path is picked up
   let typingsCmd = NodeUtil.GetNodeCommand("typings", "typings --version ", "typings/dist/bin.js");
-  var command = pkgNames.reduce((fullcmd, pkgName) => fullcmd + " && ( " + typingsCmd + " install " + pkgName + " --ambient --save || true ) ", "");
+  let command = pkgNames.reduce((fullcmd, pkgName) => fullcmd + " && ( " + typingsCmd + " install " + pkgName + " --ambient --save || true ) ", "");
+  // let command = pkgNames.reduce((fullcmd, pkgName) => fullcmd + " && ( " + typingsCmd + " install dt~" + pkgName + " --global --save || true ) ", "");
 
   shell.mkdir("-p", typingsDir);
+  shell.mkdir("-p", typesPkgDir);
   jake.Exec([
     "cd " + currDir
     + " && touch " + TypingsJson
     + command
     + " && touch " + TypingsDefs //We already CD to this folder, so use the short name
   ], () => {
+    //For backward compatibility, we make the main.d.ts to point to index.d.ts
+    // fs.writeFileSync(TypingsDefs, `/// <reference path='./index.d.ts'/>`);
+    fs.writeFileSync(path.join(typesPkgDir, "index.ts"), `import "../../typings/index.ts";`);
+    fs.writeFileSync(path.join(typingsDir, "index.ts"), `/// <reference path='./main.d.ts'/>`);
+;
     shell.echo(typingsDeclarations);
     this.complete();
     jake.LogTask(this, 2);
@@ -207,7 +230,7 @@ export function CompileJakefiles(directories: string[]) {
   directories.push(".");
   if (MakeRelativeToWorkingDir(JaketsDir) !== ".") {
     directories.push(JaketsDir);
-    directories.push(MakeRelativeToWorkingDir("node_modules/jakets"));
+    // directories.push(MakeRelativeToWorkingDir("node_modules/jakets"));
   }
 
   directories = directories.filter((d, index, array) => array.indexOf(d) === index); //Remove repeates in case later we add more
@@ -225,7 +248,8 @@ export function CompileJakefiles(directories: string[]) {
 
       let compileJakefileTs = function () {
         tsc(
-          `--module commonjs --inlineSourceMap ${MakeRelativeToWorkingDir(path.join(__dirname, TypingsDefs))} ${jakefileTs}`
+          // `--module commonjs --inlineSourceMap ${MakeRelativeToWorkingDir(path.join(__dirname, TypingsDefs))} ${jakefileTs}`
+          `--module commonjs --inlineSourceMap ${jakefileTs}`
           , () => { this.complete(); jake.LogTask(this, 2); }
         );
       };

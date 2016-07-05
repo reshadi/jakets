@@ -95,12 +95,16 @@ jts_setup $(LOCAL_JAKEFILE__JS): $(JAKE) $(JAKETS__DIR)/Jakefile.js
 	$(JAKE) --jakefile $(JAKETS__DIR)/Jakefile.js jts:setup $(JAKE__PARAMS)
 	$(JAKE) --jakefile Jakefile.js jts:generate_dependencies $(JAKE__PARAMS)
 
-$(JAKETS__DIR)/Jakefile.js: $(JAKE) $(wildcard $(JAKETS__DIR)/*.ts $(JAKETS__DIR)/bootstrap/*.js)
+$(JAKETS__DIR)/Jakefile.js: $(JAKE) $(wildcard $(JAKETS__DIR)/*.ts $(JAKETS__DIR)/bootstrap/*.js) ./node_modules/@types/index.js ./typings/index.js
 	cd $(JAKETS__DIR) && \
 	cp bootstrap/*.js .
 	$(JAKE) --jakefile $(JAKETS__DIR)/Jakefile.js jts:setup $(JAKE__PARAMS)
 	touch $@
 	echo ************** MAKE SURE YOU CALL make jts_update_bootstrap **************
+
+./node_modules/@types/index.js ./typings/index.js: $(JAKE)
+	mkdir -p $(@D)
+	node -e "require('fs').writeFileSync('$@', '')"
 
 jts_update_bootstrap:
 	cp $(JAKETS__DIR)/*.js $(JAKETS__DIR)/bootstrap/
