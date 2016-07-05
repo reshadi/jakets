@@ -312,7 +312,7 @@ namespace("jts", function () {
       jake.Log(`Found public tasks ${taskList}`, 1);
 
       var content = ""
-        + "JAKE_TASKS = " + taskList.join(" ") + "\n"
+        + "JAKE_TASKS += " + taskList.join(" ") + "\n"
         + "\n"
         + "Jakefile.js: " + dependencies.join(" ") + "\n"
         + "\n"
