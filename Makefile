@@ -95,14 +95,19 @@ jts_setup $(LOCAL_JAKEFILE__JS): $(JAKE) $(JAKETS__DIR)/Jakefile.js
 	$(JAKE) --jakefile $(JAKETS__DIR)/Jakefile.js jts:setup $(JAKE__PARAMS)
 	$(JAKE) --jakefile Jakefile.js jts:generate_dependencies $(JAKE__PARAMS)
 
-$(JAKETS__DIR)/Jakefile.js: $(JAKE) $(wildcard $(JAKETS__DIR)/*.ts $(JAKETS__DIR)/bootstrap/*.js) ./node_modules/@types/index.js ./typings/index.js
+AUTOGEN_MODULES=\
+  ./node_modules/@types/index.js ./typings/index.js \
+  ./node_modules/@types/main.js ./typings/main.js \
+  ./node_modules/@types/browser.js ./typings/browser.js
+
+$(JAKETS__DIR)/Jakefile.js: $(JAKE) $(wildcard $(JAKETS__DIR)/*.ts $(JAKETS__DIR)/bootstrap/*.js) $(AUTOGEN_MODULES)
 	cd $(JAKETS__DIR) && \
 	cp bootstrap/*.js .
 	$(JAKE) --jakefile $(JAKETS__DIR)/Jakefile.js jts:setup $(JAKE__PARAMS)
 	touch $@
 	echo ************** MAKE SURE YOU CALL make jts_update_bootstrap **************
 
-./node_modules/@types/index.js ./typings/index.js: $(JAKE)
+$(AUTOGEN_MODULES): $(JAKE)
 	mkdir -p $(@D)
 	node -e "require('fs').writeFileSync('$@', '')"
 

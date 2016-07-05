@@ -1,4 +1,4 @@
-import "@types/index";
+import "@types/main";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -121,9 +121,11 @@ rule(new RegExp(TypingsDefs.replace(".", "[.]")), name => path.join(path.dirname
   ], () => {
     //For backward compatibility, we make the main.d.ts to point to index.d.ts
     // fs.writeFileSync(TypingsDefs, `/// <reference path='./index.d.ts'/>`);
-    fs.writeFileSync(path.join(typesPkgDir, "index.ts"), `import "../../typings/index.ts";`);
-    fs.writeFileSync(path.join(typingsDir, "index.ts"), `/// <reference path='./main.d.ts'/>`);
-;
+    ["index", "main", "browser"].forEach(f => {
+      fs.writeFileSync(path.join(typesPkgDir, `${f}.ts`), `import "../../typings/${f}";`);
+      fs.writeFileSync(path.join(typingsDir, `${f}.ts`), `/// <reference path='./${f}.d.ts'/>`);
+    });
+
     shell.echo(typingsDeclarations);
     this.complete();
     jake.LogTask(this, 2);
