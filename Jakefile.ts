@@ -311,15 +311,15 @@ namespace("jts", function () {
       taskList = taskList.map(t => t.match(/\s.*/)[0]);
       jake.Log(`Found public tasks ${taskList}`, 1);
 
-      var content = ""
-        + "JAKE_TASKS += " + taskList.join(" ") + "\n"
-        + "\n"
-        + "Jakefile.js: " + dependencies.join(" ") + "\n"
-        + "\n"
-        + "clean:\n"
-        + "\t#rm -f " + jsJakeFiles.join(" ") + "\n"
-        + "\trm -f " + jsJakeFiles.map(f => f + ".map").join(" ") + "\n"
-        ;
+      var content = `
+JAKE_TASKS += ${taskList.join(" ")}
+
+Jakefile.js: $(wildcard ${dependencies.join(" ")})
+
+clean:
+\t#rm -f ${jsJakeFiles.join(" ")}
+\trm -f ${jsJakeFiles.map(f => f + ".map").join(" ")}
+`;
       fs.writeFileSync(jakeFileMk, content);
     }
   });
