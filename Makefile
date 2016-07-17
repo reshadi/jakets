@@ -55,7 +55,7 @@ endif
 
 
 JAKE = $(NODE_MODULES__DIR)/.bin/jake
-JAKE__PARAMS += logLevel=$(LOG_LEVEL)
+JAKE__PARAMS += logLevel=$(LOG_LEVEL) $(MAKEFLAGS)
 
 #One can use the following local file to overwrite the above settings
 -include LocalPaths.mk

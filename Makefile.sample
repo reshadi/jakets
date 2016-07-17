@@ -2,22 +2,20 @@
 # setup jakets and basic tools
 #
 
-#SEARCH_JAKETS__DIRS = ./node_modules/jakets ./build/jakets ./jakets ../jakets
-SEARCH_JAKETS__DIRS = ./node_modules/jakets ./build/jakets
+# SEARCH_JAKETS__DIRS += ../jakets
+# SEARCH_JAKETS__DIRS += ./node_modules/jakets
+SEARCH_JAKETS__DIRS += build/jakets
 JAKETS__MAKEFILES = $(patsubst %,%/Makefile,$(SEARCH_JAKETS__DIRS))
-JAKETS__DIR = $(dir $(word 1, $(wildcard $(JAKETS__MAKEFILES))))
-# JAKETS__DIR = $(word 1, $(wildcard $(SEARCH_JAKETS__DIRS)))ifeq ("$(JAKETS__DIR)","")
-	JAKETS__DIR = $(lastword $(SEARCH_JAKETS__DIRS))
+JAKETS__MAKEFILE = $(word 1, $(wildcard $(JAKETS__MAKEFILES)))
+ifeq ("$(JAKETS__MAKEFILE)","")
+	JAKETS__MAKEFILE = $(lastword $(JAKETS__MAKEFILES))
+	JAKETS__DIR = $(dir $(JAKETS__MAKEFILE))
+	GITOUT := $(shell git clone -b devnpm https://github.com/reshadi/jakets.git $(JAKETS__DIR))
 endif
-$(info JAKETS__DIR="$(JAKETS__DIR)" )
-
-ifeq ("$(wildcard $(JAKETS__DIR))","")
-$(shell git clone https://github.com/reshadi/jakets.git $(JAKETS__DIR))
-endif
+$(info JAKETS__DIR="$(dir $(JAKETS__MAKEFILE)" ))
 
 JAKE_TASKS += debug release
-
-include $(JAKETS__DIR)/Makefile
+include $(JAKETS__MAKEFILE)
 
 #
 ###################################################################################################
