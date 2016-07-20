@@ -11,7 +11,7 @@ JAKETS__INCLUDE_BARRIER_ = 1
 JAKETS__DIR := $(subst //,,$(dir $(lastword $(MAKEFILE_LIST)))/)
 CURRENT__DIR := $(subst //,,$(dir $(firstword $(MAKEFILE_LIST)))/)
 
-EXPECTED_NODE_VERSION?=v6.2.1
+EXPECTED_NODE_VERSION?=v6.3.0
 
 LOG_LEVEL?=0
 
@@ -55,7 +55,7 @@ endif
 
 
 JAKE = $(NODE_MODULES__DIR)/.bin/jake
-JAKE__PARAMS = logLevel=$(LOG_LEVEL)
+JAKE__PARAMS += logLevel=$(LOG_LEVEL) $(MAKEFLAGS)
 
 #One can use the following local file to overwrite the above settings
 -include LocalPaths.mk
@@ -74,7 +74,7 @@ jts_run_jake: jts_compile_jake
 	$(JAKE) $(JAKE__PARAMS)
 
 j-%: jts_compile_jake
-	$(JAKE) $*  $(JAKE__PARAMS)
+	$(JAKE) $* $(JAKE__PARAMS)
 
 #The following is auto generated to make sure local Jakefile.ts dependencies are captured properly
 -include Jakefile.dep.mk
@@ -95,12 +95,30 @@ jts_setup $(LOCAL_JAKEFILE__JS): $(JAKE) $(JAKETS__DIR)/Jakefile.js
 	$(JAKE) --jakefile $(JAKETS__DIR)/Jakefile.js jts:setup $(JAKE__PARAMS)
 	$(JAKE) --jakefile Jakefile.js jts:generate_dependencies $(JAKE__PARAMS)
 
-$(JAKETS__DIR)/Jakefile.js: $(JAKE) $(wildcard $(JAKETS__DIR)/*.ts $(JAKETS__DIR)/bootstrap/*.js)
+AUTOGEN_MODULES=\
+  $(JAKETS__DIR)/node_modules/@types/index.js \
+  $(JAKETS__DIR)/node_modules/@types/main.js \
+  $(JAKETS__DIR)/node_modules/@types/browser.js \
+  $(JAKETS__DIR)/typings/index.js \
+  $(JAKETS__DIR)/typings/main.js \
+  $(JAKETS__DIR)/typings/browser.js \
+  ./node_modules/@types/index.js \
+  ./node_modules/@types/main.js \
+  ./node_modules/@types/browser.js \
+  ./typings/index.js \
+  ./typings/main.js \
+  ./typings/browser.js
+
+$(JAKETS__DIR)/Jakefile.js: $(JAKE) $(wildcard $(JAKETS__DIR)/*.ts $(JAKETS__DIR)/bootstrap/*.js) $(AUTOGEN_MODULES)
 	cd $(JAKETS__DIR) && \
 	cp bootstrap/*.js .
 	$(JAKE) --jakefile $(JAKETS__DIR)/Jakefile.js jts:setup $(JAKE__PARAMS)
 	touch $@
 	echo ************** MAKE SURE YOU CALL make jts_update_bootstrap **************
+
+$(AUTOGEN_MODULES): $(JAKE)
+	mkdir -p $(@D)
+	node -e "require('fs').writeFileSync('$@', '')"
 
 jts_update_bootstrap:
 	cp $(JAKETS__DIR)/*.js $(JAKETS__DIR)/bootstrap/

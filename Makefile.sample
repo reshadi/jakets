@@ -2,33 +2,28 @@
 # setup jakets and basic tools
 #
 
-# Optionally, we can uncomment this one if we want to check multiple
-#JAKETS__DIRS = $(word 1, $(wildcard ./node_modules/jakets ../jakets ./jakets))
-#ifeq ("$(JAKETS__DIRS)","")
-#	JAKETS__DIR = ../jakets
-#else
-#	JAKETS__DIR = $(JAKETS__DIRS)
-#endif
-
-JAKETS__DIR = ../jakets
-$(info JAKETS__DIR="$(JAKETS__DIR)" )
-
-ifeq ("$(wildcard $(JAKETS__DIR))","")
-$(shell git clone https://github.com/reshadi/jakets.git $(JAKETS__DIR))
+# SEARCH_JAKETS__DIRS += ../jakets
+# SEARCH_JAKETS__DIRS += ./node_modules/jakets
+SEARCH_JAKETS__DIRS += build/jakets
+JAKETS__MAKEFILES = $(patsubst %,%/Makefile,$(SEARCH_JAKETS__DIRS))
+JAKETS__MAKEFILE = $(word 1, $(wildcard $(JAKETS__MAKEFILES)))
+ifeq ("$(JAKETS__MAKEFILE)","")
+	JAKETS__MAKEFILE = $(lastword $(JAKETS__MAKEFILES))
+	JAKETS__DIR = $(dir $(JAKETS__MAKEFILE))
+	GITOUT := $(shell git clone -b devnpm https://github.com/reshadi/jakets.git $(JAKETS__DIR))
 endif
+$(info JAKETS__DIR="$(dir $(JAKETS__MAKEFILE)" ))
 
-include $(JAKETS__DIR)/Makefile
-
-#
-###################################################################################################
-
-
-###################################################################################################
-# normal rules
-#
-
-# all: $(JAKE)
-# 	$(JAKE)
+JAKE_TASKS += debug release
+include $(JAKETS__MAKEFILE)
 
 #
 ###################################################################################################
+
+
+###################################################################################################
+# optional custom rules
+#
+
+#
+####################################################################################################
