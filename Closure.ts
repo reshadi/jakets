@@ -16,7 +16,7 @@ export function Exec(inputs: string, output: string, callback, options?: string)
   args += " --language_in ECMASCRIPT5";
   args += " --new_type_inf";
   args += " --summary_detail_level 3";
-  args += " --warning_level VERBOSE";
+  args += " --warning_level QUIET";
 
   args += " --js_output_file=" + output;
   // args += " --jszip=" + output + ".gz";
