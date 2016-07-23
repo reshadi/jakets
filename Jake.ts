@@ -1,7 +1,8 @@
 /// <reference path="./ExternalTypings.d.ts" />
 
+import * as ChildProcess from "child_process";
 import * as ShellJs from "shelljs";
-export let Shell = ShellJs;//require("shelljs");
+export let Shell = ShellJs;
 
 let LogLevel: number = parseInt(process.env.logLevel) || 0;
 
@@ -32,5 +33,9 @@ export function Exec(cmd: string | string[], callback, isSilent?: boolean) {
   }
   isSilent || console.log(cmd);
   Log("Running " + cmdArray.join(" , "), 1);
-  jake.exec(cmdArray, callback, { printStdout: true, printStderr: true });
+  if (cmdArray.length === 1) {
+    ChildProcess.exec(cmdArray[0], callback);
+  } else {
+    jake.exec(cmdArray, callback, { printStdout: true, printStderr: true });
+  }
 }

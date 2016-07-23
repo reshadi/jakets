@@ -66,6 +66,7 @@ JAKE__PARAMS += logLevel=$(LOG_LEVEL)
 
 # default: run_jake
 
+JAKETS_JAKEFILE__JS=$(JAKETS__DIR)/Jakefile.js
 ifneq ($(JAKETS__DIR),$(CURRENT__DIR))
   LOCAL_JAKEFILE__JS=Jakefile.js
 endif
@@ -81,7 +82,7 @@ j-%: jts_compile_jake
 
 $(JAKE_TASKS):%: j-%
 
-jts_compile_jake: jts_setup $(LOCAL_JAKEFILE__JS)
+jts_compile_jake: $(LOCAL_JAKEFILE__JS) $(JAKETS_JAKEFILE__JS)
 
 #
 ###################################################################################################
@@ -91,28 +92,26 @@ jts_compile_jake: jts_setup $(LOCAL_JAKEFILE__JS)
 # setup in jakets directory
 #
 
-jts_setup $(LOCAL_JAKEFILE__JS): $(JAKE) $(JAKETS__DIR)/Jakefile.js
+jts_setup $(LOCAL_JAKEFILE__JS): $(JAKE) $(JAKETS_JAKEFILE__JS)
 	$(JAKE) --jakefile $(JAKETS__DIR)/Jakefile.js jts:setup $(JAKE__PARAMS)
-	$(JAKE) --jakefile Jakefile.js jts:generate_dependencies $(JAKE__PARAMS)
+	# $(JAKE) --jakefile Jakefile.js jts:generate_dependencies $(JAKE__PARAMS)
 
-AUTOGEN_MODULES=\
-  $(JAKETS__DIR)/node_modules/@types/index.js \
-  $(JAKETS__DIR)/node_modules/@types/main.js \
-  $(JAKETS__DIR)/node_modules/@types/browser.js \
-  $(JAKETS__DIR)/typings/index.js \
-  $(JAKETS__DIR)/typings/main.js \
-  $(JAKETS__DIR)/typings/browser.js \
-  ./node_modules/@types/index.js \
-  ./node_modules/@types/main.js \
-  ./node_modules/@types/browser.js \
-  ./typings/index.js \
-  ./typings/main.js \
-  ./typings/browser.js
+AUTOGEN_MODULES:=\
+  node_modules/@types/index.js \
+  node_modules/@types/main.js \
+  node_modules/@types/browser.js \
+  typings/index.js \
+  typings/main.js \
+  typings/browser.js
 
-$(JAKETS__DIR)/Jakefile.js: $(JAKE) $(wildcard $(JAKETS__DIR)/*.ts $(JAKETS__DIR)/bootstrap/*.js) $(AUTOGEN_MODULES)
+ifneq ($(JAKETS__DIR),$(CURRENT__DIR))
+  AUTOGEN_MODULES += $(patsubst %,$(JAKETS__DIR)/%,$(AUTOGEN_MODULES))
+endif
+
+$(JAKETS_JAKEFILE__JS): $(JAKE) $(wildcard $(JAKETS__DIR)/*.ts $(JAKETS__DIR)/bootstrap/*.js) $(AUTOGEN_MODULES)
 	cd $(JAKETS__DIR) && \
 	cp bootstrap/*.js .
-	$(JAKE) --jakefile $(JAKETS__DIR)/Jakefile.js jts:setup $(JAKE__PARAMS)
+	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
 	touch $@
 	echo ************** MAKE SURE YOU CALL make jts_update_bootstrap **************
 
@@ -156,6 +155,9 @@ $(NODE__DIR)/$(NODE__DIST_NAME):
 show_vars: $(patsubst %,print-%, \
           JAKETS__DIR \
           CURRENT__DIR \
+          JAKETS_JAKEFILE__JS \
+          LOCAL_JAKEFILE__JS \
+          AUTOGEN_MODULES \
           NODE__DIR \
           NODE__BIN \
           NODE_VERSION \
