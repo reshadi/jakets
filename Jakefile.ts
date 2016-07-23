@@ -262,15 +262,18 @@ export function CompileJakefiles(directories: string[]) {
           `--module commonjs  --inlineSourceMap --noEmitOnError --listFiles ${jakefileTs}`
           , (error, stdout: string, stderror) => {
             if (error) {
-              console.error(`tsc error: ${error}`);
-              return;
+              console.error(`
+${error}
+${stdout}
+${stderror}`);
+              throw error;
             }
             let localDirFullpath = path.resolve(LocalDir);
             let files = stdout
               .split("\n")
               .map(f => f.trim())
               .filter(f => !!f)
-              .map(f => path.relative(localDirFullpath, f));
+              .map(f => MakeRelativeToWorkingDir(f));
 
             fs.writeFileSync(jakefileDepJson, JSON.stringify(files));
 
@@ -297,7 +300,9 @@ clean:
 \t#rm -f ${files.map(f => f.replace(".ts", ".dep.*")).join(" ")}
 `;
             fs.writeFileSync(jakefileDepMk, content);
+            this.complete();
           }
+          , true
         );
       }, { async: true });
       return jakefileJs;

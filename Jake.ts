@@ -33,7 +33,7 @@ export function Exec(cmd: string | string[], callback, isSilent?: boolean) {
   }
   isSilent || console.log(cmd);
   Log("Running " + cmdArray.join(" , "), 1);
-  if (cmdArray.length === 1) {
+  if (isSilent && cmdArray.length === 1) {
     ChildProcess.exec(cmdArray[0], callback);
   } else {
     jake.exec(cmdArray, callback, { printStdout: true, printStderr: true });

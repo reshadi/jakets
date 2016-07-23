@@ -56,7 +56,7 @@ export function CreateExec(cmd: string) {
       argsSet = [args];
     }
     argsSet = argsSet.map(function(arg) { return cmd + " " + arg; });
-    Jake.Exec(argsSet, callback);
+    Jake.Exec(argsSet, callback, isSilent);
   }
 }
 
