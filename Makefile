@@ -82,7 +82,7 @@ j-%: jts_compile_jake
 
 $(JAKE_TASKS):%: j-%
 
-jts_compile_jake: $(LOCAL_JAKEFILE__JS) $(JAKETS_JAKEFILE__JS)
+jts_compile_jake: $(JAKETS_JAKEFILE__JS) $(LOCAL_JAKEFILE__JS)
 
 #
 ###################################################################################################
@@ -92,8 +92,8 @@ jts_compile_jake: $(LOCAL_JAKEFILE__JS) $(JAKETS_JAKEFILE__JS)
 # setup in jakets directory
 #
 
-jts_setup $(LOCAL_JAKEFILE__JS): $(JAKE) $(JAKETS_JAKEFILE__JS)
-	$(JAKE) --jakefile $(JAKETS__DIR)/Jakefile.js jts:setup $(JAKE__PARAMS)
+jts_setup $(LOCAL_JAKEFILE__JS): $(JAKE)
+	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
 	# $(JAKE) --jakefile Jakefile.js jts:generate_dependencies $(JAKE__PARAMS)
 
 AUTOGEN_MODULES:=\

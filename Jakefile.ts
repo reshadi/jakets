@@ -279,7 +279,7 @@ export function CompileJakefiles(directories: string[]) {
             try {
               taskListRaw = jake.Shell.exec(jakeCmd + " -T").output;
             } catch (e) { }
-            let taskList = taskListRaw && taskListRaw.match(/^jake ([-\w]*)/gm);
+            let taskList = taskListRaw && taskListRaw.match(/^jake ([-:\w]*)/gm);
             if (taskList) {
               taskList = taskList.map(t => t.match(/\s.*/)[0]);
               jake.Log(`Found public tasks ${taskList}`, 1);
