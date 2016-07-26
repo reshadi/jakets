@@ -82,6 +82,8 @@ j-%: jts_compile_jake
 
 $(JAKE_TASKS):%: j-%
 
+jts_setup: jts_compile_jake
+
 jts_compile_jake: $(JAKETS_JAKEFILE__JS) $(LOCAL_JAKEFILE__JS)
 
 #
@@ -92,7 +94,7 @@ jts_compile_jake: $(JAKETS_JAKEFILE__JS) $(LOCAL_JAKEFILE__JS)
 # setup in jakets directory
 #
 
-jts_setup $(LOCAL_JAKEFILE__JS): $(JAKE)
+$(LOCAL_JAKEFILE__JS): $(JAKE)
 	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
 	# $(JAKE) --jakefile Jakefile.js jts:generate_dependencies $(JAKE__PARAMS)
 
