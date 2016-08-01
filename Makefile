@@ -11,7 +11,7 @@ JAKETS__INCLUDE_BARRIER_ = 1
 JAKETS__DIR := $(subst //,,$(dir $(lastword $(MAKEFILE_LIST)))/)
 CURRENT__DIR := $(subst //,,$(dir $(firstword $(MAKEFILE_LIST)))/)
 
-EXPECTED_NODE_VERSION?=v6.3.0
+EXPECTED_NODE_VERSION?=v6.3.1
 
 LOG_LEVEL?=0
 
