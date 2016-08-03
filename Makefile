@@ -94,7 +94,7 @@ jts_compile_jake: $(JAKETS_JAKEFILE__JS) $(LOCAL_JAKEFILE__JS)
 # setup in jakets directory
 #
 
-$(LOCAL_JAKEFILE__JS): $(JAKE)
+$(LOCAL_JAKEFILE__JS): $(JAKE) $(wildcard package.json) $(MAKEFILE_LIST)
 	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
 	# $(JAKE) --jakefile Jakefile.js jts:generate_dependencies $(JAKE__PARAMS)
 
