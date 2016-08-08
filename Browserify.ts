@@ -14,7 +14,7 @@ Tsify = NodeUtil.FindModulePath(Tsify) || Tsify;
 let Collapser = "bundle-collapser/plugin.js";
 Collapser = NodeUtil.FindModulePath(Collapser) || Collapser;
 
-export function Exec(inputs: string, output: string, callback, isRelease?: boolean, tsargs?: string, options?: string) {
+export function Exec(inputs: string, output: string, callback, isRelease?: boolean, tsargs?: string, options?: string, isSilent?: boolean) {
   let args = inputs;
   if (tsargs !== null) {
     args += " -p [ " + Tsify + " --global " + (tsargs || "") + " ]";
@@ -31,5 +31,5 @@ export function Exec(inputs: string, output: string, callback, isRelease?: boole
 
   Jake.Shell.mkdir("-p", Path.dirname(output));
 
-  RawExec(args, callback);
+  RawExec(args, callback, isSilent);
 }

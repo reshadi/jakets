@@ -233,6 +233,7 @@ export function TscTask(name: string, dependencies: string[], command: string): 
   let value = hash.digest("hex");
   let depDir = MakeRelative(path.join(BuildDir, "dep"));
   let depFile = `${depDir}/${name}_${value}.json`;
+  depDir = path.dirname(depFile);
   directory(depDir);
   let allDependencies = [depDir].concat(dependencies);
 
@@ -283,6 +284,94 @@ ${stderror}`);
     );
   }, { async: true });
   return depFile;
+}
+
+function BrowserifyTask(
+  name: string
+  , dependencies: string[]
+  , output: string
+  , inputs: string
+  , isRelease?: boolean
+  , tsargs?: string
+  , options?: string
+): string {
+  let data = {
+    dir: path.resolve(LocalDir),
+    output: output,
+    inputs: inputs,
+    isRelease: isRelease,
+    tsargs: tsargs,
+    options: options,
+    dependencies: dependencies
+  };
+
+  let hash = Crypto.createHash("sha1");
+  hash.update(JSON.stringify(data));
+  let value = hash.digest("hex");
+  let depDir = MakeRelative(path.join(BuildDir, "dep"));
+  let depFile = `${depDir}/${name}_${value}.json`;
+  depDir = path.dirname(depFile);
+  directory(depDir);
+  let allDependencies = [depDir].concat(dependencies);
+
+  if (fs.existsSync(depFile)) {
+    let depStr: string = fs.readFileSync(depFile, 'utf8');
+    try {
+      let dep = JSON.parse(depStr);
+      let previousDependencies = dep.dependencies;
+      let existingDependencies = previousDependencies.filter(d => d && fs.existsSync(d));
+      allDependencies = allDependencies.concat(existingDependencies);
+    } catch (e) {
+      console.error(`Regenerating the invalid dep file: ${depFile}`);
+      allDependencies = [];
+    }
+  }
+  file(depFile, allDependencies, function () {
+    browserify(
+      inputs
+      , output
+      , (error, stdout: string, stderror) => {
+        if (error) {
+          console.error(`
+${error}
+${stdout}
+${stderror}`);
+          throw error;
+        }
+
+        let files =
+          stdout
+            .split("\n")
+            .map(f => f.trim())
+            .filter(f => !!f)
+            .map(f => MakeRelativeToWorkingDir(f));
+        data.dependencies = files.concat(data.dependencies);
+        fs.writeFileSync(depFile, JSON.stringify(data, null, ' '));
+        this.complete();
+        LogTask(this, 2);
+      }
+      , isRelease
+      , tsargs
+      , (options || "") + " --list"
+      , true
+    );
+  }, { async: true });
+
+  file(output, [depFile], function () {
+    browserify(
+      inputs
+      , output
+      , () => {
+        this.complete();
+        LogTask(this, 2);
+      }
+      , isRelease
+      , tsargs
+      , options
+    );
+  }, { async: true });
+
+  return output;
 }
 
 export function CompileJakefiles(directories: string[]) {
