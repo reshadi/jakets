@@ -286,7 +286,7 @@ ${stderror}`);
   return depFile;
 }
 
-function BrowserifyTask(
+export function BrowserifyTask(
   name: string
   , dependencies: string[]
   , output: string
