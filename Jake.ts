@@ -31,8 +31,8 @@ export function Exec(cmd: string | string[], callback, isSilent?: boolean) {
   } else {
     cmdArray = [cmd];
   }
-  isSilent || console.log(cmd);
-  Log("Running " + cmdArray.join(" , "), 1);
+  // isSilent || console.log(cmd);
+  Log(cmdArray, 0);
   if (isSilent && cmdArray.length === 1) {
     ChildProcess.exec(cmdArray[0], callback);
   } else {

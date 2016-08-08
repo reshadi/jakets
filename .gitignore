@@ -13,3 +13,4 @@ typings.json
 *.dep.mk
 !bootstrap/*
 Out-Null
+build/

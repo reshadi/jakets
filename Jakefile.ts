@@ -1,6 +1,7 @@
 import "@types/main";
 import * as fs from "fs";
 import * as path from "path";
+import * as Crypto from "crypto";
 
 import * as jake from "./Jake";
 export let exec = jake.Exec;
@@ -225,6 +226,65 @@ export function UpdateTypings(directories: string[]): string {
   return taskName;
 }
 
+export function TscTask(name: string, dependencies: string[], command: string): string {
+  command += " --listFiles --noEmitOnError";
+  let hash = Crypto.createHash("sha1");
+  hash.update(command + dependencies.join(" "));
+  let value = hash.digest("hex");
+  let depDir = MakeRelative(path.join(BuildDir, "dep"));
+  let depFile = `${depDir}/${name}_${value}.json`;
+  directory(depDir);
+  let allDependencies = [depDir].concat(dependencies);
+
+  if (fs.existsSync(depFile)) {
+    let depStr: string = fs.readFileSync(depFile, 'utf8');
+    try {
+      let dep = JSON.parse(depStr);
+      let previousDependencies = dep.dependencies;
+      let existingDependencies = previousDependencies.filter(d => d && fs.existsSync(d));
+      allDependencies = allDependencies.concat(existingDependencies);
+    } catch (e) {
+      console.error(`Regenerating the invalid dep file: ${depFile}`);
+      allDependencies = [];
+    }
+  }
+  file(depFile, allDependencies, function () {
+    tsc(
+      command
+      , (error, stdout: string, stderror) => {
+        if (error) {
+          console.error(`
+${error}
+${stdout}
+${stderror}`);
+          throw error;
+        }
+
+        let localDirFullpath = path.resolve(LocalDir);
+        let files =
+          stdout
+            .split("\n")
+            .map(f => f.trim())
+            .filter(f => !!f)
+            .map(f => MakeRelativeToWorkingDir(f));
+        fs.writeFileSync(depFile, JSON.stringify(
+          {
+            dir: localDirFullpath,
+            command: command,
+            dependencies: files.concat(dependencies)
+          }
+          , null
+          , ' '
+        ));
+        this.complete();
+        LogTask(this, 2);
+      }
+      , true
+    );
+  }, { async: true });
+  return depFile;
+}
+
 export function CompileJakefiles(directories: string[]) {
   if (!directories) {
     directories = [];
@@ -246,97 +306,57 @@ export function CompileJakefiles(directories: string[]) {
       let jakefileTs = path.join(targetDir, "Jakefile.ts");
       let jakefileJs = jakefileTs.replace(".ts", ".js");
       let jakefileDepJson = jakefileTs.replace(".ts", ".dep.json");
+      let jakefileDepMk = jakefileTs.replace(".ts", ".dep.mk");
 
       let resultTarget: string;
       let dependencies: string[] = [updateTypingsTaskName];
 
-      if (fs.existsSync(jakefileDepJson)) {
+      jakefileDepJson = TscTask(
+        "Jakefile"
+        , dependencies
+        , `--module commonjs  --inlineSourceMap --noEmitOnError --listFiles ${jakefileTs}`
+      );
+
+      file(jakefileDepMk, [jakefileDepJson], function () {
+        let computedDependencies: string[];
         let depStr: string = fs.readFileSync(jakefileDepJson, 'utf8');
-        let previousDependencies = JSON.parse(depStr);
-        let existingDependencies = previousDependencies.filter(d => d && fs.existsSync(d));
-        dependencies = dependencies.concat(existingDependencies);
-      }
+        try {
+          let dep = JSON.parse(depStr);
+          computedDependencies = dep.dependencies;
+        } catch (e) {
+          console.error(`Invalid dep file: ${jakefileDepJson}`);
+        }
 
-      file(jakefileJs, dependencies, function () {
-        tsc(
-          `--module commonjs  --inlineSourceMap --noEmitOnError --listFiles ${jakefileTs}`
-          , (error, stdout: string, stderror) => {
-            if (error) {
-              console.error(`
-${error}
-${stdout}
-${stderror}`);
-              throw error;
-            }
-            let localDirFullpath = path.resolve(LocalDir);
-            let files = stdout
-              .split("\n")
-              .map(f => f.trim())
-              .filter(f => !!f)
-              .map(f => MakeRelativeToWorkingDir(f));
+        let taskListRaw: string;
+        try {
+          taskListRaw = jake.Shell.exec(jakeCmd + " -T").output;
+        } catch (e) { }
+        let taskList = taskListRaw && taskListRaw.match(/^jake ([-:\w]*)/gm);
+        if (taskList) {
+          taskList = taskList.map(t => t.match(/\s.*/)[0]);
+          jake.Log(`Found public tasks ${taskList}`, 1);
+        } else {
+          taskList = [];
+        }
 
-            fs.writeFileSync(jakefileDepJson, JSON.stringify(files));
-
-            var jakefileDepMk = jakefileTs.replace(".ts", ".dep.mk");
-            let taskListRaw: string;
-            try {
-              taskListRaw = jake.Shell.exec(jakeCmd + " -T").output;
-            } catch (e) { }
-            let taskList = taskListRaw && taskListRaw.match(/^jake ([-:\w]*)/gm);
-            if (taskList) {
-              taskList = taskList.map(t => t.match(/\s.*/)[0]);
-              jake.Log(`Found public tasks ${taskList}`, 1);
-            } else {
-              taskList = [];
-            }
-
-            var content = `
+        var content = `
 JAKE_TASKS += ${taskList.join(" ")}
 
-Jakefile.js: $(wildcard ${files.join(" ")})
+Jakefile.js: $(wildcard ${computedDependencies.join(" ")})
 
 clean:
-\t#rm -f ${files.map(f => f.replace(".ts", ".js")).join(" ")}
-\t#rm -f ${files.map(f => f.replace(".ts", ".dep.*")).join(" ")}
-`;
-            fs.writeFileSync(jakefileDepMk, content);
-            this.complete();
+\t#rm -f ${
+          computedDependencies
+            .filter(f => !/node_modules|[.]d[.]ts/.test(f))
+            .map(f => f.replace(".ts", ".js") + " " + f.replace(".ts", ".dep.*"))
+            .join(" ")
           }
-          , true
-        );
+`;
+        fs.writeFileSync(jakefileDepMk, content);
+        this.complete();
       }, { async: true });
-      return jakefileJs;
 
-      // let compileJakefileTs = function () {
-      //   tsc(
-      //     // `--module commonjs --inlineSourceMap ${MakeRelativeToWorkingDir(path.join(__dirname, TypingsDefs))} ${jakefileTs}`
-      //     `--module commonjs --inlineSourceMap ${jakefileTs}`
-      //     , () => { this.complete(); jake.LogTask(this, 2); }
-      //   );
-      // };
-
-      // let targetJakefileDependencies = path.join(targetDir, JakefileDependencies);
-      // let hasDependency = fs.existsSync(targetJakefileDependencies);
-      // if (!hasDependency) {
-      //   //Compile unconditionally since it seems file was never compiled before and need to be sure
-      //   let compileJakefileTaskName = `compile_Jakefile_in_${path.basename(targetDir)}`;
-      //   task(compileJakefileTaskName, [updateTypingsTaskName], compileJakefileTs, { async: true });
-
-      //   dependencies.push(compileJakefileTaskName);
-
-      //   resultTarget = `setup_all_for_${path.basename(targetDir)}`;
-      //   task(resultTarget, dependencies, function () {
-      //     jake.LogTask(this, 2);
-      //   });
-      // } else {
-      //   //Compile conditionally since it seems file was already compiled before and we know what it depends on
-      //   let depStr: string = fs.readFileSync(targetJakefileDependencies, 'utf8');
-      //   dependencies = dependencies.concat(JSON.parse(depStr));
-
-      //   resultTarget = jakefileJs;
-      //   file(jakefileJs, dependencies, compileJakefileTs, { async: true });
-      // }
-      // return resultTarget;
+      return jakefileDepMk;
     })
     ;
   return CreatePlaceHolderTask("compile_jakefiles", dependencies);
@@ -344,44 +364,6 @@ clean:
 
 namespace("jts", function () {
   CreatePlaceHolderTask("setup", [CompileJakefiles([])]);
-
-  //   task("generate_dependencies", [JakefileDependencies], function () { });
-  //   file(JakefileDependencies, ["Jakefile.js"], function () {
-  //     //We will add all imported Jakefile.js file as well as any local .js files that each one might be referencing.
-  //     //Also we assumt his rule is called from a local directory and it will create the files in that directory.
-
-  //     var jakefilePattern = /(Jakefile.*)\.js$/;
-  //     var jsJakeFiles =
-  //       Object.keys(require('module')._cache)
-  //         .filter(m => m.search(jakefilePattern) > -1)
-  //         .map(MakeRelativeToWorkingDir)
-  //       ;
-  //     var tsJakeFiles =
-  //       jsJakeFiles
-  //         .map(f => f.replace(jakefilePattern, "$1.ts"))
-  //       ;
-  //     let dependencies = tsJakeFiles; //TODO: add other local modules.
-  //     fs.writeFileSync(JakefileDependencies, JSON.stringify(dependencies));
-
-  //     var jakeFileMk = "Jakefile.dep.mk";
-  //     let taskListRaw = jake.Shell.exec(jakeCmd + " -T").output;
-  //     let taskList = taskListRaw && taskListRaw.match(/^jake ([-\w]*)/gm);
-  //     if (taskList) {
-  //       taskList = taskList.map(t => t.match(/\s.*/)[0]);
-  //       jake.Log(`Found public tasks ${taskList}`, 1);
-
-  //       var content = `
-  // JAKE_TASKS += ${taskList.join(" ")}
-
-  // Jakefile.js: $(wildcard ${dependencies.join(" ")})
-
-  // clean:
-  // \t#rm -f ${jsJakeFiles.join(" ")}
-  // \trm -f ${jsJakeFiles.map(f => f + ".map").join(" ")}
-  // `;
-  //       fs.writeFileSync(jakeFileMk, content);
-  //     }
-  //   });
 });
 
 task("default");
