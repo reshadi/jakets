@@ -227,7 +227,7 @@ export function UpdateTypings(directories: string[]): string {
 }
 
 export function TscTask(name: string, dependencies: string[], command: string): string {
-  command += " --listFiles --noEmitOnError";
+  command += " --listFiles --noEmitOnError --noLib ./node_modules/typescript/lib/lib.es6.d.ts";
   let hash = Crypto.createHash("sha1");
   hash.update(command + dependencies.join(" "));
   let value = hash.digest("hex");
