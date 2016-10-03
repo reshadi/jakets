@@ -123,8 +123,8 @@ rule(new RegExp(TypingsDefs.replace(".", "[.]")), name => path.join(path.dirname
     //For backward compatibility, we make the main.d.ts to point to index.d.ts
     // fs.writeFileSync(TypingsDefs, `/// <reference path='./index.d.ts'/>`);
     ["index", "main", "browser"].forEach(f => {
-      fs.writeFileSync(path.join(typesPkgDir, `${f}.ts`), `import "../../typings/${f}";`);
-      fs.writeFileSync(path.join(typingsDir, `${f}.ts`), `/// <reference path='./${f}.d.ts'/>`);
+      fs.writeFileSync(path.join(typesPkgDir, `${f}.ts`), `//import "../../typings/${f}";`);
+      fs.writeFileSync(path.join(typingsDir, `${f}.ts`), `// / <reference path='./${f}.d.ts'/>`);
     });
 
     shell.echo(typingsDeclarations);

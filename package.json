@@ -17,16 +17,16 @@
   },
   "homepage": "https://github.com/reshadi/jakets",
   "dependencies": {
-    "@types/browserify": "^12.0.25-alpha",
-    "@types/jake": "^1.0.23-alpha",
-    "@types/shelljs": "^0.3.23-alpha",
-    "browserify": "^13.0.1",
+    "@types/browserify": "^12.0.30",
+    "@types/jake": "^0.0.28",
+    "@types/shelljs": "^0.3.31",
+    "browserify": "^13.1.0",
     "bundle-collapser": "^1.2.1",
     "google-closure-compiler": "^20151015.7.0",
     "jake": "^8.0.12",
-    "shelljs": "^0.5.3",
-    "tsify": "0.16.0",
-    "typescript": "^1.8.10",
+    "shelljs": "^0.7.4",
+    "tsify": "1.0.7",
+    "typescript": "^2.0.3",
     "typings": "^0.8.1"
   },
   "_dep":{
