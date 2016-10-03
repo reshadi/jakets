@@ -226,22 +226,32 @@ export function UpdateTypings(directories: string[]): string {
   return taskName;
 }
 
-export function TscTask(name: string, dependencies: string[], command: string): string {
-  command += " --listFiles --noEmitOnError";
+interface CommandData {
+  name: string;
+  dependencies: string[];
+  files?: string[];
+}
+interface DependencyInfo {
+  DepFile: string;
+  AllDependencies: string[];
+}
+
+function GetDependencyInfo(data: CommandData): DependencyInfo {
   let hash = Crypto.createHash("sha1");
-  hash.update(command + dependencies.join(" "));
+  hash.update(JSON.stringify(data));
   let value = hash.digest("hex");
   let depDir = MakeRelative(path.join(BuildDir, "dep"));
-  let depFile = `${depDir}/${name}_${value}.json`;
+  let depFile = `${depDir}/${data.name}_${value}.json`;
   depDir = path.dirname(depFile);
   directory(depDir);
-  let allDependencies = [depDir].concat(dependencies);
+
+  let allDependencies = [depDir].concat(data.dependencies);
 
   if (fs.existsSync(depFile)) {
     let depStr: string = fs.readFileSync(depFile, 'utf8');
     try {
-      let dep = JSON.parse(depStr);
-      let previousDependencies = dep.dependencies;
+      let dep = <CommandData>JSON.parse(depStr);
+      let previousDependencies = dep.dependencies.concat(dep.files);
       let existingDependencies = previousDependencies.filter(d => d && fs.existsSync(d));
       allDependencies = allDependencies.concat(existingDependencies);
     } catch (e) {
@@ -249,41 +259,63 @@ export function TscTask(name: string, dependencies: string[], command: string): 
       allDependencies = [];
     }
   }
-  file(depFile, allDependencies, function () {
-    tsc(
-      command
-      , (error, stdout: string, stderror) => {
-        if (error) {
-          console.error(`
+
+  let result = {
+    DepFile: depFile,
+    AllDependencies: allDependencies
+  }
+  return result;
+}
+
+function ExtractFilesAndUpdateDependencyInfo(data: CommandData, depInfo: DependencyInfo, error, stdout: string, stderror) {
+  if (error) {
+    console.error(`
 ${error}
 ${stdout}
 ${stderror}`);
-          throw error;
-        }
+    throw error;
+  }
 
-        let localDirFullpath = path.resolve(LocalDir);
-        let files =
-          stdout
-            .split("\n")
-            .map(f => f.trim())
-            .filter(f => !!f)
-            .map(f => MakeRelativeToWorkingDir(f));
-        fs.writeFileSync(depFile, JSON.stringify(
-          {
-            dir: localDirFullpath,
-            command: command,
-            dependencies: files.concat(dependencies)
-          }
-          , null
-          , ' '
-        ));
-        this.complete();
-        LogTask(this, 2);
+  data.files =
+    stdout
+      .split("\n")
+      .map(f => f.trim())
+      .filter(f => !!f)
+      .map(f => MakeRelativeToWorkingDir(f));
+  fs.writeFileSync(depInfo.DepFile, JSON.stringify(data, null, ' '));
+}
+
+export function TscTask(name: string, dependencies: string[], command: string, excludeExternal?: boolean): string {
+  command += " --listFiles --noEmitOnError";
+  var data = {
+    name: name,
+    dir: path.resolve(LocalDir),
+    command: command,
+    dependencies: dependencies,
+    files: []
+  };
+
+  let depInfo = GetDependencyInfo(data);
+
+  file(depInfo.DepFile, depInfo.AllDependencies, function () {
+    tsc(
+      command
+      , (error, stdout: string, stderror) => {
+        ExtractFilesAndUpdateDependencyInfo(data, depInfo, error, stdout, stderror);
+        let callback = () => {
+          this.complete();
+          LogTask(this, 2);
+        };
+        if (!excludeExternal) {
+          tsc(command + " " + data.files.join(" "), callback, false);
+        } else {
+          callback();
+        }
       }
       , true
     );
   }, { async: true });
-  return depFile;
+  return depInfo.DepFile;
 }
 
 export function BrowserifyTask(
@@ -296,6 +328,7 @@ export function BrowserifyTask(
   , options?: string
 ): string {
   let data = {
+    name: name,
     dir: path.resolve(LocalDir),
     output: output,
     inputs: inputs,
@@ -304,49 +337,14 @@ export function BrowserifyTask(
     options: options,
     dependencies: dependencies
   };
+  let depInfo = GetDependencyInfo(data);
 
-  let hash = Crypto.createHash("sha1");
-  hash.update(JSON.stringify(data));
-  let value = hash.digest("hex");
-  let depDir = MakeRelative(path.join(BuildDir, "dep"));
-  let depFile = `${depDir}/${name}_${value}.json`;
-  depDir = path.dirname(depFile);
-  directory(depDir);
-  let allDependencies = [depDir].concat(dependencies);
-
-  if (fs.existsSync(depFile)) {
-    let depStr: string = fs.readFileSync(depFile, 'utf8');
-    try {
-      let dep = JSON.parse(depStr);
-      let previousDependencies = dep.dependencies;
-      let existingDependencies = previousDependencies.filter(d => d && fs.existsSync(d));
-      allDependencies = allDependencies.concat(existingDependencies);
-    } catch (e) {
-      console.error(`Regenerating the invalid dep file: ${depFile}`);
-      allDependencies = [];
-    }
-  }
-  file(depFile, allDependencies, function () {
+  file(depInfo.DepFile, depInfo.AllDependencies, function () {
     browserify(
       inputs
       , output
       , (error, stdout: string, stderror) => {
-        if (error) {
-          console.error(`
-${error}
-${stdout}
-${stderror}`);
-          throw error;
-        }
-
-        let files =
-          stdout
-            .split("\n")
-            .map(f => f.trim())
-            .filter(f => !!f)
-            .map(f => MakeRelativeToWorkingDir(f));
-        data.dependencies = files.concat(data.dependencies);
-        fs.writeFileSync(depFile, JSON.stringify(data, null, ' '));
+        ExtractFilesAndUpdateDependencyInfo(data, depInfo, error, stdout, stderror);
         this.complete();
         LogTask(this, 2);
       }
@@ -357,7 +355,7 @@ ${stderror}`);
     );
   }, { async: true });
 
-  file(output, [depFile], function () {
+  file(output, [depInfo.DepFile], function () {
     browserify(
       inputs
       , output
