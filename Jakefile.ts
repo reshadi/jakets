@@ -116,8 +116,8 @@ rule(new RegExp(TypingsDefs.replace(".", "[.]")), name => path.join(path.dirname
   shell.mkdir("-p", typesPkgDir);
   jake.Exec([
     "cd " + currDir
-    + " && touch " + TypingsJson
-    + command
+    // + " && touch " + TypingsJson
+    // + command
     + " && touch " + TypingsDefs //We already CD to this folder, so use the short name
   ], () => {
     //For backward compatibility, we make the main.d.ts to point to index.d.ts
