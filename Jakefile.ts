@@ -408,8 +408,8 @@ export function CompileJakefiles(directories: string[]) {
         let computedDependencies: string[];
         let depStr: string = fs.readFileSync(jakefileDepJson, 'utf8');
         try {
-          let dep = JSON.parse(depStr);
-          computedDependencies = dep.dependencies;
+          let dep = <CommandData> JSON.parse(depStr);
+          computedDependencies = dep.dependencies.concat(dep.files);
         } catch (e) {
           console.error(`Invalid dep file: ${jakefileDepJson}`);
         }
