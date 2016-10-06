@@ -307,7 +307,20 @@ export function TscTask(name: string, dependencies: string[], command: string, e
           LogTask(this, 2);
         };
         if (!excludeExternal) {
-          tsc(command + " " + data.files.join(" "), callback, false);
+          let seenDirs = {};
+          let files = data.files.filter((f: string) => {
+            if (/node_modules/.test(f) && !/[.]d[.]ts$/.test(f)) {
+              let dir = path.dirname(f);
+              if (seenDirs[dir]) {
+                return false;
+              } else {
+                seenDirs[dir] = true;
+                return true;
+              }
+            }
+            return false;
+          });
+          tsc(command + " " + files.join(" "), callback, false);
         } else {
           callback();
         }
@@ -408,7 +421,7 @@ export function CompileJakefiles(directories: string[]) {
         let computedDependencies: string[];
         let depStr: string = fs.readFileSync(jakefileDepJson, 'utf8');
         try {
-          let dep = <CommandData> JSON.parse(depStr);
+          let dep = <CommandData>JSON.parse(depStr);
           computedDependencies = dep.dependencies.concat(dep.files);
         } catch (e) {
           console.error(`Invalid dep file: ${jakefileDepJson}`);
