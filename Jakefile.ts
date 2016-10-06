@@ -308,7 +308,7 @@ export function TscTask(name: string, dependencies: string[], command: string, e
         };
         if (!excludeExternal) {
           let seenDirs = {};
-          let files = data.files.filter((f: string) => {
+          let files = data.files.reverse().filter((f: string) => {
             if (/node_modules/.test(f) && !/[.]d[.]ts$/.test(f)) {
               let dir = path.dirname(f);
               if (seenDirs[dir]) {
