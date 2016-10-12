@@ -22,7 +22,7 @@
     "@types/shelljs": "^0.3.23-alpha",
     "browserify": "^13.0.1",
     "bundle-collapser": "^1.2.1",
-    "google-closure-compiler": "^20151015.7.0",
+    "google-closure-compiler": "^20160911.0.0",
     "jake": "^8.0.12",
     "shelljs": "^0.5.3",
     "tsify": "0.16.0",
