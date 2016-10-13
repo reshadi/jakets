@@ -394,7 +394,7 @@ export function CompileJakefiles(directories: string[]) {
 
   jake.Log(`LocalDir=${LocalDir}  - JaketsDir=${JaketsDir} - Dirs=[${directories.join(",")}]`, 3);
 
-  // let updateTypingsTaskName = UpdateTypings(directories);
+  let updateTypingsTaskName = UpdatePackages(directories); // UpdateTypings(directories);
   let dependencies = directories
     .filter(targetDir => fs.existsSync(targetDir))
     .map(targetDir => {
@@ -404,7 +404,7 @@ export function CompileJakefiles(directories: string[]) {
       let jakefileDepMk = jakefileTs.replace(".ts", ".dep.mk");
 
       let resultTarget: string;
-      let dependencies: string[] = [];//[updateTypingsTaskName];
+      let dependencies: string[] = [updateTypingsTaskName];
 
       jakefileDepJson = TscTask(
         "Jakefile"
