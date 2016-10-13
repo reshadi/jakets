@@ -98,17 +98,17 @@ $(LOCAL_JAKEFILE__JS): $(JAKE) $(wildcard package.json) $(filter-out Jakefile.de
 	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
 	# $(JAKE) --jakefile Jakefile.js jts:generate_dependencies $(JAKE__PARAMS)
 
-AUTOGEN_MODULES:=\
-  node_modules/@types/index.js \
-  node_modules/@types/main.js \
-  node_modules/@types/browser.js \
-  typings/index.js \
-  typings/main.js \
-  typings/browser.js
+# AUTOGEN_MODULES:=\
+#   node_modules/@types/index.js \
+#   node_modules/@types/main.js \
+#   node_modules/@types/browser.js \
+#   typings/index.js \
+#   typings/main.js \
+#   typings/browser.js
 
-ifneq ($(JAKETS__DIR),$(CURRENT__DIR))
-  AUTOGEN_MODULES += $(patsubst %,$(JAKETS__DIR)/%,$(AUTOGEN_MODULES))
-endif
+# ifneq ($(JAKETS__DIR),$(CURRENT__DIR))
+#   AUTOGEN_MODULES += $(patsubst %,$(JAKETS__DIR)/%,$(AUTOGEN_MODULES))
+# endif
 
 $(JAKETS_JAKEFILE__JS): $(JAKE) $(wildcard $(JAKETS__DIR)/*.ts $(JAKETS__DIR)/bootstrap/*.js) $(AUTOGEN_MODULES)
 	cd $(JAKETS__DIR) && \
@@ -117,9 +117,9 @@ $(JAKETS_JAKEFILE__JS): $(JAKE) $(wildcard $(JAKETS__DIR)/*.ts $(JAKETS__DIR)/bo
 	touch $@
 	echo ************** MAKE SURE YOU CALL make jts_update_bootstrap **************
 
-$(AUTOGEN_MODULES): $(JAKE)
-	mkdir -p $(@D)
-	node -e "require('fs').writeFileSync('$@', '')"
+# $(AUTOGEN_MODULES): $(JAKE)
+# 	mkdir -p $(@D)
+# 	node -e "require('fs').writeFileSync('$@', '')"
 
 jts_update_bootstrap:
 	cp $(JAKETS__DIR)/*.js $(JAKETS__DIR)/bootstrap/

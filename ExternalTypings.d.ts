@@ -1,4 +1,4 @@
-// / <reference path="typings/main.d.ts" />
+/// <reference types="@types/node" />
 
 /**
  * Creates a Jake TestTask.
