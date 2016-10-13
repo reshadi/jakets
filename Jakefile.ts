@@ -307,16 +307,12 @@ export function TscTask(name: string, dependencies: string[], command: string, e
           LogTask(this, 2);
         };
         if (!excludeExternal) {
-          let seenDirs = {};
+          let seenDirs: { [index: string]: number; } = {};
           let files = data.files.reverse().filter((f: string) => {
             if (/node_modules/.test(f) && !/[.]d[.]ts$/.test(f)) {
               let dir = path.dirname(f);
-              if (seenDirs[dir]) {
-                return false;
-              } else {
-                seenDirs[dir] = true;
-                return true;
-              }
+              let seenCount = seenDirs[dir] = ((seenDirs[dir] || 0) + 1);
+              return seenCount <= 5;
             }
             return false;
           });
