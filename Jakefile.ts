@@ -1,4 +1,3 @@
-import "@types/main";
 import * as fs from "fs";
 import * as path from "path";
 import * as Crypto from "crypto";
@@ -54,84 +53,84 @@ export var BuildDir: string = process.env.BUILD__DIR || MakeRelativeToWorkingDir
 // Dependencies 
 
 let NodeModulesUpdateIndicator = MakeRelativeToWorkingDir("node_modules/.node_modules_updated");
-let TypingsDefs = "typings/main.d.ts";
-let TypingsJson = MakeRelativeToWorkingDir("typings.json");
+// let TypingsDefs = "typings/main.d.ts";
+// let TypingsJson = MakeRelativeToWorkingDir("typings.json");
 let JakefileDependencies = MakeRelativeToWorkingDir("Jakefile.dep.json");
 
-desc(`update ${TypingsDefs} from package.json`);
-rule(new RegExp(TypingsDefs.replace(".", "[.]")), name => path.join(path.dirname(name), "..", "package.json"), [], function () {
-  let typingsDeclarations: string = this.name;
-  let packageJson: string = this.source;
-  jake.Log(`updating file ${typingsDeclarations} from package file ${packageJson}`, 1);
-  jake.Log(`${packageJson}`, 3);
+// desc(`update ${TypingsDefs} from package.json`);
+// rule(new RegExp(TypingsDefs.replace(".", "[.]")), name => path.join(path.dirname(name), "..", "package.json"), [], function () {
+//   let typingsDeclarations: string = this.name;
+//   let packageJson: string = this.source;
+//   jake.Log(`updating file ${typingsDeclarations} from package file ${packageJson}`, 1);
+//   jake.Log(`${packageJson}`, 3);
 
-  let typingsDir = path.dirname(typingsDeclarations);
-  let currDir = path.dirname(packageJson);
+//   let typingsDir = path.dirname(typingsDeclarations);
+//   let currDir = path.dirname(packageJson);
 
-  let pkgNames: string[];
+//   let pkgNames: string[];
 
-  //Extract package names from pacakge.json for backward compatibility
-  var pkgStr: string = fs.readFileSync(packageJson, 'utf8');
-  var pkg = JSON.parse(pkgStr);
-  var dependencies = pkg["dependencies"] || {};
-  jake.Log(dependencies, 2);
-  var additionalTypings = pkg["addTypings"] || {};
-  pkgNames = Object.keys(dependencies);
-  pkgNames = pkgNames.filter(p => p.lastIndexOf("@types", 6) === -1);
-  for (let typename in additionalTypings) {
-    let typeSelector = additionalTypings[typename];
-    let typeIndex = pkgNames.indexOf(typename);
-    if (typeSelector === false || typeSelector === "-") {
-      if (typeIndex !== -1) {
-        //Remove this typing from the list
-        pkgNames[typeIndex] = pkgNames[pkgNames.length - 1];
-        --pkgNames.length;
-      }
-    } else {
-      if (typeIndex === -1) {
-        //add this missing type
-        pkgNames.push(typename);
-      }
-    }
-  }
-  pkgNames.unshift("node");
+//   //Extract package names from pacakge.json for backward compatibility
+//   var pkgStr: string = fs.readFileSync(packageJson, 'utf8');
+//   var pkg = JSON.parse(pkgStr);
+//   var dependencies = pkg["dependencies"] || {};
+//   jake.Log(dependencies, 2);
+//   var additionalTypings = pkg["addTypings"] || {};
+//   pkgNames = Object.keys(dependencies);
+//   pkgNames = pkgNames.filter(p => p.lastIndexOf("@types", 6) === -1);
+//   for (let typename in additionalTypings) {
+//     let typeSelector = additionalTypings[typename];
+//     let typeIndex = pkgNames.indexOf(typename);
+//     if (typeSelector === false || typeSelector === "-") {
+//       if (typeIndex !== -1) {
+//         //Remove this typing from the list
+//         pkgNames[typeIndex] = pkgNames[pkgNames.length - 1];
+//         --pkgNames.length;
+//       }
+//     } else {
+//       if (typeIndex === -1) {
+//         //add this missing type
+//         pkgNames.push(typename);
+//       }
+//     }
+//   }
+//   pkgNames.unshift("node");
 
-  //Extract all package names in the node_modules/@types/
-  let typesPkgDir = MakeRelativeToWorkingDir("node_modules/@types");
-  pkgNames = pkgNames.concat(
-    fs.readdirSync(typesPkgDir).filter(
-      f =>
-        pkgNames.indexOf(f) === -1
-        && fs.statSync(path.join(typesPkgDir, f)).isDirectory())
-  );
+//   //Extract all package names in the node_modules/@types/
+//   let typesPkgDir = MakeRelativeToWorkingDir("node_modules/@types");
+//   pkgNames = pkgNames.concat(
+//     fs.readdirSync(typesPkgDir).filter(
+//       f =>
+//         pkgNames.indexOf(f) === -1
+//         && fs.statSync(path.join(typesPkgDir, f)).isDirectory())
+//   );
 
-  jake.Log(pkgNames, 2);
+//   jake.Log(pkgNames, 2);
 
-  //We need to look this up the last moment to make sure correct path is picked up
-  let typingsCmd = NodeUtil.GetNodeCommand("typings", "typings --version ", "typings/dist/bin.js");
-  let command = pkgNames.reduce((fullcmd, pkgName) => fullcmd + " && ( " + typingsCmd + " install " + pkgName + " --ambient --save || true ) ", "");
-  // let command = pkgNames.reduce((fullcmd, pkgName) => fullcmd + " && ( " + typingsCmd + " install dt~" + pkgName + " --global --save || true ) ", "");
+//   //We need to look this up the last moment to make sure correct path is picked up
+//   let typingsCmd = NodeUtil.GetNodeCommand("typings", "typings --version ", "typings/dist/bin.js");
+//   let command = pkgNames.reduce((fullcmd, pkgName) => fullcmd + " && ( " + typingsCmd + " install " + pkgName + " --ambient --save || true ) ", "");
+//   // let command = pkgNames.reduce((fullcmd, pkgName) => fullcmd + " && ( " + typingsCmd + " install dt~" + pkgName + " --global --save || true ) ", "");
 
-  shell.mkdir("-p", typingsDir);
-  shell.mkdir("-p", typesPkgDir);
-  jake.Exec([
-    "cd " + currDir
-    // + " && touch " + TypingsJson
-    // + command
-    + " && touch " + TypingsDefs //We already CD to this folder, so use the short name
-  ], () => {
-    //For backward compatibility, we make the main.d.ts to point to index.d.ts
-    // fs.writeFileSync(TypingsDefs, `/// <reference path='./index.d.ts'/>`);
-    ["index", "main", "browser"].forEach(f => {
-      fs.writeFileSync(path.join(typesPkgDir, `${f}.ts`), `//import "../../typings/${f}";`);
-      fs.writeFileSync(path.join(typingsDir, `${f}.ts`), `// / <reference path='./${f}.d.ts'/>`);
-    });
+//   shell.mkdir("-p", typingsDir);
+//   shell.mkdir("-p", typesPkgDir);
+//   jake.Exec([
+//     "cd " + currDir
+//     // + " && touch " + TypingsJson
+//     // + command
+//     + " && touch " + TypingsDefs //We already CD to this folder, so use the short name
+//   ], () => {
+//     //For backward compatibility, we make the main.d.ts to point to index.d.ts
+//     // fs.writeFileSync(TypingsDefs, `/// <reference path='./index.d.ts'/>`);
+//     ["index", "main", "browser"].forEach(f => {
+//       fs.writeFileSync(path.join(typesPkgDir, `${f}.ts`), `//import "../../typings/${f}";`);
+//       fs.writeFileSync(path.join(typingsDir, `${f}.ts`), `// / <reference path='./${f}.d.ts'/>`);
+//     });
 
-    shell.echo(typingsDeclarations);
-    this.complete();
-    jake.LogTask(this, 2);
-  });
-}, { async: true });
+//     shell.echo(typingsDeclarations);
+//     this.complete();
+//     jake.LogTask(this, 2);
+//   });
+// }, { async: true });
 
 
 desc("update node_modules from package.json");
@@ -200,31 +199,31 @@ export function UpdatePackages(directories: string[]): string {
   return CreatePlaceHolderTask("update_packages", dependencies);
 }
 
-export function UpdateTypings(directories: string[]): string {
-  let taskName = "update_typings";
-  let updateTask = task(taskName, [UpdatePackages(directories)], function () {
-    //At this point we know that all package.json files are already installed
-    //So, we can safely look for folders inside of node_modules folders as well
-    let dependencies = directories
-      .filter(targetDir => fs.existsSync(path.join(targetDir, "package.json")) || fs.existsSync(path.join(targetDir, "typings.json")))
-      .map(targetDir => path.join(targetDir, TypingsDefs).replace(/\\/g, "/"))
-      ;
-    //Now we need to invoke all these files
-    let depTask = task(taskName + "_dependencies", dependencies, function () {
-      this.complete();
-      jake.LogTask(this, 2);
-    }, { async: true });
-    depTask.addListener("complete", () => {
-      this.complete();
-      jake.LogTask(this, 2);
-    });
-    depTask.invoke();
+// export function UpdateTypings(directories: string[]): string {
+//   let taskName = "update_typings";
+//   let updateTask = task(taskName, [UpdatePackages(directories)], function () {
+//     //At this point we know that all package.json files are already installed
+//     //So, we can safely look for folders inside of node_modules folders as well
+//     let dependencies = directories
+//       .filter(targetDir => fs.existsSync(path.join(targetDir, "package.json")) || fs.existsSync(path.join(targetDir, "typings.json")))
+//       .map(targetDir => path.join(targetDir, TypingsDefs).replace(/\\/g, "/"))
+//       ;
+//     //Now we need to invoke all these files
+//     let depTask = task(taskName + "_dependencies", dependencies, function () {
+//       this.complete();
+//       jake.LogTask(this, 2);
+//     }, { async: true });
+//     depTask.addListener("complete", () => {
+//       this.complete();
+//       jake.LogTask(this, 2);
+//     });
+//     depTask.invoke();
 
-    jake.LogTask(this, 2);
-  }, { async: true });
-  jake.LogTask(updateTask, 2);
-  return taskName;
-}
+//     jake.LogTask(this, 2);
+//   }, { async: true });
+//   jake.LogTask(updateTask, 2);
+//   return taskName;
+// }
 
 interface CommandData {
   name: string;
@@ -395,7 +394,7 @@ export function CompileJakefiles(directories: string[]) {
 
   jake.Log(`LocalDir=${LocalDir}  - JaketsDir=${JaketsDir} - Dirs=[${directories.join(",")}]`, 3);
 
-  let updateTypingsTaskName = UpdateTypings(directories);
+  // let updateTypingsTaskName = UpdateTypings(directories);
   let dependencies = directories
     .filter(targetDir => fs.existsSync(targetDir))
     .map(targetDir => {
@@ -405,7 +404,7 @@ export function CompileJakefiles(directories: string[]) {
       let jakefileDepMk = jakefileTs.replace(".ts", ".dep.mk");
 
       let resultTarget: string;
-      let dependencies: string[] = [updateTypingsTaskName];
+      let dependencies: string[] = [];//[updateTypingsTaskName];
 
       jakefileDepJson = TscTask(
         "Jakefile"
