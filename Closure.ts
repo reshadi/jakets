@@ -14,7 +14,7 @@ export function Exec(inputs: string, output: string, callback, options?: string)
   //Default arguments that can be overwritten via options
   args += " --compilation_level ADVANCED_OPTIMIZATIONS";
   args += " --language_in ECMASCRIPT5";
-  args += " --new_type_inf";
+  // args += " --new_type_inf"; //Looks like crashes the compier sometimes
   args += " --summary_detail_level 3";
   // args += " --warning_level VERBOSE";
   args += " --warning_level QUIET";
