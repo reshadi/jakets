@@ -116,13 +116,14 @@ $(JAKETS_JAKEFILE__JS): $(JAKE) $(wildcard $(JAKETS__DIR)/*.ts $(JAKETS__DIR)/bo
 	# $(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
 	$(NPM) install
 	touch $@
-	echo ************** MAKE SURE YOU CALL make jts_update_bootstrap **************
+	# echo ************** MAKE SURE YOU CALL make jts_update_bootstrap **************
 
 # $(AUTOGEN_MODULES): $(JAKE)
 # 	mkdir -p $(@D)
 # 	node -e "require('fs').writeFileSync('$@', '')"
 
-jts_update_bootstrap:
+jts_update_bootstrap: $(JAKETS_JAKEFILE__JS)
+	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
 	cp $(JAKETS__DIR)/*.js $(JAKETS__DIR)/bootstrap/
 
 $(JAKE): $(NODE__BIN)

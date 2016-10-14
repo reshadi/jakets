@@ -2,11 +2,11 @@ import * as fs from "fs";
 import * as path from "path";
 import * as Crypto from "crypto";
 
-import * as jake from "./Jake";
-export let exec = jake.Exec;
-export let shell = jake.Shell;
-export let Log = jake.Log;
-export let LogTask = jake.LogTask;
+import * as Jake from "./Jake";
+export let exec = Jake.Exec;
+export let shell = Jake.Shell;
+export let Log = Jake.Log;
+export let LogTask = Jake.LogTask;
 
 import * as NodeUtil from "./NodeUtil";
 
@@ -137,12 +137,12 @@ desc("update node_modules from package.json");
 rule(new RegExp(NodeModulesUpdateIndicator), name => path.join(path.dirname(name), "..", "package.json"), [], function () {
   let indicator: string = this.name;
   let packageJson: string = this.source;
-  jake.Log(`updating file ${indicator} from package file ${packageJson}`, 1);
+  Jake.Log(`updating file ${indicator} from package file ${packageJson}`, 1);
 
   let packageDir = path.dirname(packageJson);
 
   var pkgStr: string = fs.readFileSync(packageJson, 'utf8');
-  jake.Exec([
+  Jake.Exec([
     "cd " + packageDir
     + " && npm install"
     + " && npm update"
@@ -150,17 +150,17 @@ rule(new RegExp(NodeModulesUpdateIndicator), name => path.join(path.dirname(name
   ], () => {
     shell.echo(indicator);
     this.complete();
-    jake.LogTask(this, 2);
+    Jake.LogTask(this, 2);
   });
 }, { async: true });
 
 
 // desc("create empty package.json if missing");
 file("package.json", [], function () {
-  jake.Log(this.name, 3);
+  Jake.Log(this.name, 3);
   console.error("Generating package.json")
   var NPM = path.join("npm");
-  exec([NPM + " init"], () => { this.complete(); jake.LogTask(this, 2); });
+  exec([NPM + " init"], () => { this.complete(); Jake.LogTask(this, 2); });
 }, { async: true });
 
 // 
@@ -171,12 +171,12 @@ file("package.json", [], function () {
 
 function CreatePlaceHolderTask(taskName: string, dependencies: string[]): string {
   let t = task(taskName, dependencies, function () {
-    jake.LogTask(this, 2);
+    Jake.LogTask(this, 2);
   });
-  jake.LogTask(t, 2);
+  Jake.LogTask(t, 2);
 
   if (t["name"] !== taskName) {
-    jake.Log(taskName + " != " + t["name"]);
+    Jake.Log(taskName + " != " + t["name"]);
   }
 
   return taskName;
@@ -392,7 +392,7 @@ export function CompileJakefiles(directories: string[]) {
 
   directories = directories.filter((d, index, array) => array.indexOf(d) === index); //Remove repeates in case later we add more
 
-  jake.Log(`LocalDir=${LocalDir}  - JaketsDir=${JaketsDir} - Dirs=[${directories.join(",")}]`, 3);
+  Jake.Log(`LocalDir=${LocalDir}  - JaketsDir=${JaketsDir} - Dirs=[${directories.join(",")}]`, 3);
 
   let updateTypingsTaskName = UpdatePackages(directories); // UpdateTypings(directories);
   let dependencies = directories
@@ -422,17 +422,21 @@ export function CompileJakefiles(directories: string[]) {
           console.error(`Invalid dep file: ${jakefileDepJson}`);
         }
 
-        let taskListRaw: string;
-        try {
-          taskListRaw = jake.Shell.exec(jakeCmd + " -T").output;
-        } catch (e) { }
-        let taskList = taskListRaw && taskListRaw.match(/^jake ([-:\w]*)/gm);
-        if (taskList) {
-          taskList = taskList.map(t => t.match(/\s.*/)[0]);
-          jake.Log(`Found public tasks ${taskList}`, 1);
-        } else {
-          taskList = [];
-        }
+        // let taskListRaw: string;
+        // try {
+        //   taskListRaw = Jake.Shell.exec("pwd & " + jakeCmd + " -T").output;
+        // } catch (e) { }
+        // let taskList = taskListRaw && taskListRaw.match(/^jake ([-:\w]*)/gm);
+        // if (taskList) {
+        //   taskList = taskList.map(t => t.match(/\s.*/)[0]);
+        //   Jake.Log(`Found public tasks ${taskList}`, 1);
+        // } else {
+        //   taskList = [];
+        // }
+        let tasks = (<any>jake).Task;
+        let taskList = tasks
+          ? Object.keys(tasks).map(key => tasks[key]).filter(t => !!t.description).map(t => t.name)
+          : [];
 
         var content = `
 JAKE_TASKS += ${taskList.join(" ")}
@@ -461,6 +465,7 @@ namespace("jts", function () {
   CreatePlaceHolderTask("setup", [CompileJakefiles([])]);
 });
 
+desc("Default task");
 task("default");
 
 //
