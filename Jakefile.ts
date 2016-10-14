@@ -386,7 +386,7 @@ export function CompileJakefiles(directories: string[]) {
   }
   directories.push(".");
   if (MakeRelativeToWorkingDir(JaketsDir) !== ".") {
-    directories.push(JaketsDir);
+    // directories.push(JaketsDir);
     // directories.push(MakeRelativeToWorkingDir("node_modules/jakets"));
   }
 

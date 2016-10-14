@@ -113,7 +113,8 @@ $(LOCAL_JAKEFILE__JS): $(JAKE) $(wildcard package.json) $(filter-out Jakefile.de
 $(JAKETS_JAKEFILE__JS): $(JAKE) $(wildcard $(JAKETS__DIR)/*.ts $(JAKETS__DIR)/bootstrap/*.js) $(AUTOGEN_MODULES)
 	cd $(JAKETS__DIR) && \
 	cp bootstrap/*.js .
-	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
+	# $(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
+	$(NPM) install
 	touch $@
 	echo ************** MAKE SURE YOU CALL make jts_update_bootstrap **************
 

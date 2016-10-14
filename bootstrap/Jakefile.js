@@ -279,7 +279,7 @@ function CompileJakefiles(directories) {
     }
     directories.push(".");
     if (MakeRelativeToWorkingDir(JaketsDir) !== ".") {
-        directories.push(JaketsDir);
+        // directories.push(JaketsDir);
     }
     directories = directories.filter(function (d, index, array) { return array.indexOf(d) === index; }); //Remove repeates in case later we add more
     jake.Log("LocalDir=" + exports.LocalDir + "  - JaketsDir=" + JaketsDir + " - Dirs=[" + directories.join(",") + "]", 3);
