@@ -11,30 +11,25 @@ JAKETS__INCLUDE_BARRIER_ = 1
 JAKETS__DIR := $(subst //,,$(dir $(lastword $(MAKEFILE_LIST)))/)
 CURRENT__DIR := $(subst //,,$(dir $(firstword $(MAKEFILE_LIST)))/)
 
-NODE_MODULES__DIR=$(JAKETS__DIR)/node_modules
-
 #overwritable values
 LOG_LEVEL?=0
 EXPECTED_NODE_VERSION?=v6.7.0
-NODE__DIR?=$(NODE_MODULES__DIR)/nodejs
+NODE__DIR?=$(JAKETS__DIR)/node_modules/nodejs
 
 ###################################################################################################
 # setup platform dependent variables
 #
 SHELL := /bin/bash
 UNAME := $(shell uname)
+NULL = /dev/null
 
 ifeq ($(UNAME), Linux)
-	NULL = /dev/null
 	NODE_DIST__NAME = node-$(EXPECTED_NODE_VERSION)-linux-x64.tar.gz
 else ifeq ($(UNAME), Darwin)
-	NULL = /dev/null
 	NODE_DIST__NAME = node-$(EXPECTED_NODE_VERSION)-darwin-x64.tar.gz
-	PLATFORM = darwin-x64
 else 
 # ifeq($(UNAME), MINGW32_NT-6.2)
 	# NULL = $$null
-	NULL = /dev/null
 	NODE_DIST__NAME = node-$(EXPECTED_NODE_VERSION)-win-x64.zip
 endif
 NODE_DIST_LOCAL__FILE = $(NODE__DIR)/$(NODE_DIST__NAME)
@@ -57,6 +52,9 @@ ifneq "$(INSTALLED_NODE_VERSION)" "$(EXPECTED_NODE_VERSION)"
 endif
 
 
+# NODE_MODULES__DIR=$(JAKETS__DIR)/node_modules
+NODE_MODULES__DIR=$(CURRENT__DIR)/node_modules
+NODE_MODULES__UPDATE_INDICATOR=$(NODE_MODULES__DIR)/.node_modules_updated
 JAKE = $(NODE_MODULES__DIR)/.bin/jake
 JAKE__PARAMS += logLevel=$(LOG_LEVEL)
 
@@ -99,13 +97,12 @@ jts_compile_jake: $(JAKETS_JAKEFILE__JS) $(LOCAL_JAKEFILE__JS)
 
 $(LOCAL_JAKEFILE__JS): $(JAKE) $(wildcard package.json) $(filter-out Jakefile.dep.mk, $(MAKEFILE_LIST))
 	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
-	# $(JAKE) --jakefile Jakefile.js jts:generate_dependencies $(JAKE__PARAMS)
 
 $(JAKETS_JAKEFILE__JS): $(JAKE) $(wildcard $(JAKETS__DIR)/*.ts $(JAKETS__DIR)/bootstrap/*.js)
+	# $(NPM) install
 	cd $(JAKETS__DIR) && \
 	cp bootstrap/*.js .
 	# $(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
-	$(NPM) install
 	touch $@
 	# echo ************** MAKE SURE YOU CALL make jts_update_bootstrap **************
 
@@ -113,9 +110,14 @@ jts_update_bootstrap: $(JAKETS_JAKEFILE__JS)
 	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
 	cp $(JAKETS__DIR)/*.js $(JAKETS__DIR)/bootstrap/
 
-$(JAKE): $(NODE_BIN__FILE)
-	cd $(JAKETS__DIR) && \
-	$(NPM) install jake shelljs
+$(JAKE): $(NODE_MODULES__UPDATE_INDICATOR)
+	# cd $(JAKETS__DIR) &&
+	# cd $(CURRENT__DIR) && \
+	# $(NPM) install jake shelljs
+	touch $@
+
+$(NODE_MODULES__UPDATE_INDICATOR): $(NODE_BIN__FILE)
+	$(NPM) install
 	touch $@
 
 _jts_get_node: $(NODE_BIN__FILE)
