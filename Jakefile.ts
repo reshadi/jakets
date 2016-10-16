@@ -286,6 +286,9 @@ ${stderror}`);
 
 export function TscTask(name: string, dependencies: string[], command: string, excludeExternal?: boolean): string {
   command += " --listFiles --noEmitOnError";
+  if (!excludeExternal){
+    command += " --baseUrl ./node_modules";
+  }
   var data = {
     name: name,
     dir: path.resolve(LocalDir),
@@ -301,24 +304,24 @@ export function TscTask(name: string, dependencies: string[], command: string, e
       command
       , (error, stdout: string, stderror) => {
         ExtractFilesAndUpdateDependencyInfo(data, depInfo, error, stdout, stderror);
-        let callback = () => {
+        // let callback = () => {
           this.complete();
           LogTask(this, 2);
-        };
-        if (!excludeExternal) {
-          let seenDirs: { [index: string]: number; } = {};
-          let files = data.files.reverse().filter((f: string) => {
-            if (/node_modules/.test(f) && !/[.]d[.]ts$/.test(f)) {
-              let dir = path.dirname(f);
-              let seenCount = seenDirs[dir] = ((seenDirs[dir] || 0) + 1);
-              return seenCount <= 5;
-            }
-            return false;
-          });
-          tsc(command + " " + files.join(" "), callback, false);
-        } else {
-          callback();
-        }
+        // };
+        // if (!excludeExternal) {
+        //   let seenDirs: { [index: string]: number; } = {};
+        //   let files = data.files.reverse().filter((f: string) => {
+        //     if (/node_modules/.test(f) && !/[.]d[.]ts$/.test(f)) {
+        //       let dir = path.dirname(f);
+        //       let seenCount = seenDirs[dir] = ((seenDirs[dir] || 0) + 1);
+        //       return seenCount <= 5;
+        //     }
+        //     return false;
+        //   });
+        //   tsc(command + " " + files.join(" "), callback, false);
+        // } else {
+        //   callback();
+        // }
       }
       , true
     );
