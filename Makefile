@@ -11,26 +11,35 @@ JAKETS__INCLUDE_BARRIER_ = 1
 JAKETS__DIR := $(subst //,,$(dir $(lastword $(MAKEFILE_LIST)))/)
 CURRENT__DIR := $(subst //,,$(dir $(firstword $(MAKEFILE_LIST)))/)
 
-EXPECTED_NODE_VERSION?=v6.7.0
+NODE_MODULES__DIR=$(JAKETS__DIR)/node_modules
 
+#overwritable values
 LOG_LEVEL?=0
+EXPECTED_NODE_VERSION?=v6.7.0
+NODE__DIR?=$(NODE_MODULES__DIR)/nodejs
 
 ###################################################################################################
 # setup platform dependent variables
 #
 SHELL := /bin/bash
 UNAME := $(shell uname)
-PLATFORM := linux-x64
 
 ifeq ($(UNAME), Linux)
 	NULL = /dev/null
+	NODE_DIST__NAME = node-$(EXPECTED_NODE_VERSION)-linux-x64.tar.gz
 else ifeq ($(UNAME), Darwin)
 	NULL = /dev/null
+	NODE_DIST__NAME = node-$(EXPECTED_NODE_VERSION)-darwin-x64.tar.gz
 	PLATFORM = darwin-x64
 else 
 # ifeq($(UNAME), MINGW32_NT-6.2)
-	NULL = Out-Null
+	# NULL = $$null
+	NULL = /dev/null
+	NODE_DIST__NAME = node-$(EXPECTED_NODE_VERSION)-win-x64.zip
 endif
+NODE_DIST_LOCAL__FILE = $(NODE__DIR)/$(NODE_DIST__NAME)
+NODE_DIST_REMOTE__FILE = https://nodejs.org/dist/$(EXPECTED_NODE_VERSION)/$(NODE_DIST__NAME)
+
 #
 ###################################################################################################
 
@@ -38,19 +47,13 @@ endif
 NODE := node
 NPM := npm
 
-NODE_MODULES__DIR=$(JAKETS__DIR)/node_modules
-
-NODE__DIR =
-NODE__BIN = 
-NODE_VERSION = $(shell $(NODE) --version 2>$(NULL))
-ifneq "$(NODE_VERSION)" "$(EXPECTED_NODE_VERSION)"
-  NODE_VERSION = $(EXPECTED_NODE_VERSION)
-  NODE__DIR = $(NODE_MODULES__DIR)/nodejs
-  # NODE__DIR = $(NODE_MODULES__DIR)/node-$(NODE_VERSION)
-  NODE__BIN_DIR = $(NODE__DIR)/bin
-  NODE__BIN = $(NODE__BIN_DIR)/$(NODE)
-  NODE__DIST_NAME = node-$(NODE_VERSION)-$(PLATFORM).tar.gz
-  export PATH := $(PWD)/$(NODE__BIN_DIR):$(PATH)
+NODE_BIN__FILE =
+INSTALLED_NODE_VERSION = $(shell $(NODE) --version 2>$(NULL))
+ifneq "$(INSTALLED_NODE_VERSION)" "$(EXPECTED_NODE_VERSION)"
+  # INSTALLED_NODE_VERSION = $(EXPECTED_NODE_VERSION)
+  NODE_BIN__DIR = $(NODE__DIR)/bin
+  NODE_BIN__FILE = $(NODE_BIN__DIR)/$(NODE)
+  export PATH := $(PWD)/$(NODE_BIN__DIR):$(PATH)
 endif
 
 
@@ -98,19 +101,7 @@ $(LOCAL_JAKEFILE__JS): $(JAKE) $(wildcard package.json) $(filter-out Jakefile.de
 	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
 	# $(JAKE) --jakefile Jakefile.js jts:generate_dependencies $(JAKE__PARAMS)
 
-# AUTOGEN_MODULES:=\
-#   node_modules/@types/index.js \
-#   node_modules/@types/main.js \
-#   node_modules/@types/browser.js \
-#   typings/index.js \
-#   typings/main.js \
-#   typings/browser.js
-
-# ifneq ($(JAKETS__DIR),$(CURRENT__DIR))
-#   AUTOGEN_MODULES += $(patsubst %,$(JAKETS__DIR)/%,$(AUTOGEN_MODULES))
-# endif
-
-$(JAKETS_JAKEFILE__JS): $(JAKE) $(wildcard $(JAKETS__DIR)/*.ts $(JAKETS__DIR)/bootstrap/*.js) $(AUTOGEN_MODULES)
+$(JAKETS_JAKEFILE__JS): $(JAKE) $(wildcard $(JAKETS__DIR)/*.ts $(JAKETS__DIR)/bootstrap/*.js)
 	cd $(JAKETS__DIR) && \
 	cp bootstrap/*.js .
 	# $(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
@@ -118,29 +109,25 @@ $(JAKETS_JAKEFILE__JS): $(JAKE) $(wildcard $(JAKETS__DIR)/*.ts $(JAKETS__DIR)/bo
 	touch $@
 	# echo ************** MAKE SURE YOU CALL make jts_update_bootstrap **************
 
-# $(AUTOGEN_MODULES): $(JAKE)
-# 	mkdir -p $(@D)
-# 	node -e "require('fs').writeFileSync('$@', '')"
-
 jts_update_bootstrap: $(JAKETS_JAKEFILE__JS)
 	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
 	cp $(JAKETS__DIR)/*.js $(JAKETS__DIR)/bootstrap/
 
-$(JAKE): $(NODE__BIN)
+$(JAKE): $(NODE_BIN__FILE)
 	cd $(JAKETS__DIR) && \
 	$(NPM) install jake shelljs
 	touch $@
 
-_jts_get_node: $(NODE__BIN)
+_jts_get_node: $(NODE_BIN__FILE)
 
-$(NODE__BIN): $(NODE__DIR)/$(NODE__DIST_NAME) $(JAKETS__DIR)/Makefile
+$(NODE_BIN__FILE): $(NODE_DIST_LOCAL__FILE) $(JAKETS__DIR)/Makefile
 	cd $(NODE__DIR) && \
-	tar xvf $(NODE__DIST_NAME) --strip-components=1
+	tar xvf $(NODE_DIST__NAME) --strip-components=1
 	touch $@
 
-$(NODE__DIR)/$(NODE__DIST_NAME):
+$(NODE_DIST_LOCAL__FILE):
 	mkdir -p $(NODE__DIR)
-	wget --directory-prefix=$(NODE__DIR) https://nodejs.org/dist/$(NODE_VERSION)/$(NODE__DIST_NAME)
+	wget --directory-prefix=$(NODE__DIR) $(NODE_DIST_REMOTE__FILE)
 	touch $@
 
 #
@@ -162,22 +149,24 @@ show_vars: $(patsubst %,print-%, \
           JAKETS_JAKEFILE__JS \
           LOCAL_JAKEFILE__JS \
           AUTOGEN_MODULES \
+          UNAME \
+          NULL \
+          EXPECTED_NODE_VERSION \
+          INSTALLED_NODE_VERSION \
           NODE__DIR \
-          NODE__BIN \
-          NODE_VERSION \
-          NODE__DIST_NAME \
+          NODE_BIN__FILE \
+          NODE_DIST__NAME \
+          NODE_DIST_LOCAL__FILE \
+          NODE_DIST_REMOTE__FILE \
           NODE \
           NPM \
-          TSC \
-          TSD \
           JAKE \
-          BOWER \
           PATH \
           )
-	@echo ----------------------------------------------------------------^^^jakets^^^
+	@echo --------------------------------------------------------------------------------^^^jakets^^^
 
 print-%:
-	$(info ----------------------------------------------------------------)
+	$(info --------------------------------------------------------------------------------)
 	$(info  $* = $($*))
 #
 ###################################################################################################
