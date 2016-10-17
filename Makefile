@@ -96,8 +96,8 @@ jts_compile_jake: $(JAKETS_JAKEFILE__JS) $(LOCAL_JAKEFILE__JS)
 #
 
 $(LOCAL_JAKEFILE__JS): $(JAKE) $(wildcard package.json) $(filter-out Jakefile.dep.mk, $(MAKEFILE_LIST))
-	$(NODE_MODULES__DIR)/.bin/ts-node $(NODE_MODULES__DIR)/jake/bin/cli.js --jakefile Jakefile.ts jts:setup $(JAKE__PARAMS)
-	# $(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
+	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
+	# $(NODE_MODULES__DIR)/.bin/ts-node $(NODE_MODULES__DIR)/jake/bin/cli.js --jakefile Jakefile.ts jts:setup $(JAKE__PARAMS)
 
 $(JAKETS_JAKEFILE__JS): $(JAKE) $(wildcard $(JAKETS__DIR)/*.ts $(JAKETS__DIR)/bootstrap/*.js)
 	# $(NPM) install
