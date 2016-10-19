@@ -1,6 +1,7 @@
 /// <reference path="./ExternalTypings.d.ts" />
 
 import * as ChildProcess from "child_process";
+import "jake";
 import * as ShellJs from "shelljs";
 export let Shell = ShellJs;
 
