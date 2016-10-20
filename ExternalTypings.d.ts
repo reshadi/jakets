@@ -1,5 +1,3 @@
-/// <reference types="@types/node" />
-/// <reference types="@types/jake" />
 
 /**
  * Creates a Jake TestTask.

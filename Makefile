@@ -57,6 +57,7 @@ NODE_MODULES__DIR=$(CURRENT__DIR)/node_modules
 NODE_MODULES__UPDATE_INDICATOR=$(NODE_MODULES__DIR)/.node_modules_updated
 JAKE = $(NODE_MODULES__DIR)/.bin/jake
 JAKE__PARAMS += logLevel=$(LOG_LEVEL)
+TS_NODE = $(NODE_MODULES__DIR)/.bin/ts-node
 
 #One can use the following local file to overwrite the above settings
 -include LocalPaths.mk
@@ -95,12 +96,11 @@ jts_compile_jake: $(JAKETS_JAKEFILE__JS) $(LOCAL_JAKEFILE__JS)
 # setup in jakets directory
 #
 
-$(LOCAL_JAKEFILE__JS): $(JAKE) $(wildcard package.json) $(filter-out Jakefile.dep.mk, $(MAKEFILE_LIST))
-	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
-	# $(NODE_MODULES__DIR)/.bin/ts-node $(NODE_MODULES__DIR)/jake/bin/cli.js --jakefile Jakefile.ts jts:setup $(JAKE__PARAMS)
+$(LOCAL_JAKEFILE__JS): $(JAKE) $(TS_NODE) $(JAKETS_JAKEFILE__JS) $(wildcard package.json) $(filter-out Jakefile.dep.mk, $(MAKEFILE_LIST))
+	# $(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
+	$(TS_NODE) $(NODE_MODULES__DIR)/jake/bin/cli.js --jakefile Jakefile.ts jts:setup $(JAKE__PARAMS)
 
 $(JAKETS_JAKEFILE__JS): $(JAKE) $(wildcard $(JAKETS__DIR)/*.ts $(JAKETS__DIR)/bootstrap/*.js)
-	# $(NPM) install
 	cd $(JAKETS__DIR) && \
 	cp bootstrap/*.js .
 	# $(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
@@ -112,9 +112,13 @@ jts_update_bootstrap: $(JAKETS_JAKEFILE__JS)
 	cp $(JAKETS__DIR)/*.js $(JAKETS__DIR)/bootstrap/
 
 $(JAKE): $(NODE_MODULES__UPDATE_INDICATOR)
-	# cd $(JAKETS__DIR) &&
-	# cd $(CURRENT__DIR) && \
-	# $(NPM) install jake shelljs
+	if [ ! -f $@ ]; then $(NPM) install jake; fi
+	@echo found jake @ `node -e "console.log(require.resolve('jake'))"`
+	touch $@
+
+$(TS_NODE): $(NODE_MODULES__UPDATE_INDICATOR)
+	if [ ! -f $@ ]; then $(NPM) install ts-node; fi
+	@echo found ts-node @ `node -e "console.log(require.resolve('ts-node'))"`
 	touch $@
 
 $(NODE_MODULES__UPDATE_INDICATOR): $(NODE_BIN__FILE)
