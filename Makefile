@@ -127,7 +127,7 @@ $(NODE_MODULES__UPDATE_INDICATOR): $(NODE_BIN__FILE)
 
 _jts_get_node: $(NODE_BIN__FILE)
 
-$(NODE_BIN__FILE): $(NODE_DIST_LOCAL__FILE) $(JAKETS__DIR)/Makefile
+$(NODE_BIN__FILE): $(NODE_DIST_LOCAL__FILE) $(CURRENT__DIR)/Makefile
 	cd $(NODE__DIR) && \
 	tar xvf $(NODE_DIST__NAME) --strip-components=1
 	touch $@
