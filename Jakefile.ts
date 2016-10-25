@@ -122,47 +122,72 @@ export function UpdatePackages(directories: string[]): string {
 }
 
 interface CommandData {
-  name: string;
-  dependencies: string[];
-  files?: string[];
+  /**Name used for creating the build/dep/Name.json file */
+  Name: string;
+
+  /** Directory in which the command was executed */
+  Dir?: string;
+
+  /** The actual command that was executed */
+  Command?: string;
+
+  /** Extra dependencies that should satisfy before the command runs */
+  Dependencies: string[];
+
+  /** The input files of the command */
+  Files?: string[];
 }
-interface DependencyInfo {
-  DepFile: string;
+
+export class CommandInfo<DataType extends CommandData> {
+  /** The original command data */
+  Data: DataType;
+
+  /** Full file name of json file that captured dependencies */
+  DependencyFile: string;
+
+  /** All computed dependencies based on input and previous files/dependencies in the json file */
   AllDependencies: string[];
-}
 
-function GetDependencyInfo(data: CommandData): DependencyInfo {
-  let hash = Crypto.createHash("sha1");
-  hash.update(JSON.stringify(data));
-  let value = hash.digest("hex");
-  let depDir = MakeRelative(path.join(BuildDir, "dep"));
-  let depFile = `${depDir}/${data.name}_${value}.json`;
-  depDir = path.dirname(depFile);
-  directory(depDir);
+  constructor(data: DataType) {
+    this.Data = data;
 
-  let allDependencies = [depDir].concat(data.dependencies);
+    let hash = Crypto.createHash("sha1");
+    hash.update(JSON.stringify(data));
+    let value = hash.digest("hex");
+    let depDir = MakeRelative(path.join(BuildDir, "dep"));
+    this.DependencyFile = `${depDir}/${data.Name}_${value}.json`;
 
-  if (fs.existsSync(depFile)) {
-    let depStr: string = fs.readFileSync(depFile, 'utf8');
-    try {
-      let dep = <CommandData>JSON.parse(depStr);
-      let previousDependencies = dep.dependencies.concat(dep.files);
-      let existingDependencies = previousDependencies.filter(d => d && fs.existsSync(d));
-      allDependencies = allDependencies.concat(existingDependencies);
-    } catch (e) {
-      console.error(`Regenerating the invalid dep file: ${depFile}`);
-      allDependencies = [];
+    //In case data.name had some / in it, we need to re-calculate the dir
+    depDir = path.dirname(this.DependencyFile);
+    directory(depDir);
+
+    this.AllDependencies = [depDir].concat(data.Dependencies);
+  }
+
+  private Read() {
+    if (fs.existsSync(this.DependencyFile)) {
+      let depStr: string = fs.readFileSync(this.DependencyFile, 'utf8');
+      try {
+        let dep = <CommandData>JSON.parse(depStr);
+        let previousDependencies = dep.Dependencies.concat(dep.Files);
+        let existingDependencies = previousDependencies.filter(d => d && fs.existsSync(d));
+        this.AllDependencies = this.AllDependencies.concat(existingDependencies);
+      } catch (e) {
+        console.error(`Regenerating the invalid dep file: ${this.DependencyFile}`);
+        this.AllDependencies = [];
+      }
     }
   }
 
-  let result = {
-    DepFile: depFile,
-    AllDependencies: allDependencies
+  Write(files?: string[]) {
+    if (files) {
+      this.Data.Files = files;
+    }
+    fs.writeFileSync(this.DependencyFile, JSON.stringify(this.Data, null, ' '));
   }
-  return result;
 }
 
-function ExtractFilesAndUpdateDependencyInfo(data: CommandData, depInfo: DependencyInfo, error, stdout: string, stderror) {
+export function ExtractFilesAndUpdateDependencyInfo<T extends CommandData>(cmdInfo: CommandInfo<T>, error, stdout: string, stderror) {
   if (error) {
     console.error(`
 ${error}
@@ -171,38 +196,37 @@ ${stderror}`);
     throw error;
   }
 
-  data.files =
+  let files =
     stdout
       .split("\n")
       .map(f => f.trim())
       .filter(f => !!f)
       .map(f => MakeRelativeToWorkingDir(f));
-  fs.writeFileSync(depInfo.DepFile, JSON.stringify(data, null, ' '));
+  cmdInfo.Write(files);
 }
 
 export function TscTask(name: string, dependencies: string[], command: string, excludeExternal?: boolean): string {
   command += " --listFiles --noEmitOnError";
-  if (!excludeExternal){
+  if (!excludeExternal) {
     command += " --baseUrl ./node_modules";
   }
-  var data = {
-    name: name,
-    dir: path.resolve(LocalDir),
-    command: command,
-    dependencies: dependencies,
-    files: []
-  };
 
-  let depInfo = GetDependencyInfo(data);
+  let depInfo = new CommandInfo({
+    Name: name,
+    Dir: path.resolve(LocalDir),
+    Command: command,
+    Dependencies: dependencies,
+    Files: []
+  });
 
-  file(depInfo.DepFile, depInfo.AllDependencies, function () {
+  file(depInfo.DependencyFile, depInfo.AllDependencies, function () {
     tsc(
       command
       , (error, stdout: string, stderror) => {
-        ExtractFilesAndUpdateDependencyInfo(data, depInfo, error, stdout, stderror);
+        ExtractFilesAndUpdateDependencyInfo(depInfo, error, stdout, stderror);
         // let callback = () => {
-          this.complete();
-          LogTask(this, 2);
+        this.complete();
+        LogTask(this, 2);
         // };
         // if (!excludeExternal) {
         //   let seenDirs: { [index: string]: number; } = {};
@@ -222,7 +246,7 @@ export function TscTask(name: string, dependencies: string[], command: string, e
       , true
     );
   }, { async: true });
-  return depInfo.DepFile;
+  return depInfo.DependencyFile;
 }
 
 export function BrowserifyTask(
@@ -234,24 +258,23 @@ export function BrowserifyTask(
   , tsargs?: string
   , options?: string
 ): string {
-  let data = {
-    name: name,
-    dir: path.resolve(LocalDir),
-    output: output,
-    inputs: inputs,
-    isRelease: isRelease,
-    tsargs: tsargs,
-    options: options,
-    dependencies: dependencies
-  };
-  let depInfo = GetDependencyInfo(data);
+  let depInfo = new CommandInfo({
+    Name: name,
+    Dir: path.resolve(LocalDir),
+    Output: output,
+    Inputs: inputs,
+    IsRelease: isRelease,
+    Tsargs: tsargs,
+    Options: options,
+    Dependencies: dependencies
+  });
 
-  file(depInfo.DepFile, depInfo.AllDependencies, function () {
+  file(depInfo.DependencyFile, depInfo.AllDependencies, function () {
     browserify(
       inputs
       , output
       , (error, stdout: string, stderror) => {
-        ExtractFilesAndUpdateDependencyInfo(data, depInfo, error, stdout, stderror);
+        ExtractFilesAndUpdateDependencyInfo(depInfo, error, stdout, stderror);
         this.complete();
         LogTask(this, 2);
       }
@@ -262,7 +285,7 @@ export function BrowserifyTask(
     );
   }, { async: true });
 
-  file(output, [depInfo.DepFile], function () {
+  file(output, [depInfo.DependencyFile], function () {
     browserify(
       inputs
       , output
@@ -316,7 +339,7 @@ export function CompileJakefiles(directories: string[]) {
         let depStr: string = fs.readFileSync(jakefileDepJson, 'utf8');
         try {
           let dep = <CommandData>JSON.parse(depStr);
-          computedDependencies = dep.dependencies.concat(dep.files);
+          computedDependencies = dep.Dependencies.concat(dep.Files);
         } catch (e) {
           console.error(`Invalid dep file: ${jakefileDepJson}`);
         }
