@@ -331,7 +331,7 @@ export function CompileJakefiles(directories: string[]) {
       jakefileDepJson = TscTask(
         "Jakefile"
         , dependencies
-        , `--module commonjs  --inlineSourceMap --noEmitOnError --listFiles ${jakefileTs}`
+        , `--module commonjs --target es6 --inlineSourceMap --noEmitOnError --listFiles ${jakefileTs}`
       );
 
       file(jakefileDepMk, [jakefileDepJson], function () {
