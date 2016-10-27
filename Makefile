@@ -13,8 +13,9 @@ CURRENT__DIR := $(subst //,,$(dir $(firstword $(MAKEFILE_LIST)))/)
 
 #overwritable values
 LOG_LEVEL?=0
-EXPECTED_NODE_VERSION?=v6.7.0
-NODE__DIR?=$(JAKETS__DIR)/node_modules/nodejs
+EXPECTED_NODE_VERSION?=v7.0.0
+# NODE__DIR?=$(JAKETS__DIR)/node_modules/nodejs
+NODE__DIR?=./build/nodejs
 
 ###################################################################################################
 # setup platform dependent variables
@@ -46,9 +47,18 @@ NODE_BIN__FILE =
 INSTALLED_NODE_VERSION = $(shell $(NODE) --version 2>$(NULL))
 ifneq "$(INSTALLED_NODE_VERSION)" "$(EXPECTED_NODE_VERSION)"
   # INSTALLED_NODE_VERSION = $(EXPECTED_NODE_VERSION)
-  NODE_BIN__DIR = $(NODE__DIR)/bin
-  NODE_BIN__FILE = $(NODE_BIN__DIR)/$(NODE)
-  export PATH := $(PWD)/$(NODE_BIN__DIR):$(PATH)
+  # IS_NEWER_NODE_VERSION := $(shell $(NODE) -e "console.log(require('semver').satisfies('$(INSTALLED_NODE_VERSION)','$(EXPECTED_NODE_VERSION)'))" 2>$(NULL))
+  IS_NEWER_NODE_VERSION := $(shell $(NODE) -e "console.log(require('semver').gt('$(INSTALLED_NODE_VERSION)','$(EXPECTED_NODE_VERSION)'))" 2>$(NULL))
+  ifeq "$(IS_NEWER_NODE_VERSION)" "true"
+    $(info using installed node $(INSTALLED_NODE_VERSION))
+  else
+    $(info using local node $(EXPECTED_NODE_VERSION))
+    NODE_BIN__DIR = $(NODE__DIR)/bin
+    NODE_BIN__FILE = $(NODE_BIN__DIR)/$(NODE)
+    export PATH := $(PWD)/$(NODE_BIN__DIR):$(PATH)
+  endif
+else
+  $(info using installed node $(INSTALLED_NODE_VERSION))
 endif
 
 
