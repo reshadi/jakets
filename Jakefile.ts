@@ -175,6 +175,7 @@ export class CommandInfo<DataType extends CommandData> {
         this.AllDependencies = this.AllDependencies.concat(existingDependencies);
       } catch (e) {
         console.error(`Regenerating the invalid dep file: ${this.DependencyFile}`);
+        fs.unlinkSync(this.DependencyFile);
         // this.AllDependencies = [];
       }
     }
