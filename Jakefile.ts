@@ -162,6 +162,7 @@ export class CommandInfo<DataType extends CommandData> {
     directory(depDir);
 
     this.AllDependencies = [depDir].concat(data.Dependencies);
+    this.Read();
   }
 
   private Read() {
@@ -174,7 +175,7 @@ export class CommandInfo<DataType extends CommandData> {
         this.AllDependencies = this.AllDependencies.concat(existingDependencies);
       } catch (e) {
         console.error(`Regenerating the invalid dep file: ${this.DependencyFile}`);
-        this.AllDependencies = [];
+        // this.AllDependencies = [];
       }
     }
   }
