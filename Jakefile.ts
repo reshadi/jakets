@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as Crypto from "crypto";
+import * as ChildProcess from "child_process";
 
 import * as Jake from "./Jake";
 export let exec = Jake.Exec;
@@ -346,37 +347,36 @@ export function CompileJakefiles(directories: string[]) {
           console.error(`Invalid dep file: ${jakefileDepJson}`);
         }
 
-        // let taskListRaw: string;
-        // try {
-        //   taskListRaw = Jake.Shell.exec("pwd & " + jakeCmd + " -T").output;
-        // } catch (e) { }
-        // let taskList = taskListRaw && taskListRaw.match(/^jake ([-:\w]*)/gm);
-        // if (taskList) {
-        //   taskList = taskList.map(t => t.match(/\s.*/)[0]);
-        //   Jake.Log(`Found public tasks ${taskList}`, 1);
-        // } else {
-        //   taskList = [];
-        // }
-        let tasks = (<any>jake).Task;
-        let taskList = tasks
-          ? Object.keys(tasks).map(key => tasks[key]).filter(t => !!t.description).map(t => t.name)
-          : [];
+        ChildProcess.exec(jakeCmd + " -T", (error, stdout, stderr) => {
+          Jake.Log(stdout);
+          let taskList = !error && stdout.match(/^jake ([-:\w]*)/gm);
+          if (taskList) {
+            taskList = taskList.map(t => t.match(/\s.*/)[0]).filter(t => t.indexOf(":") === -1);
+            Jake.Log(`Found public tasks ${taskList}`, 1);
+          } else {
+            taskList = [];
+          }
+          // let tasks = (<any>jake).Task;
+          // let taskList = tasks
+          //   ? Object.keys(tasks).map(key => tasks[key]).filter(t => !!t.description).map(t => t.name)
+          //   : [];
 
-        var content = `
+          var content = `
 JAKE_TASKS += ${taskList.join(" ")}
 
 Jakefile.js: $(wildcard ${computedDependencies.join(" ")})
 
 clean:
 \t#rm -f ${
-          computedDependencies
-            .filter(f => !/node_modules|[.]d[.]ts/.test(f))
-            .map(f => f.replace(".ts", ".js") + " " + f.replace(".ts", ".dep.*"))
-            .join(" ")
-          }
+            computedDependencies
+              .filter(f => !/node_modules|[.]d[.]ts/.test(f))
+              .map(f => f.replace(".ts", ".js") + " " + f.replace(".ts", ".dep.*"))
+              .join(" ")
+            }
 `;
-        fs.writeFileSync(jakefileDepMk, content);
-        this.complete();
+          fs.writeFileSync(jakefileDepMk, content);
+          this.complete();
+        });
       }, { async: true });
 
       return jakefileDepMk;
