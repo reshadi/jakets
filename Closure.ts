@@ -3,7 +3,7 @@ import * as Fs from "fs";
 import * as Zlib from "zlib";
 
 import * as Jake from "./Jake";
-import * as NodeUtil from "./NodeUtil";
+import * as NodeUtil from "./Util";
 
 let ClosureJar = NodeUtil.FindModulePath("google-closure-compiler/compiler.jar", [".."]);
 
