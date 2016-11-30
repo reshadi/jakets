@@ -1,8 +1,8 @@
 {
   "name": "jakets",
-  "version": "5.7.0",
+  "version": "5.7.1",
   "description": "Jake with TypeScript.",
-  "main": "index.js",
+  "main": "Jakefile.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -20,13 +20,13 @@
     "@types/browserify": "^12.0.30",
     "@types/jake": "^0.0.28",
     "@types/shelljs": "^0.3.32",
-    "browserify": "^13.1.0",
+    "browserify": "^13.1.1",
     "bundle-collapser": "^1.2.1",
     "google-closure-compiler": "^20161024.3.0",
     "jake": "^8.0.15",
     "shelljs": "^0.7.5",
     "ts-node": "^1.7.0",
-    "tsify": "2.0.2",
+    "tsify": "2.0.3",
     "typescript": "^2.0.10"
   }
 }
