@@ -69,15 +69,26 @@ function UpdateVersionRangeTags(callback: () => void) {
       }
     }
 
-    let cmds: string[] = [];
+    let localCmds: string[] = [];
+    let remoteCmds: string[] = [];
     for (let range of ranges) {
       let maxVer = Semver.maxSatisfying(versions, range);
       if (hashes.get(range) !== hashes.get(maxVer)) {
-        cmds.push(`git tag -f ${range} ${maxVer}`);
+        localCmds.push(`git tag -f ${range} ${maxVer}`);
+        remoteCmds.push(`git push :refs/tags/${range}`);
       }
     }
-    Jake.Log([versions, ranges, cmds], 0);
-    Jake.Exec(cmds, callback);
+    if (remoteCmds.length) {
+      remoteCmds.push(`git push --tags`);
+    }
+    Jake.Log([versions, ranges, localCmds, remoteCmds], 0);
+    Jake.Exec(localCmds, () => {
+      if (remoteCmds.length) {
+        console.log("Call the following commands");
+        console.log(remoteCmds.join("\n"));
+      }
+      callback();
+    });
   });
 }
 
