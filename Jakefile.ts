@@ -26,6 +26,7 @@ import * as Closure from "./Closure";
 export let closure = Closure.Exec;
 
 import "./Setup";
+import "./GitUtil";
 
 desc("Default task");
 task("default");
