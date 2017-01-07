@@ -14,6 +14,7 @@
       // Command line arguments passed to the program.
       "args": [
         "jts:setup"
+        // "update_version_range_tags"
       ],
       // Workspace relative or absolute path to the working directory of the program being debugged. Default is the current workspace.
       "cwd": "${workspaceRoot}",

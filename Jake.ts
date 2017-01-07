@@ -40,3 +40,30 @@ export function Exec(cmd: string | string[], callback, isSilent?: boolean) {
     jake.exec(cmdArray, callback, { printStdout: true, printStderr: true });
   }
 }
+
+interface CmdOutput { StdOut: string; StdErr: string; }
+
+export async function ExecAsync(cmd: string): Promise<CmdOutput> {
+  return new Promise<CmdOutput>((resolve, reject) => {
+    ChildProcess.exec(cmd, (error, stdout, stderr) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve({ StdOut: stdout, StdErr: stderr });
+      }
+    });
+  });
+}
+
+export async function ExecAsyncAll(cmds: string[], runParallel?: boolean): Promise<CmdOutput[]> {
+  if (runParallel) {
+    return Promise.all(cmds.map(ExecAsync));
+  } else {
+    // return cmds.map(async cmd => await ExecAsync(cmd));
+    let result: CmdOutput[] = [];
+    for (let cmd of cmds) {
+      result.push(await ExecAsync(cmd));
+    }
+    return Promise.resolve(result);
+  }
+}
