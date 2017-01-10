@@ -45,6 +45,7 @@ interface CmdOutput { StdOut: string; StdErr: string; }
 
 export async function ExecAsync(cmd: string): Promise<CmdOutput> {
   return new Promise<CmdOutput>((resolve, reject) => {
+    Log(cmd, 0);
     ChildProcess.exec(cmd, (error, stdout, stderr) => {
       if (error) {
         reject(error);
