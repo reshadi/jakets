@@ -29,6 +29,6 @@
     "shelljs": "^0.7.5",
     "ts-node": "^1.7.0",
     "tsify": "2.0.3",
-    "typescript": "^2.0.10"
+    "typescript": "^2.2.1"
   }
 }

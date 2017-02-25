@@ -4,6 +4,8 @@ export let exec = Jake.Exec;
 export let shell = Jake.Shell;
 export let Log = Jake.Log;
 export let LogTask = Jake.LogTask;
+export let AsyncTask = Jake.AsyncTask;
+export let AsyncFile = Jake.AsyncFile;
 
 import * as Util from "./Util";
 export let MakeRelativeToWorkingDir = Util.MakeRelativeToWorkingDir;
