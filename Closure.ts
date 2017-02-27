@@ -3,7 +3,7 @@ import * as Fs from "fs";
 import * as Zlib from "zlib";
 
 import * as Jake from "./Jake";
-import * as NodeUtil from "./NodeUtil";
+import * as NodeUtil from "./Util";
 
 let ClosureJar = NodeUtil.FindModulePath("google-closure-compiler/compiler.jar", [".."]);
 
@@ -14,9 +14,10 @@ export function Exec(inputs: string, output: string, callback, options?: string)
   //Default arguments that can be overwritten via options
   args += " --compilation_level ADVANCED_OPTIMIZATIONS";
   args += " --language_in ECMASCRIPT5";
-  args += " --new_type_inf";
+  // args += " --new_type_inf"; //Looks like crashes the compier sometimes
   args += " --summary_detail_level 3";
-  args += " --warning_level VERBOSE";
+  // args += " --warning_level VERBOSE";
+  args += " --warning_level QUIET";
 
   args += " --js_output_file=" + output;
   // args += " --jszip=" + output + ".gz";

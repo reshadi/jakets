@@ -1,14 +1,28 @@
-import fs = require("fs");
-import * as path  from "path";
+import * as Fs from "fs";
+import * as Path  from "path";
 import {execSync} from "child_process";
 import * as Jake from "./Jake";
 
+//We use the following to better clarity what we are using/checking
+export var LocalDir = process.cwd();
+
+export function MakeRelativeToWorkingDir(fullpath: string): string {
+  if (!fullpath) {
+    return fullpath;
+  }
+  return Path.relative(LocalDir, fullpath)
+    .replace(/\\/g, "/") //Convert \ to / on windows
+    || '.' //in case the answer is empty
+    ;
+  // return path.relative(LocalDir, fullpath) || '.';
+}
+
+export var JaketsDir = MakeRelativeToWorkingDir(__dirname.replace("bootstrap", ""));
+
+export var BuildDir: string = process.env.BUILD__DIR || MakeRelativeToWorkingDir("./build");
 
 var NodeDir = ""; //TODO: try to detect the correct path
 var Node = NodeDir + "node";
-
-var LocalDir = process.cwd();
-var JaketsDir = path.relative(LocalDir, __dirname.replace("bootstrap", "")).replace(/\\/g, "/");
 
 let DefaultSearchPath = [LocalDir, JaketsDir];
 export function FindModulePath(modulePath: string, additionalLocations?: string[]): string {
@@ -18,8 +32,8 @@ export function FindModulePath(modulePath: string, additionalLocations?: string[
   }
   for (let i = 0; i < searchDirs.length; ++i) {
     let dir = searchDirs[i];
-    let fullpath = path.join(dir, "node_modules", modulePath);
-    if (fs.existsSync(fullpath)) {
+    let fullpath = Path.join(dir, "node_modules", modulePath);
+    if (Fs.existsSync(fullpath)) {
       return fullpath;
     }    
   }
@@ -31,11 +45,11 @@ export function GetNodeCommand(
   testCmd: string, //command to test if there is one installed locally
   nodeCli: string //path to node file
 ) {
-  let localCli = path.resolve(path.join(LocalDir, "node_modules", nodeCli));
-  let jaketsCli = path.resolve(path.join(JaketsDir, "node_modules", nodeCli));
+  let localCli = Path.resolve(Path.join(LocalDir, "node_modules", nodeCli));
+  let jaketsCli = Path.resolve(Path.join(JaketsDir, "node_modules", nodeCli));
   let cmd = cmdName;
   try {
-    if (fs.statSync(localCli)) {
+    if (Fs.statSync(localCli)) {
       cmd = Node + " " + localCli;
     } else {
       execSync(testCmd); //Confirms the global one exists
@@ -56,7 +70,7 @@ export function CreateExec(cmd: string) {
       argsSet = [args];
     }
     argsSet = argsSet.map(function(arg) { return cmd + " " + arg; });
-    Jake.Exec(argsSet, callback);
+    Jake.Exec(argsSet, callback, isSilent);
   }
 }
 

@@ -14,6 +14,7 @@
       // Command line arguments passed to the program.
       "args": [
         "jts:setup"
+        // "update_version_range_tags"
       ],
       // Workspace relative or absolute path to the working directory of the program being debugged. Default is the current workspace.
       "cwd": "${workspaceRoot}",
@@ -27,11 +28,12 @@
       "env": {
         "NODE_ENV": "development"
       },
-      "externalConsole": false,
       // Use JavaScript source maps (if they exist).
       "sourceMaps": true,
       // If JavaScript source maps are enabled, the generated code is expected in this directory.
-      "outDir": "${workspaceRoot}"
+      "outFiles": [
+        "${workspaceRoot}/**/*.js"
+      ]
     },
     {
       "name": "Attach",

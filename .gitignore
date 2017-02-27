@@ -10,4 +10,7 @@ typings.json
 *.js
 *.js.map
 *.dep.json
+*.dep.mk
 !bootstrap/*
+Out-Null
+build/
