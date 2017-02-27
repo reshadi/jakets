@@ -13,7 +13,7 @@ CURRENT__DIR := $(subst //,,$(dir $(firstword $(MAKEFILE_LIST)))/)
 
 #overwritable values
 LOG_LEVEL?=0
-EXPECTED_NODE_VERSION?=v6.9.1
+EXPECTED_NODE_VERSION?=v6.10.0
 # NODE__DIR?=$(JAKETS__DIR)/node_modules/nodejs
 NODE__DIR?=./build/nodejs
 
