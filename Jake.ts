@@ -35,6 +35,16 @@ export function Exec(cmd: string | string[], callback, isSilent?: boolean) {
   // isSilent || console.log(cmd);
   Log(cmdArray, 0);
   if (isSilent && cmdArray.length === 1) {
+    let command = cmdArray[0].trim().replace(/\s\s+/g, ' ').split(' ');
+    let executable = command[0];
+    let args = command.slice(1);
+    let result = ChildProcess.spawnSync(executable, args);
+    if (result.error) {
+      callback(result.error, "", result.stderr.toString());
+    }
+    else {
+      callback(result.error, result.stdout.toString(), "");
+    }
     ChildProcess.exec(cmdArray[0], callback);
   } else {
     jake.exec(cmdArray, callback, { printStdout: true, printStderr: true });
