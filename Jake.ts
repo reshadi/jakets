@@ -39,7 +39,7 @@ export function Exec(cmd: string | string[], callback, isSilent?: boolean) {
     let executable = command[0];
     let args = command.slice(1);
     let result = ChildProcess.spawnSync(executable, args);
-    callback(result.error || "", (result.stdout || "").toString(), (result.stderr || "").toString());
+    callback(result.error || (result.status ? `exit code: ${result.status}` : ""), (result.stdout || "").toString(), (result.stderr || "").toString());
   } else {
     jake.exec(cmdArray, callback, { printStdout: true, printStderr: true });
   }
