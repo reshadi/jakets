@@ -37,7 +37,7 @@ export class CommandInfo<DataType extends CommandData> {
     let hash = Crypto.createHash("sha1");
     hash.update(JSON.stringify(data));
     let value = hash.digest("hex");
-    let depDir = Path.join(BuildDir, "dep");
+    let depDir = MakeRelativeToWorkingDir(Path.join(BuildDir, "dep"));
     this.DependencyFile = `${depDir}/${data.Name}_${value}.json`;
 
     //In case data.name had some / in it, we need to re-calculate the dir

@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    // "outDir": "build",
+    "module": "commonjs",
+    "target": "es2015",
+    "inlineSourceMap": true,
+    "noEmitOnError": true
+  },
+  "files": [
+    "Jakefile.ts"
+  ],
+  "include": [
+    // "lib/**/*.ts"
+  ]
+}

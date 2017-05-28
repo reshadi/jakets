@@ -14,7 +14,6 @@ CURRENT__DIR := $(subst //,,$(dir $(firstword $(MAKEFILE_LIST)))/)
 #overwritable values
 LOG_LEVEL?=0
 EXPECTED_NODE_VERSION?=v7.10.0
-# NODE__DIR?=$(JAKETS__DIR)/node_modules/nodejs
 NODE__DIR?=./build/nodejs
 
 ###################################################################################################
@@ -66,6 +65,7 @@ endif
 NODE_MODULES__DIR=$(CURRENT__DIR)/node_modules
 NODE_MODULES__UPDATE_INDICATOR=$(NODE_MODULES__DIR)/.node_modules_updated
 JAKE = $(NODE_MODULES__DIR)/.bin/jake
+TSC = $(NODE_MODULES__DIR)/.bin/tsc
 JAKE__PARAMS += logLevel=$(LOG_LEVEL)
 TS_NODE = $(NODE_MODULES__DIR)/.bin/ts-node
 
@@ -78,16 +78,23 @@ TS_NODE = $(NODE_MODULES__DIR)/.bin/ts-node
 
 # default: run_jake
 
+JAKETS_JAKEFILE__TS=$(JAKETS__DIR)/Jakefile.ts
 JAKETS_JAKEFILE__JS=$(JAKETS__DIR)/Jakefile.js
 ifneq ($(JAKETS__DIR),$(CURRENT__DIR))
   LOCAL_JAKEFILE__JS=Jakefile.js
 endif
 
 jts_run_jake: jts_compile_jake
-	$(JAKE) $(JAKE__PARAMS)
+	$(NODE) $(JAKETS_JAKEFILE__JS) $(JAKE__PARAMS)
+
+# jts_run_jake: jts_compile_jake
+# 	$(JAKE) $(JAKE__PARAMS)
 
 j-%: jts_compile_jake
-	$(JAKE) $* $(JAKE__PARAMS)
+	$(NODE) $(JAKETS_JAKEFILE__JS) $* $(JAKE__PARAMS)
+
+# j-%: jts_compile_jake
+# 	$(JAKE) $* $(JAKE__PARAMS)
 
 #The following is auto generated to make sure local Jakefile.ts dependencies are captured properly
 -include Jakefile.dep.mk
@@ -106,24 +113,42 @@ jts_compile_jake: $(JAKETS_JAKEFILE__JS) $(LOCAL_JAKEFILE__JS)
 # setup in jakets directory
 #
 
-$(LOCAL_JAKEFILE__JS): $(JAKE) $(TS_NODE) $(JAKETS_JAKEFILE__JS) $(wildcard package.json) $(filter-out Jakefile.dep.mk, $(MAKEFILE_LIST))
-	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
-	# $(TS_NODE) $(NODE_MODULES__DIR)/jake/bin/cli.js --jakefile Jakefile.ts jts:setup $(JAKE__PARAMS)
+$(LOCAL_JAKEFILE__JS): $(JAKETS_JAKEFILE__JS) $(wildcard package.json) $(filter-out Jakefile.dep.mk, $(MAKEFILE_LIST))
+	$(NODE) $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
 
-$(JAKETS_JAKEFILE__JS): $(JAKE) $(wildcard $(JAKETS__DIR)/*.ts $(JAKETS__DIR)/bootstrap/*.js)
-	cd $(JAKETS__DIR) && \
-	cp bootstrap/*.js .
-	# $(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
+$(JAKETS_JAKEFILE__JS): $(TSC) $(wildcard $(JAKETS__DIR)/*.ts $(JAKETS__DIR)/tsconfig.json)
+	$(TSC) -p $(JAKETS__DIR)/tsconfig.json
+	$(NODE) $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
 	touch $@
-	# echo ************** MAKE SURE YOU CALL make jts_update_bootstrap **************
 
-jts_update_bootstrap: $(JAKETS_JAKEFILE__JS)
-	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
-	cp $(JAKETS__DIR)/*.js $(JAKETS__DIR)/bootstrap/
+# $(LOCAL_JAKEFILE__JS): $(JAKE) $(TS_NODE) $(JAKETS_JAKEFILE__JS) $(wildcard package.json) $(filter-out Jakefile.dep.mk, $(MAKEFILE_LIST))
+# 	$(NODE) $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
+# 	# $(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
+# 	# $(TS_NODE) $(NODE_MODULES__DIR)/jake/bin/cli.js --jakefile Jakefile.ts jts:setup $(JAKE__PARAMS)
+
+# $(JAKETS_JAKEFILE__JS): $(TSC) $(TS_NODE) $(wildcard $(JAKETS__DIR)/*.ts $(JAKETS__DIR)/tsconfig.json $(JAKETS__DIR)/bootstrap/*.js)
+# 	$(TS_NODE) $(JAKETS_JAKEFILE__TS) jts:setup $(JAKE__PARAMS)
+# 	# cd $(JAKETS__DIR) && \
+# 	# $(TSC)
+# 	# cp bootstrap/*.js .
+# 	# $(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
+# 	touch $@
+# 	# echo ************** MAKE SURE YOU CALL make jts_update_bootstrap **************
+
+# jts_update_bootstrap: $(JAKETS_JAKEFILE__JS)
+# 	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
+# 	cp $(JAKETS__DIR)/*.js $(JAKETS__DIR)/bootstrap/
+
+jts_get_tools: $(TSC)
 
 $(JAKE): $(NODE_MODULES__UPDATE_INDICATOR)
 	if [ ! -f $@ ]; then $(NPM) install jake; fi
 	@echo found jake @ `node -e "console.log(require.resolve('jake'))"`
+	touch $@
+
+$(TSC): $(NODE_MODULES__UPDATE_INDICATOR)
+	if [ ! -f $@ ]; then $(NPM) install typescript; fi
+	@echo found typescript @ `node -e "console.log(require.resolve('typescript'))"`
 	touch $@
 
 $(TS_NODE): $(NODE_MODULES__UPDATE_INDICATOR)
@@ -135,7 +160,7 @@ $(NODE_MODULES__UPDATE_INDICATOR): $(NODE_BIN__FILE)
 	$(NPM) install
 	touch $@
 
-_jts_get_node: $(NODE_BIN__FILE)
+jts_get_node: $(NODE_BIN__FILE)
 
 $(NODE_BIN__FILE): $(NODE_DIST_LOCAL__FILE) $(CURRENT__DIR)/Makefile
 	cd $(NODE__DIR) && \

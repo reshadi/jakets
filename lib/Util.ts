@@ -1,7 +1,8 @@
 import * as Fs from "fs";
-import * as Path  from "path";
-import {execSync} from "child_process";
-import * as Jake from "./Jake";
+import * as Path from "path";
+import { execSync } from "child_process";
+import { Log } from "./Log";
+import { Exec } from "./Exec";
 
 //We use the following to better clarity what we are using/checking
 export var LocalDir = process.cwd();
@@ -35,7 +36,7 @@ export function FindModulePath(modulePath: string, additionalLocations?: string[
     let fullpath = Path.join(dir, "node_modules", modulePath);
     if (Fs.existsSync(fullpath)) {
       return fullpath;
-    }    
+    }
   }
   return null;
 }
@@ -57,7 +58,7 @@ export function GetNodeCommand(
   } catch (e) {
     cmd = Node + " " + jaketsCli;
   }
-  Jake.Log("Node command: " + cmd, 3);
+  Log("Node command: " + cmd, 3);
   return cmd;
 }
 
@@ -69,8 +70,8 @@ export function CreateExec(cmd: string) {
     } else {
       argsSet = [args];
     }
-    argsSet = argsSet.map(function(arg) { return cmd + " " + arg; });
-    Jake.Exec(argsSet, callback, isSilent);
+    argsSet = argsSet.map(function (arg) { return cmd + " " + arg; });
+    Exec(argsSet, callback, isSilent);
   }
 }
 
