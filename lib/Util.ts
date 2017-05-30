@@ -18,6 +18,10 @@ export function MakeRelativeToWorkingDir(fullpath: string): string {
   // return path.relative(LocalDir, fullpath) || '.';
 }
 
+export function CreateMakeRelative(dirname: string) {
+  return (path: string) => MakeRelativeToWorkingDir(Path.join(dirname, path));
+}
+
 export var JaketsDir = MakeRelativeToWorkingDir(__dirname.replace("bootstrap", ""));
 
 export var BuildDir: string = process.env.BUILD__DIR || MakeRelativeToWorkingDir("./build");

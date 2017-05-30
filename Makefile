@@ -80,18 +80,20 @@ TS_NODE = $(NODE_MODULES__DIR)/.bin/ts-node
 
 JAKETS_JAKEFILE__TS=$(JAKETS__DIR)/Jakefile.ts
 JAKETS_JAKEFILE__JS=$(JAKETS__DIR)/Jakefile.js
+MAIN_JAKEFILE__JS=$(JAKETS_JAKEFILE__JS)
 ifneq ($(JAKETS__DIR),$(CURRENT__DIR))
   LOCAL_JAKEFILE__JS=Jakefile.js
+  MAIN_JAKEFILE__JS=$(LOCAL_JAKEFILE__JS)
 endif
 
 jts_run_jake: jts_compile_jake
-	$(NODE) $(JAKETS_JAKEFILE__JS) $(JAKE__PARAMS)
+	$(NODE) $(MAIN_JAKEFILE__JS) $(JAKE__PARAMS)
 
 # jts_run_jake: jts_compile_jake
 # 	$(JAKE) $(JAKE__PARAMS)
 
 j-%: jts_compile_jake
-	$(NODE) $(JAKETS_JAKEFILE__JS) $* $(JAKE__PARAMS)
+	$(NODE) $(MAIN_JAKEFILE__JS) $* $(JAKE__PARAMS)
 
 # j-%: jts_compile_jake
 # 	$(JAKE) $* $(JAKE__PARAMS)
