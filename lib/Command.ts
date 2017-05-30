@@ -3,6 +3,7 @@ import * as Path from "path";
 import * as Crypto from "crypto";
 import * as ChildProcess from "child_process";
 import { BuildDir, MakeRelativeToWorkingDir } from "./Util";
+import * as Task from "./task/Helpers";
 
 export interface CommandData {
   /**Name used for creating the build/dep/Name.json file */
@@ -14,8 +15,8 @@ export interface CommandData {
   /** The actual command that was executed */
   Command?: string;
 
-  /** Extra dependencies that should satisfy before the command runs */
-  Dependencies: string[];
+  /** Extra global dependencies that should satisfy before the command runs */
+  Dependencies?: string[];
 
   /** The input files of the command */
   Files?: string[];
@@ -29,11 +30,30 @@ export class CommandInfo<DataType extends CommandData> {
   DependencyFile: string;
 
   /** All computed dependencies based on input and previous files/dependencies in the json file */
-  AllDependencies: string[];
+  AllDependencies: Task.TaskDependencies;
 
-  constructor(data: DataType) {
+  constructor(data: DataType, allDependencies: Task.TaskDependencies = []) {
+    if (!data.Dependencies) {
+      data.Dependencies = [];
+    }
+    if (allDependencies.length) {
+      let globalDeps: string[] = [];
+      let localDeps: Task.TaskType[] = [];
+      for (let d of allDependencies) {
+        if (typeof d === "string") {
+          globalDeps.push(d);
+        } else {
+          if (d.GlobalName) {
+            globalDeps.push(d.GlobalName);
+          } else {
+            localDeps.push(d);
+          }
+        }
+      }
+      data.Dependencies = data.Dependencies.concat(globalDeps);
+    }
+
     this.Data = data;
-
     let hash = Crypto.createHash("sha1");
     hash.update(JSON.stringify(data));
     let value = hash.digest("hex");
@@ -42,9 +62,9 @@ export class CommandInfo<DataType extends CommandData> {
 
     //In case data.name had some / in it, we need to re-calculate the dir
     depDir = Path.dirname(this.DependencyFile);
-    directory(depDir);
+    let depDirTask = Task.DirectoryTask(depDir);
 
-    this.AllDependencies = [depDir].concat(data.Dependencies);
+    this.AllDependencies = allDependencies.concat([depDirTask]).concat(data.Dependencies);
     this.Read();
   }
 

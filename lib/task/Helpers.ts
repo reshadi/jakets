@@ -13,6 +13,9 @@ function Prepare<T extends T.Task>(task: T, dependencies: T.TaskDependencies, ac
 }
 
 export type TaskType = T.Task;
+export type TaskDependencies = T.TaskDependencies;
+export type FileTaskType = F.FileTask;
+export type DirectoryTaskType = D.DirectoryTask;
 
 export function Task(dependencies?: T.TaskDependencies, action?: T.TaskAction): T.Task {
   return Prepare(new T.Task(), dependencies, action);

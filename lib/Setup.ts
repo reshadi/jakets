@@ -60,6 +60,7 @@ function CompileJakefile(targetDir: string): Jakets.TaskType {
     target: Tsc.ScriptTarget.ES2015,
     inlineSourceMap: true,
     noEmitOnError: true,
+    importHelpers: true,
     // outDir: Jakets.MakeRelativeToWorkingDir("build")
   });
 

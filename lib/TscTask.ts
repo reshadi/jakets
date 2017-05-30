@@ -18,32 +18,15 @@ export function TscTask(
   , options: Typescript.CompilerOptions
 ): FileTask {
 
-  let globalDeps: string[] = [];
-  let localDeps: Task.Task[] = [];
-  for (let d of dependencies) {
-    if (typeof d === "string") {
-      globalDeps.push(d);
-    } else {
-      if (d.GlobalName) {
-        globalDeps.push(d.GlobalName);
-      } else {
-        localDeps.push(d);
-      }
-    }
-  }
-
   let depInfo = new Command.CommandInfo({
     Name: name,
     Dir: Path.resolve(Util.LocalDir),
     Command: "tsc",
-    Dependencies: globalDeps,
     Files: [],
     TsConfig: options
-  });
+  }, dependencies);
 
-  let allDependencies: Task.TaskDependencies = [].concat(depInfo.AllDependencies).concat(localDeps);
-
-  return Helpers.FileTask(depInfo.DependencyFile, allDependencies, async function () {
+  return Helpers.FileTask(depInfo.DependencyFile, depInfo.AllDependencies, async function () {
     let program = Typescript.createProgram(filenames, options);
     let emitResult = program.emit();
 
@@ -61,32 +44,5 @@ export function TscTask(
     console.log(`Process exiting with code '${exitCode}'.`);
     this.Log(2);
   });
-  //   Exec(
-  //     command
-  //     , (error, stdout: string, stderror) => {
-  //       ExtractFilesAndUpdateDependencyInfo(depInfo, error, stdout, stderror);
-  //       // let callback = () => {
-  //       this.complete();
-  //       Jake.LogTask(this, 2);
-  //       // };
-  //       // if (!excludeExternal) {
-  //       //   let seenDirs: { [index: string]: number; } = {};
-  //       //   let files = data.files.reverse().filter((f: string) => {
-  //       //     if (/node_modules/.test(f) && !/[.]d[.]ts$/.test(f)) {
-  //       //       let dir = path.dirname(f);
-  //       //       let seenCount = seenDirs[dir] = ((seenDirs[dir] || 0) + 1);
-  //       //       return seenCount <= 5;
-  //       //     }
-  //       //     return false;
-  //       //   });
-  //       //   tsc(command + " " + files.join(" "), callback, false);
-  //       // } else {
-  //       //   callback();
-  //       // }
-  //     }
-  //     , true
-  //   );
-  // }, { async: true });
-  // return depInfo.DependencyFile;
 }
 

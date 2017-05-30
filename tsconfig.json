@@ -4,7 +4,8 @@
     "module": "commonjs",
     "target": "es2015",
     "inlineSourceMap": true,
-    "noEmitOnError": true
+    "noEmitOnError": true,
+    "importHelpers": true
   },
   "files": [
     "Jakefile.ts"
