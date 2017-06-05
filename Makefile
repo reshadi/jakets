@@ -22,7 +22,7 @@ NODE__DIR?=./build/nodejs
 SHELL := /bin/bash
 UNAME := $(shell uname)
 NULL = /dev/null
-WGET = wget  --directory-prefix=$(NODE__DIR)
+WGET = wget --directory-prefix=$(NODE__DIR)
 EXTRACT = tar xvf --strip-components=1
 
 ifeq ($(UNAME), Linux)
@@ -170,7 +170,7 @@ jts_get_node: $(NODE_BIN__FILE)
 
 $(NODE_BIN__FILE): $(NODE_DIST_LOCAL__FILE) $(CURRENT__DIR)/Makefile
 	cd $(NODE__DIR) && \
-	$(EXTRACT) $(NODE_DIST__NAME)
+	tar xvf $(NODE_DIST__NAME) --strip-components=1
 	touch $@
 
 $(NODE_DIST_LOCAL__FILE):
