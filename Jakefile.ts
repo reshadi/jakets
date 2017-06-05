@@ -7,10 +7,10 @@ Jakets.GlobalTask("default").Description("Default task");
 
 //The following is kept for backward compatibility and will be removed later
 export {Exec as exec} from "./lib/Exec";
-// export let shell = Jake.Shell;
 export {Log} from "./lib/Log";
 
 import * as Jake from "./lib/Jake";
+export let shell = Jake.Shell;
 export let LogTask = Jake.LogTask;
 export let AsyncTask = Jake.AsyncTask;
 export let AsyncFile = Jake.AsyncFile;

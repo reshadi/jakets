@@ -2,8 +2,8 @@ import "jake";
 import * as ChildProcess from "child_process";
 
 import { Log } from "./Log";
-// import * as ShellJs from "shelljs";
-// export let Shell = ShellJs;
+import * as ShellJs from "shelljs";
+export let Shell = ShellJs;
 
 interface Task extends jake.Task {
   name?: string;
