@@ -7,3 +7,4 @@ node_modules/
 !bootstrap/*
 Out-Null
 build/
+package-lock.json

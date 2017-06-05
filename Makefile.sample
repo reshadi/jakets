@@ -10,13 +10,10 @@ JAKETS__MAKEFILE = $(word 1, $(wildcard $(JAKETS__MAKEFILES)))
 ifeq ("$(JAKETS__MAKEFILE)","")
   JAKETS__MAKEFILE = $(lastword $(JAKETS__MAKEFILES))
   JAKETS__DIR = $(dir $(JAKETS__MAKEFILE))
-  CURLOUT := $(shell curl https://raw.githubusercontent.com/reshadi/jakets/master/Makefile --create-dirs -o $(JAKETS__MAKEFILE) )
-  $(info $(CURLOUT))
-  #GITOUT := wget https://raw.githubusercontent.com/reshadi/jakets/master/Makefile -o $(JAKETS__MAKEFILE)
-  # GITOUT := $(shell git clone -b master https://github.com/reshadi/jakets.git $(JAKETS__DIR))
-else
-  # JAKETS__DIR = $(dir $(JAKETS__MAKEFILE))
-  # GITOUT := $(shell git -C $(JAKETS__DIR) pull -r)
+  CMD_OUT += $(shell mkdir -p $(JAKETS__DIR))
+  CMD_OUT += $(shell wget --no-check-certificate https://raw.githubusercontent.com/reshadi/jakets/v5.x.x/Makefile -O $(JAKETS__MAKEFILE) )
+  #CMD_OUT := $(shell curl https://raw.githubusercontent.com/reshadi/jakets/master/Makefile --create-dirs -o $(JAKETS__MAKEFILE) )
+  $(info $(CMD_OUT))
 endif
 $(info JAKETS__DIR="$(dir $(JAKETS__MAKEFILE)" ))
 

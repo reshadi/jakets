@@ -1,4 +1,4 @@
-/// <ref erence path="./ExternalTypings.d.ts" />
+/// <reference path="./ExternalTypings.d.ts" />
 
 let LogLevel: number = parseInt(process.env.logLevel) || 0;
 
