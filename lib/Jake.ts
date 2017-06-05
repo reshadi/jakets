@@ -39,11 +39,12 @@ export const AsyncTask = ToAsync(task);
 export const AsyncFile = ToAsync(file);
 
 
-setImmediate(()=> {
+setImmediate(() => {
   //First we drop the runner program name (e.g. node)
-  let args = process.argv.slice(1);
-  args.unshift("-f");
-
-  //based on https://github.com/jakejs/jake/blob/master/bin/cli.js#L25
-  jake["run"].apply(jake, args);
+  let args = process.argv.slice(0);
+  if (/node/.test(args[0]) && /Jakefile[.]js/.test(args[1])) {
+    args[0] = "-f";
+    //based on https://github.com/jakejs/jake/blob/master/bin/cli.js#L25
+    jake["run"].apply(jake, args);
+  }
 })

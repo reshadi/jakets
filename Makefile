@@ -22,6 +22,8 @@ NODE__DIR?=./build/nodejs
 SHELL := /bin/bash
 UNAME := $(shell uname)
 NULL = /dev/null
+WGET = wget  --directory-prefix=$(NODE__DIR)
+EXTRACT = tar xvf --strip-components=1
 
 ifeq ($(UNAME), Linux)
 	NODE_DIST__NAME = node-$(EXPECTED_NODE_VERSION)-linux-x64.tar.gz
@@ -31,6 +33,8 @@ else
 # ifeq($(UNAME), MINGW32_NT-6.2)
 	# NULL = $$null
 	NODE_DIST__NAME = node-$(EXPECTED_NODE_VERSION)-win-x64.zip
+	WGET += --no-check-certificate
+  EXTRACT = Expand-Archive -DestinationPath $(NODE__DIR)
 endif
 NODE_DIST_LOCAL__FILE = $(NODE__DIR)/$(NODE_DIST__NAME)
 NODE_DIST_REMOTE__FILE = https://nodejs.org/dist/$(EXPECTED_NODE_VERSION)/$(NODE_DIST__NAME)
@@ -144,17 +148,17 @@ $(JAKETS_JAKEFILE__JS): $(TSC) $(wildcard $(JAKETS__DIR)/*.ts $(JAKETS__DIR)/tsc
 jts_get_tools: $(TSC)
 
 $(JAKE): $(NODE_MODULES__UPDATE_INDICATOR)
-	if [ ! -f $@ ]; then $(NPM) install jake; fi
+	if [ ! -f $@ ]; then $(NPM) install --no-save jake; fi
 	@echo found jake @ `node -e "console.log(require.resolve('jake'))"`
 	touch $@
 
 $(TSC): $(NODE_MODULES__UPDATE_INDICATOR)
-	if [ ! -f $@ ]; then $(NPM) install typescript; fi
+	if [ ! -f $@ ]; then $(NPM) install --no-save typescript; fi
 	@echo found typescript @ `node -e "console.log(require.resolve('typescript'))"`
 	touch $@
 
 $(TS_NODE): $(NODE_MODULES__UPDATE_INDICATOR)
-	if [ ! -f $@ ]; then $(NPM) install ts-node; fi
+	if [ ! -f $@ ]; then $(NPM) install --no-save ts-node; fi
 	@echo found ts-node @ `node -e "console.log(require.resolve('ts-node'))"`
 	touch $@
 
@@ -166,12 +170,12 @@ jts_get_node: $(NODE_BIN__FILE)
 
 $(NODE_BIN__FILE): $(NODE_DIST_LOCAL__FILE) $(CURRENT__DIR)/Makefile
 	cd $(NODE__DIR) && \
-	tar xvf $(NODE_DIST__NAME) --strip-components=1
+	$(EXTRACT) $(NODE_DIST__NAME)
 	touch $@
 
 $(NODE_DIST_LOCAL__FILE):
 	mkdir -p $(NODE__DIR)
-	wget --directory-prefix=$(NODE__DIR) $(NODE_DIST_REMOTE__FILE)
+	$(WGET) $(NODE_DIST_REMOTE__FILE)
 	touch $@
 
 #
