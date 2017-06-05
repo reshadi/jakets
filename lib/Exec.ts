@@ -23,6 +23,19 @@ export function Exec(cmd: string | string[], callback, isSilent?: boolean) {
 
 interface CmdOutput { StdOut: string; StdErr: string; }
 
+export async function SpawnAsync(cmd: string): Promise<CmdOutput> {
+  return new Promise<CmdOutput>((resolve, reject) => {
+    Log(cmd, 0);
+    Exec(cmd, (error, stdout, stderr) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve({ StdOut: stdout, StdErr: stderr });
+      }
+    });
+  });
+}
+
 export async function ExecAsync(cmd: string): Promise<CmdOutput> {
   return new Promise<CmdOutput>((resolve, reject) => {
     Log(cmd, 0);

@@ -40,9 +40,13 @@ export class Task {
     return this.TaskImplementation.name;
   }
 
+  static NormalizeDedpendencies(dependencies: TaskDependencies): string[] {
+    return dependencies.map(t => typeof t === "string" ? t : t.TaskImplementation.name);
+  }
+
   DependsOn(dependencies: TaskDependencies): this {
     //Based on https://github.com/jakejs/jake/blob/master/lib/jake.js#L203
-    this.TaskImplementation.prereqs = this.TaskImplementation.prereqs.concat(dependencies.map(t => typeof t === "string" ? t : t.TaskImplementation.name));
+    this.TaskImplementation.prereqs = this.TaskImplementation.prereqs.concat(Task.NormalizeDedpendencies(dependencies));
     return this;
   }
 

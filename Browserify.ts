@@ -1,7 +1,8 @@
 import * as Path from "path";
-import * as Util from "./Util";
-import * as Jake from "./Jake";
-import { CommandInfo, ExtractFilesAndUpdateDependencyInfo } from "./Command";
+import * as Util from "./lib/Util";
+import * as Jake from "./lib/Jake";
+import { CommandInfo, ExtractFilesAndUpdateDependencyInfo } from "./lib/Command";
+import { Task } from "./lib/task/Task";
 
 let RawExec = Util.CreateNodeExec(
   "browserify",
@@ -30,7 +31,7 @@ export function Exec(inputs: string, output: string, callback, isRelease?: boole
     args += " " + options;
   }
 
-  Jake.Shell.mkdir("-p", Path.dirname(output));
+  jake.mkdirP(Path.dirname(output));
 
   RawExec(args, callback, isSilent);
 }
@@ -55,7 +56,7 @@ export function BrowserifyTask(
     Dependencies: dependencies
   });
 
-  file(depInfo.DependencyFile, depInfo.AllDependencies, function () {
+  file(depInfo.DependencyFile, Task.NormalizeDedpendencies(depInfo.AllDependencies), function () {
     Exec(
       inputs
       , output

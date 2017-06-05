@@ -1,4 +1,4 @@
-import * as NodeUtil from "./Util";
+import * as NodeUtil from "./lib/Util";
 
 export let Exec = NodeUtil.CreateNodeExec(
   "bower",
