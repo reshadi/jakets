@@ -35,7 +35,7 @@ let JakefileDependencies = Jakets.MakeRelativeToWorkingDir("Jakefile.dep.json");
 // }, { async: true });
 
 let PackageJsonTask = Jakets.FileTask(Jakets.MakeRelativeToWorkingDir("package.json"), [], async function () {
-  this.Log(3, true);
+  this.Log("Missing package.json", 3, true);
   console.error("Generating package.json")
   var NPM = Path.join("npm");
   return Jakets.ExecAsync(NPM + " init");//], () => { this.complete(); Jake.LogTask(this, 2); });
@@ -55,7 +55,10 @@ function CompileJakefile(targetDir: string): Jakets.TaskType {
   let jakefileJs = jakefileTs.replace(".ts", ".js");
   let jakefileDepMk = jakefileTs.replace(".ts", ".dep.mk");
 
-  let jakefileDepJson = Tsc.TscTask("Jakefile", [jakefileTs], [NpmUpdateTask], {
+  let allJakefiles = new jake.FileList();
+  allJakefiles.include(`${targetDir}/**/node_modules/**/Jakefile.ts`);
+
+  let jakefileDepJson = Tsc.TscTask("Jakefile", [jakefileTs].concat(allJakefiles.toArray()), [NpmUpdateTask], {
     module: Tsc.ModuleKind.CommonJS,
     target: Tsc.ScriptTarget.ES2015,
     inlineSourceMap: true,

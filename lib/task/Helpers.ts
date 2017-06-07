@@ -1,6 +1,8 @@
 import * as T from "./Task";
+import * as G from "./GlobalTask";
 import * as F from "./FileTask";
 import * as D from "./DirectoryTask";
+
 
 function Prepare<T extends T.Task>(task: T, dependencies: T.TaskDependencies, action: T.TaskAction): T {
   if (dependencies) {
@@ -14,6 +16,7 @@ function Prepare<T extends T.Task>(task: T, dependencies: T.TaskDependencies, ac
 
 export type TaskType = T.Task;
 export type TaskDependencies = T.TaskDependencies;
+export type GlobalTaskType = G.GlobalTask;
 export type FileTaskType = F.FileTask;
 export type DirectoryTaskType = D.DirectoryTask;
 
@@ -21,8 +24,8 @@ export function Task(dependencies?: T.TaskDependencies, action?: T.TaskAction): 
   return Prepare(new T.Task(), dependencies, action);
 }
 
-export function GlobalTask(globalName: string, dependencies?: T.TaskDependencies, action?: T.TaskAction): T.Task {
-  return Prepare(new T.Task(globalName), dependencies, action);
+export function GlobalTask(globalName: string, dependencies?: T.TaskDependencies, action?: T.TaskAction): G.GlobalTask {
+  return Prepare(new G.GlobalTask(globalName), dependencies, action);
 }
 
 export function FileTask(filename: string, dependencies?: T.TaskDependencies, action?: T.TaskAction): F.FileTask {

@@ -41,8 +41,7 @@ export function TscTask(
     });
 
     let exitCode = emitResult.emitSkipped ? 1 : 0;
-    console.log(`Process exiting with code '${exitCode}'.`);
-    this.Log(2);
+    this.Log(`Process exiting with code '${exitCode}'.`, 1);
   });
 }
 

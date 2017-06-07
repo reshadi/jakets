@@ -42,8 +42,12 @@ export const AsyncFile = ToAsync(file);
 setImmediate(() => {
   //First we drop the runner program name (e.g. node)
   let args = process.argv.slice(0);
-  if (/node/.test(args[0]) && /Jakefile[.]js/.test(args[1])) {
+  if (/node/.test(args[0]) && /Jakefile[.][jt]s/.test(args[1])) {
     args[0] = "-f";
+
+    //TODO: do we need the following to support ts-node?
+    args[1] = args[1].replace("Jakefile.ts", "Jakefile.js");
+    
     //based on https://github.com/jakejs/jake/blob/master/bin/cli.js#L25
     jake["run"].apply(jake, args);
   }

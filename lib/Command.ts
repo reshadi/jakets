@@ -43,8 +43,8 @@ export class CommandInfo<DataType extends CommandData> {
         if (typeof d === "string") {
           globalDeps.push(d);
         } else {
-          if (d.GlobalName) {
-            globalDeps.push(d.GlobalName);
+          if (d.IsGlobal()) {
+            globalDeps.push(d.GetName());
           } else {
             localDeps.push(d);
           }

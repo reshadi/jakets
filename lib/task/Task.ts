@@ -24,14 +24,16 @@ export class Task {
     return task;
   }
 
+  IsGlobal(): boolean {
+    return false;
+  }
+
   private readonly TaskImplementation: ITask;
 
-  public readonly GlobalName: string;
-
-  constructor(globalName?: string) {
-    let taskName = globalName
-      ? (this.GlobalName = globalName)
-      : `task_${Math.random()}`;
+  constructor(taskName?: string) {
+    let fullTaskName = this.IsGlobal()
+      ? taskName
+      : `${taskName}_task_${Math.random()}`;
     let taskFunc = this.GetTaskCreatorFunc();
     this.TaskImplementation = taskFunc(taskName, { async: true });
   }
@@ -41,7 +43,7 @@ export class Task {
   }
 
   static NormalizeDedpendencies(dependencies: TaskDependencies): string[] {
-    return dependencies.map(t => typeof t === "string" ? t : t.TaskImplementation.name);
+    return dependencies.map(t => typeof t === "string" ? t : t.GetName());
   }
 
   DependsOn(dependencies: TaskDependencies): this {
@@ -71,13 +73,15 @@ export class Task {
     return this;
   }
 
-  Log(level?: number, shortForm?: boolean): this {
+  Log(message?: string, level?: number, showLongForm?: boolean): this {
     let t = this.TaskImplementation;
     Log(
-      shortForm
-        ? this.GetName()
-        :
-        `${t.taskStatus} => ${t.name}: ['${t.prereqs.join("', '")}']`
+      (message || "")
+      + (
+        showLongForm
+          ? `[${t.taskStatus} => ${this.GetName()}: ['${t.prereqs.join("', '")}']]`
+          : `[${this.GetName()}]`
+      )
       , level
     );
     return this;
