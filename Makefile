@@ -23,6 +23,8 @@ NODE__DIR?=./build/nodejs
 SHELL := /bin/bash
 UNAME := $(shell uname)
 NULL = /dev/null
+WGET = wget --directory-prefix=$(NODE__DIR)
+EXTRACT = tar xvf --strip-components=1
 
 ifeq ($(UNAME), Linux)
 	NODE_DIST__NAME = node-$(EXPECTED_NODE_VERSION)-linux-x64.tar.gz
@@ -32,6 +34,8 @@ else
 # ifeq($(UNAME), MINGW32_NT-6.2)
 	# NULL = $$null
 	NODE_DIST__NAME = node-$(EXPECTED_NODE_VERSION)-win-x64.zip
+	WGET += --no-check-certificate
+	EXTRACT = Expand-Archive -DestinationPath $(NODE__DIR)
 endif
 NODE_DIST_LOCAL__FILE = $(NODE__DIR)/$(NODE_DIST__NAME)
 NODE_DIST_REMOTE__FILE = https://nodejs.org/dist/$(EXPECTED_NODE_VERSION)/$(NODE_DIST__NAME)
@@ -144,7 +148,7 @@ $(NODE_BIN__FILE): $(NODE_DIST_LOCAL__FILE) $(CURRENT__DIR)/Makefile
 
 $(NODE_DIST_LOCAL__FILE):
 	mkdir -p $(NODE__DIR)
-	wget --directory-prefix=$(NODE__DIR) $(NODE_DIST_REMOTE__FILE)
+	$(WGET) $(NODE_DIST_REMOTE__FILE)
 	touch $@
 
 #
