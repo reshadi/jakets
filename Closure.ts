@@ -2,8 +2,9 @@ import * as Path from "path";
 import * as Fs from "fs";
 import * as Zlib from "zlib";
 
+import * as Jakets from "./lib/Jakets";
 import * as Jake from "./Jake";
-import * as NodeUtil from "./Util";
+import * as NodeUtil from "./lib/Util";
 
 let ClosureJar = NodeUtil.FindModulePath("google-closure-compiler/compiler.jar", [".."]);
 
@@ -26,10 +27,10 @@ export function Exec(inputs: string, output: string, callback, options?: string)
   }
   args += " " + inputs;
 
-  Jake.Shell.mkdir("-p", Path.dirname(output));
+  jake.mkdirP(Path.dirname(output));
 
   // RawExec(args, callback);
   RawExec(args, () => {
-    Jake.Exec("gzip --best < " + output + " > " + output + ".gz", callback);
+    Jakets.Exec("gzip --best < " + output + " > " + output + ".gz", callback);
   });
 }

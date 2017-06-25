@@ -3,9 +3,10 @@ import * as Path from "path";
 import * as ChildProcess from "child_process";
 
 import * as Util from "./Util";
-import * as Jake from "./Jake";
+import * as Jakets from "./Jakets";
+import * as Jake from "../Jake";
 import * as Command from "./Command";
-import * as Tsc from "./Tsc";
+import * as Tsc from "../Tsc";
 
 let jakeCmd = Util.GetNodeCommand("jake", "jake --version", "jake/bin/cli.js");
 
@@ -16,12 +17,12 @@ desc("update node_modules from package.json");
 rule(new RegExp(NodeModulesUpdateIndicator), name => Path.join(Path.dirname(name), "..", "package.json"), [], function () {
   let indicator: string = this.name;
   let packageJson: string = this.source;
-  Jake.Log(`updating file ${indicator} from package file ${packageJson}`, 1);
+  Jakets.Log(`updating file ${indicator} from package file ${packageJson}`, 1);
 
   let packageDir = Path.dirname(packageJson);
 
   var pkgStr: string = Fs.readFileSync(packageJson, 'utf8');
-  Jake.Exec([
+  Jakets.Exec([
     "cd " + packageDir
     + " && npm install"
     + " && npm update"
@@ -36,10 +37,10 @@ rule(new RegExp(NodeModulesUpdateIndicator), name => Path.join(Path.dirname(name
 
 // desc("create empty package.json if missing");
 file("package.json", [], function () {
-  Jake.Log(this.name, 3);
+  Jakets.Log(this.name, 3);
   console.error("Generating package.json")
   var NPM = Path.join("npm");
-  Jake.Exec([NPM + " init"], () => { this.complete(); Jake.LogTask(this, 2); });
+  Jakets.Exec([NPM + " init"], () => { this.complete(); Jake.LogTask(this, 2); });
 }, { async: true });
 
 // 
@@ -55,7 +56,7 @@ function CreatePlaceHolderTask(taskName: string, dependencies: string[]): string
   Jake.LogTask(t, 2);
 
   if (t["name"] !== taskName) {
-    Jake.Log(taskName + " != " + t["name"]);
+    Jakets.Log(taskName + " != " + t["name"]);
   }
 
   return taskName;
@@ -90,7 +91,7 @@ export function CompileJakefiles(directories: string[]) {
 
   directories = directories.filter((d, index, array) => array.indexOf(d) === index); //Remove repeates in case later we add more
 
-  Jake.Log(`LocalDir=${Util.LocalDir}  - JaketsDir=${Util.JaketsDir} - Dirs=[${directories.join(",")}]`, 3);
+  Jakets.Log(`LocalDir=${Util.LocalDir}  - JaketsDir=${Util.JaketsDir} - Dirs=[${directories.join(",")}]`, 3);
 
   let updateTypingsTaskName = UpdatePackages(directories); // UpdateTypings(directories);
   let dependencies = directories
@@ -121,11 +122,11 @@ export function CompileJakefiles(directories: string[]) {
         }
 
         ChildProcess.exec(jakeCmd + " -T", (error, stdout, stderr) => {
-          Jake.Log(stdout);
+          Jakets.Log(stdout);
           let taskList = !error && stdout.match(/^jake ([-:\w]*)/gm);
           if (taskList) {
             taskList = taskList.map(t => t.match(/\s.*/)[0]).filter(t => t.indexOf(":") === -1);
-            Jake.Log(`Found public tasks ${taskList}`, 1);
+            Jakets.Log(`Found public tasks ${taskList}`, 1);
           } else {
             taskList = [];
           }

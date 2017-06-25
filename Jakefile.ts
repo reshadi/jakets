@@ -1,17 +1,13 @@
 
+//The following is kept for backward compatibility and will be removed later
+export * from "./lib/Jakets";
+export {Exec as exec} from "./lib/Exec";
+
 import * as Jake from "./Jake";
-export let exec = Jake.Exec;
 export let shell = Jake.Shell;
-export let Log = Jake.Log;
 export let LogTask = Jake.LogTask;
 export let AsyncTask = Jake.AsyncTask;
 export let AsyncFile = Jake.AsyncFile;
-
-import * as Util from "./Util";
-export let MakeRelativeToWorkingDir = Util.MakeRelativeToWorkingDir;
-export let MakeRelative = Util.MakeRelativeToWorkingDir;
-export let LocalDir = Util.LocalDir;
-export let BuildDir = Util.BuildDir;
 
 import * as Bower from "./Bower";
 export let bower = Bower.Exec;
@@ -27,8 +23,8 @@ export let BrowserifyTask = Browserify.BrowserifyTask;
 import * as Closure from "./Closure";
 export let closure = Closure.Exec;
 
-import "./Setup";
-import "./GitUtil";
+import "./lib/Setup";
+import "./lib/GitUtil";
 
 desc("Default task");
 task("default");

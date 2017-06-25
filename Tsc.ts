@@ -1,7 +1,7 @@
 import * as Path from "path";
-import * as Util from "./Util";
+import * as Util from "./lib/Util";
 import * as Jake from "./Jake";
-import { CommandInfo, ExtractFilesAndUpdateDependencyInfo } from "./Command";
+import { CommandInfo, ExtractFilesAndUpdateDependencyInfo } from "./lib/Command";
 
 export var Exec = Util.CreateNodeExec(
   "tsc",

@@ -1,13 +1,13 @@
 import * as ChildProcess from "child_process";
 import * as Semver from "semver";
 
-import * as Jake from "./Jake";
+import * as Jakets from "./Jakets";
 import * as Util from "./Util";
 
 async function GetRemoteRepoInfo() {
-  let result = await Jake.ExecAsync("git remote -v");
+  let result = await Jakets.ExecAsync("git remote -v");
   let lines = result.StdOut.split("\n");
-  Jake.Log(result.StdOut, 0);
+  Jakets.Log(result.StdOut, 0);
 
   let remotes: { Name: string; Url: string; }[] = [];
   for (let line of lines) {
@@ -23,7 +23,7 @@ async function GetRemoteRepoInfo() {
 }
 
 async function GetVersionChangeInfo() {
-  let result = await Jake.ExecAsync("git diff HEAD~1 -- package.json");
+  let result = await Jakets.ExecAsync("git diff HEAD~1 -- package.json");
   const GetVersion = (pattern: RegExp, str: string) => {
     let match = pattern.exec(str);
     let version = match && match[1];
@@ -51,14 +51,14 @@ interface IRange extends IVersion {
 }
 
 async function UpdateVersionRangeTags(runRemoveCmds?: boolean) {
-  Jake.Log(Util.LocalDir, 0);
+  Jakets.Log(Util.LocalDir, 0);
   // "git tag -l"
   let tagInfo: string[];
   try {
     //Since we always have commits in the repo, the other commands wont fail. But the following can fail
-    let rawTagInfo = await Jake.ExecAsync("git show-ref --tags");
+    let rawTagInfo = await Jakets.ExecAsync("git show-ref --tags");
     tagInfo = rawTagInfo.StdOut.split("\n");
-    Jake.Log(rawTagInfo.StdOut, 0);
+    Jakets.Log(rawTagInfo.StdOut, 0);
   } catch (e) {
     tagInfo = [];
   }
@@ -130,9 +130,9 @@ async function UpdateVersionRangeTags(runRemoveCmds?: boolean) {
     }
   }
 
-  Jake.Log([versions, ranges, localCmds, remoteCmds], 0);
+  Jakets.Log([versions, ranges, localCmds, remoteCmds], 0);
 
-  await Jake.ExecAsyncAll(localCmds);
+  await Jakets.ExecAsyncAll(localCmds);
 
   if (localCmds.length || remoteCmds.length) {
     remoteCmds.push(`git push ${writableRemote} --tags`);
@@ -141,7 +141,7 @@ async function UpdateVersionRangeTags(runRemoveCmds?: boolean) {
   }
 
   if (runRemoveCmds && remoteCmds.length) {
-    await Jake.ExecAsyncAll(remoteCmds);
+    await Jakets.ExecAsyncAll(remoteCmds);
   }
   return remoteCmds;
 }
