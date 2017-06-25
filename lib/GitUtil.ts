@@ -146,8 +146,13 @@ async function UpdateVersionRangeTags(runRemoveCmds?: boolean) {
   return remoteCmds;
 }
 
-desc("update all tags for version and range releases");
-task("update_version_range_tags", function (runRemoveCmds?: boolean) {
-  UpdateVersionRangeTags(runRemoveCmds)
-    .then(() => this.complete());
-}, { async: true });
+Jakets.GlobalTask("update_version_range_tags")
+  .Description("update all tags for version and range releases")
+  .Action(UpdateVersionRangeTags)
+  ;
+
+// desc("update all tags for version and range releases");
+// task("update_version_range_tags", function (runRemoveCmds?: boolean) {
+//   UpdateVersionRangeTags(runRemoveCmds)
+//     .then(() => this.complete());
+// }, { async: true });

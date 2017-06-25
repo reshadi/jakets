@@ -1,16 +1,7 @@
 node_modules/
 
-typings/
-typings.json
-#!typings/node/
-#!typings/jake/
-#!typings/shelljs/
-
-#Jakefile.js*
 *.js
 *.js.map
 *.dep.json
 *.dep.mk
-!bootstrap/*
-Out-Null
 build/
