@@ -25,7 +25,7 @@ export function TscTask(
     Command: "tsc",
     Files: [],
     TsConfig: options,
-   Dependencies: Task.Task.NormalizeDedpendencies(dependencies) 
+    Dependencies: Task.Task.NormalizeDedpendencies(dependencies)
   });
 
   return Helpers.FileTask(depInfo.DependencyFile, depInfo.AllDependencies, async function () {
@@ -48,9 +48,12 @@ export function TscTask(
     let allDiagnostics = Typescript.getPreEmitDiagnostics(program).concat(emitResult.diagnostics);
 
     allDiagnostics.forEach(diagnostic => {
-      let { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
       let message = Typescript.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
-      console.log(`${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`);
+      if (diagnostic.file) {
+        let { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
+        message = `${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`;
+      }
+      console.warn(message);
     });
 
     let exitCode = emitResult.emitSkipped ? 1 : 0;
