@@ -13,8 +13,7 @@ CURRENT__DIR := $(subst //,,$(dir $(firstword $(MAKEFILE_LIST)))/)
 
 #overwritable values
 LOG_LEVEL?=0
-EXPECTED_NODE_VERSION?=v7.10.0
-# NODE__DIR?=$(JAKETS__DIR)/node_modules/nodejs
+EXPECTED_NODE_VERSION?=v8.1.1
 NODE__DIR?=./build/nodejs
 
 ###################################################################################################
@@ -110,7 +109,7 @@ jts_compile_jake: $(JAKETS_JAKEFILE__JS) $(LOCAL_JAKEFILE__JS)
 # setup in jakets directory
 #
 
-$(LOCAL_JAKEFILE__JS): $(JAKE) $(TS_NODE) $(JAKETS_JAKEFILE__JS) $(wildcard package.json) $(filter-out Jakefile.dep.mk, $(MAKEFILE_LIST))
+$(LOCAL_JAKEFILE__JS): $(JAKE) $(TS_NODE) $(JAKETS_JAKEFILE__JS) $(filter-out Jakefile.dep.mk, $(MAKEFILE_LIST))
 	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
 	# $(TS_NODE) $(NODE_MODULES__DIR)/jake/bin/cli.js --jakefile Jakefile.ts jts:setup $(JAKE__PARAMS)
 
@@ -126,17 +125,22 @@ jts_update_bootstrap: $(JAKETS_JAKEFILE__JS)
 	cp $(JAKETS__DIR)/*.js $(JAKETS__DIR)/bootstrap/
 
 $(JAKE): $(NODE_MODULES__UPDATE_INDICATOR)
-	if [ ! -f $@ ]; then $(NPM) install jake; fi
+	if [ ! -f $@ ]; then $(NPM) install --no-save jake; fi
 	@echo found jake @ `node -e "console.log(require.resolve('jake'))"`
 	touch $@
 
+$(TSC): $(NODE_MODULES__UPDATE_INDICATOR)
+	if [ ! -f $@ ]; then $(NPM) install --no-save typescript; fi
+	@echo found typescript @ `node -e "console.log(require.resolve('typescript'))"`
+	touch $@
+
 $(TS_NODE): $(NODE_MODULES__UPDATE_INDICATOR)
-	if [ ! -f $@ ]; then $(NPM) install ts-node; fi
+	if [ ! -f $@ ]; then $(NPM) install --no-save ts-node; fi
 	@echo found ts-node @ `node -e "console.log(require.resolve('ts-node'))"`
 	touch $@
 
-$(NODE_MODULES__UPDATE_INDICATOR): $(NODE_BIN__FILE)
-	$(NPM) install
+$(NODE_MODULES__UPDATE_INDICATOR): $(NODE_BIN__FILE) $(wildcard package.json)
+	$(NPM) update --no-save
 	touch $@
 
 _jts_get_node: $(NODE_BIN__FILE)
