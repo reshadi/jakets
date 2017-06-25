@@ -2,6 +2,8 @@ import "jake";
 import * as ShellJs from "shelljs";
 export let Shell = ShellJs;
 import { Log } from "./lib/Log";
+export { Log } from "./lib/Log";
+export * from "./lib/Exec";
 
 interface Task extends jake.Task {
   name?: string;
