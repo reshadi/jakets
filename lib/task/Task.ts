@@ -10,9 +10,12 @@ interface ITask {
   description?: string;
 }
 
+type JakeTasks = jake.Task | jake.FileTask | jake.DirectoryTask;
+type JakeTaskOptionss = jake.TaskOptions | jake.FileTaskOptions;
+
 export interface TaskCreatorFunc {
-  (name: string, prereqs?: string[], action?: (...params: any[]) => any, opts?: jake.TaskOptions): jake.Task | jake.FileTask | jake.DirectoryTask;
-  (name: string, opts?: jake.TaskOptions): jake.Task | jake.FileTask | jake.DirectoryTask;
+  (name: string, prereqs?: string[], action?: (...params: any[]) => any, opts?: JakeTaskOptionss): JakeTasks;
+  (name: string, opts?: JakeTaskOptionss): JakeTasks;
 };
 
 export type TaskDependencies = (Task | string)[];
