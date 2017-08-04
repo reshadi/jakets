@@ -60,6 +60,10 @@ export function TscTask(
     this.Log(`Process exiting with code '${exitCode}'.`, 1);
 
     console.timeEnd(sectionName);
+
+    if (exitCode > 0) {
+      throw `>> TypeScript compilation failed for ${name}`;
+    }
   });
 }
 
