@@ -10,7 +10,7 @@ let ClosureJar = NodeUtil.FindModulePath("google-closure-compiler/compiler.jar",
 
 let RawExec = NodeUtil.CreateExec("java -jar " + ClosureJar);
 
-export function Exec(inputs: string, output: string, callback, options?: string) {
+export function Exec(inputs: string, output: string, callback, options?: string, enableGzip?: boolean) {
   let args = "";
   //Default arguments that can be overwritten via options
   args += " --compilation_level ADVANCED_OPTIMIZATIONS";
@@ -30,7 +30,10 @@ export function Exec(inputs: string, output: string, callback, options?: string)
   jake.mkdirP(Path.dirname(output));
 
   // RawExec(args, callback);
-  RawExec(args, () => {
-    Jakets.Exec("gzip --best < " + output + " > " + output + ".gz", callback);
-  });
+  RawExec(
+    args,
+    enableGzip
+      ? () => Jakets.Exec("gzip --best < " + output + " > " + output + ".gz", callback)
+      : callback
+  );
 }
