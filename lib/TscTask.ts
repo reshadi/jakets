@@ -23,7 +23,7 @@ export function TscTask(
     Name: name,
     Dir: Path.resolve(Util.LocalDir),
     Command: "tsc",
-    Files: [],
+    Files: filenames,
     TsConfig: options,
     Dependencies: Task.Task.NormalizeDedpendencies(dependencies)
   });

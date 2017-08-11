@@ -61,7 +61,7 @@ function CompileJakefile(targetDir: string): Jakets.TaskType {
     inlineSourceMap: true,
     noEmitOnError: true,
     importHelpers: true,
-    baseUrl: "./node_module",
+    // baseUrl: "./node_module",
     // outDir: Jakets.MakeRelativeToWorkingDir("build")
   });
 
