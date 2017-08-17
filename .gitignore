@@ -5,3 +5,4 @@ node_modules/
 *.dep.json
 *.dep.mk
 build/
+package-lock.json

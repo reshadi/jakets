@@ -19,8 +19,8 @@ export type GlobalTaskType = G.GlobalTask;
 export type FileTaskType = F.FileTask;
 export type DirectoryTaskType = D.DirectoryTask;
 
-export function Task(dependencies?: T.TaskDependencies, action?: T.TaskAction): T.Task {
-  return Prepare(new T.Task(), dependencies, action);
+export function Task(taskName?: string, dependencies?: T.TaskDependencies, action?: T.TaskAction): T.Task {
+  return Prepare(new T.Task(taskName), dependencies, action);
 }
 
 export function GlobalTask(globalName: string, dependencies?: T.TaskDependencies, action?: T.TaskAction): G.GlobalTask {

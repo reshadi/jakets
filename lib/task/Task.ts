@@ -33,11 +33,11 @@ export class Task {
 
   private readonly TaskImplementation: ITask;
 
-  constructor(taskName?: string) {
-    //For now, only global tasks supported:
-    if (!taskName || !this.IsGlobal()) {
-      Log("Invalid local task");
-      throw "Invalid local task";
+  constructor(taskName: string = "") {
+    if (!taskName && this.IsGlobal()) {
+      const msg = "Invalid nameless global task";
+      Log(msg);
+      throw msg;
     }
 
     let fullTaskName = this.IsGlobal()
