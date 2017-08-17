@@ -45,7 +45,13 @@ export class Task {
       : `${taskName}_task_${Math.random()}`;
     let taskFunc = this.GetTaskCreatorFunc();
     //TODO: remove <any> whe upstream types are updated
-    this.TaskImplementation = <any>taskFunc(taskName, { async: true });
+    let taskImp = this.TaskImplementation = <any>taskFunc(taskName, { async: true });
+    let defaultAction = taskImp.action;
+    if (defaultAction) {
+      //This type of task adds default action, so either call it, or make the task non-async
+      //Assert this is a directory task!
+      this.Action(async () => defaultAction.apply(taskImp, arguments));
+    }
   }
 
   GetName(): string {
