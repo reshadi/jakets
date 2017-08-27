@@ -26,5 +26,7 @@ export let closure = Closure.Exec;
 import "./lib/Setup";
 import "./lib/GitUtil";
 
+import "./tests/Jakefile";
+
 desc("Default task");
 task("default");

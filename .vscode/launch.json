@@ -1,10 +1,30 @@
 {
   "version": "0.2.0",
-  "configurations": [
-    {
-      "name": "Jake",
+  "configurations": [{
       "type": "node",
       "request": "launch",
+      "name": "Test",
+      "program": "${workspaceRoot}/node_modules/jake/bin/cli.js",
+      "stopOnEntry": false,
+      "args": [
+        "jts_test"
+      ],
+      "cwd": "${workspaceRoot}",
+      "runtimeArgs": [
+        "--nolazy"
+      ],
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/**/*.js"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Jake",
       "program": "${workspaceRoot}/node_modules/jake/bin/cli.js",
       "stopOnEntry": false,
       "args": [

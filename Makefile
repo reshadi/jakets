@@ -69,7 +69,7 @@ endif
 NODE_MODULES__DIR=$(CURRENT__DIR)/node_modules
 NODE_MODULES__UPDATE_INDICATOR=$(NODE_MODULES__DIR)/.node_modules_updated
 JAKE = $(NODE_MODULES__DIR)/.bin/jake
-JAKE__PARAMS += logLevel=$(LOG_LEVEL)
+JAKE__PARAMS += LogLevel=$(LOG_LEVEL) ParallelLevel=$(PARALLEL_LEVEL)
 TSC = $(NODE_MODULES__DIR)/.bin/tsc
 TS_NODE = $(NODE_MODULES__DIR)/.bin/ts-node
 

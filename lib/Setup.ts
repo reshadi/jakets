@@ -91,12 +91,12 @@ JAKE_TASKS += ${taskList.join(" ")}
 Jakefile.js: $(wildcard ${computedDependencies.join(" ")})
 
 clean:
-\t#rm - f ${
+\trm -f $(wildcard ${
       computedDependencies
-        .filter(f => !/node_modules|[.]d[.]ts/.test(f))
+        .filter(f => /[.]ts$/.test(f) && !/node_modules|[.]d[.]ts/.test(f))
         .map(f => f.replace(".ts", ".js") + " " + f.replace(".ts", ".dep.*"))
         .join(" ")
-      }
+      })
 `;
     Fs.writeFileSync(jakefileDepMk, content);
   });

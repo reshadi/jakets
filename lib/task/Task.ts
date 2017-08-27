@@ -1,5 +1,8 @@
+import * as Os from "os";
 import "jake";
 import { Log } from "../Log";
+
+export const ParallelLimit: number = parseInt(process.env.ParallelLevel) || Os.cpus().length;
 
 interface ITask {
   name?: string;
@@ -8,32 +11,55 @@ interface ITask {
   taskStatus?: string;
   async?: boolean;
   description?: string;
+
+  addListener?(event: string, listener: Function): this;
+  removeListener?(event: string, listener: Function): this;
+  invoke?(): void;
 }
 
 type JakeTasks = jake.Task | jake.FileTask | jake.DirectoryTask;
-type JakeTaskOptionss = jake.TaskOptions | jake.FileTaskOptions;
+type JakeTaskOptions = jake.TaskOptions | jake.FileTaskOptions;
 
 export interface TaskCreatorFunc {
-  (name: string, prereqs?: string[], action?: (...params: any[]) => any, opts?: JakeTaskOptionss): JakeTasks;
-  (name: string, opts?: JakeTaskOptionss): JakeTasks;
+  (name: string, prereqs?: string[], action?: (...params: any[]) => any, opts?: JakeTaskOptions): JakeTasks & ITask;
+  (name: string, opts?: JakeTaskOptions): JakeTasks & ITask;
 };
 
 export type TaskDependencies = (Task | string)[];
 
 export type TaskAction = (this: Task, ...params: any[]) => Promise<any>;
 
+let LocalTaskId = 0;
 export class Task {
+  private readonly TaskImplementation: ITask;
+
   protected GetTaskCreatorFunc(): TaskCreatorFunc {
     return task;
+  }
+
+  protected CreateTask(taskName: string, ns?: string): ITask {
+    let taskImp: ITask;
+    let taskFunc = this.GetTaskCreatorFunc();
+    let defaultOptions: JakeTaskOptions = {
+      async: true,
+      parallelLimit: ParallelLimit
+    };
+
+    if (ns) {
+      namespace(ns, () => {
+        taskImp = taskFunc(taskName, defaultOptions);
+      });
+    } else {
+      taskImp = taskFunc(taskName, defaultOptions);
+    }
+    return taskImp;
   }
 
   IsGlobal(): boolean {
     return false;
   }
 
-  private readonly TaskImplementation: ITask;
-
-  constructor(taskName: string = "") {
+  constructor(taskName: string = "", ns?: string) {
     if (!taskName && this.IsGlobal()) {
       const msg = "Invalid nameless global task";
       Log(msg);
@@ -42,10 +68,9 @@ export class Task {
 
     let fullTaskName = this.IsGlobal()
       ? taskName
-      : `${taskName}_task_${Math.random()}`;
-    let taskFunc = this.GetTaskCreatorFunc();
-    //TODO: remove <any> whe upstream types are updated
-    let taskImp = this.TaskImplementation = <any>taskFunc(taskName, { async: true });
+      : `${taskName}_task_${++LocalTaskId}_${Math.floor(100000 * Math.random())}`;
+
+    let taskImp = this.TaskImplementation = this.CreateTask(fullTaskName, ns);
     let defaultAction = taskImp.action;
     if (defaultAction) {
       //This type of task adds default action, so either call it, or make the task non-async
@@ -81,6 +106,21 @@ export class Task {
         });
     };
     return this;
+  }
+
+  HasAction(): boolean {
+    return typeof this.TaskImplementation.action !== undefined
+  }
+
+  async Invoke() {
+    return new Promise((resolve, reject) => {
+      let complete = () => {
+        this.TaskImplementation.removeListener("complete", complete);
+        resolve();
+      }
+      this.TaskImplementation.addListener("complete", complete);
+      this.TaskImplementation.invoke();
+    });
   }
 
   Description(description: string): this {
