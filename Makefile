@@ -13,7 +13,8 @@ CURRENT__DIR := $(subst //,,$(dir $(firstword $(MAKEFILE_LIST)))/)
 
 #overwritable values
 LOG_LEVEL?=0
-EXPECTED_NODE_VERSION?=v8.1.1
+PARALLEL_LEVEL?=0
+EXPECTED_NODE_VERSION?=v8.4.0
 NODE__DIR?=./build/nodejs
 
 ###################################################################################################
@@ -165,6 +166,8 @@ $(NODE_DIST_LOCAL__FILE):
 # Example:
 .PHONY: show_vars
 show_vars: $(patsubst %,print-%, \
+          LOG_LEVEL \
+          PARALLEL_LEVEL \
           JAKETS__DIR \
           CURRENT__DIR \
           JAKETS_JAKEFILE__JS \
