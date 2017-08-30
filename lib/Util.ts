@@ -88,3 +88,19 @@ export function CreateNodeExec(
   var cmdName = GetNodeCommand(cmdName, testCmd, nodeCli);
   return CreateExec(cmdName);
 }
+
+export function GetPackageVersion(packageFilepath: string): string {
+  let version: string;
+  try {
+    let content = Fs.readFileSync(packageFilepath, { encoding: "utf8" });
+    let parsed = <{ version: string; }>JSON.parse(content);
+    version = parsed.version;
+
+  } catch (e) {
+    console.error(`Could not read version from ${packageFilepath}`);
+    version = "0.0.0";
+  }
+  return version;
+}
+export const CurrentPackageJson = MakeRelativeToWorkingDir("package.json");
+export const CurrentPackageVersion = GetPackageVersion(CurrentPackageJson);

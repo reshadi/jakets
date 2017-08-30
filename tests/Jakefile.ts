@@ -6,7 +6,7 @@ let MakeRelative = Jakets.CreateMakeRelative(__dirname);
 let d = Jakets.DirectoryTask(Jakets.BuildDir + "/test/d");
 
 let CreateFileAction: Jakets.TaskAction = async function () {
-  Fs.writeFileSync(this.GetName(), "Testfile: " + this.GetName(), { encoding: "utf8", });
+  Fs.writeFileSync(this.GetName(), `Testfile: ${this.GetName()} ${Jakets.CurrentPackageVersion}`, { encoding: "utf8", });
   this.Log(`Generated file ${this.GetName()}`, 0);
 };
 
