@@ -23,7 +23,7 @@ export function TscTask(
     Name: name,
     Dir: Path.resolve(Util.LocalDir),
     Command: "tsc",
-    Files: filenames,
+    Inputs: filenames,
     TsConfig: options,
     Dependencies: Task.Task.NormalizeDedpendencies(dependencies)
   });
@@ -42,8 +42,8 @@ export function TscTask(
     }
 
     let emitResult = program.emit();
-
-    depInfo.Write(allFilenames);
+    let outputs = emitResult && emitResult.emittedFiles && emitResult.emittedFiles.map(Util.MakeRelativeToWorkingDir); 
+    depInfo.Write(allFilenames, outputs);
 
     let allDiagnostics = Typescript.getPreEmitDiagnostics(program).concat(emitResult.diagnostics);
 

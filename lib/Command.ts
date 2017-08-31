@@ -4,6 +4,8 @@ import * as Crypto from "crypto";
 import * as ChildProcess from "child_process";
 import { BuildDir, MakeRelativeToWorkingDir } from "./Util";
 
+export const DepDir = `${BuildDir}/dep`;
+
 export interface CommandData {
   /**Name used for creating the build/dep/Name.json file */
   Name: string;
@@ -18,6 +20,12 @@ export interface CommandData {
   Dependencies: string[];
 
   /** The input files of the command */
+  Inputs?: string[];
+
+  /** The output files of the command */
+  Outputs?: string[];
+
+  /** Any other files of the command */
   Files?: string[];
 }
 
@@ -37,11 +45,10 @@ export class CommandInfo<DataType extends CommandData> {
     let hash = Crypto.createHash("sha1");
     hash.update(JSON.stringify(data));
     let value = hash.digest("hex");
-    let depDir = Path.join(BuildDir, "dep");
-    this.DependencyFile = `${depDir}/${data.Name}_${value}.json`;
+    this.DependencyFile = `${DepDir}/${data.Name}_${value}.json`;
 
     //In case data.name had some / in it, we need to re-calculate the dir
-    depDir = Path.dirname(this.DependencyFile);
+    let depDir = Path.dirname(this.DependencyFile);
     directory(depDir);
 
     this.AllDependencies = [depDir].concat(data.Dependencies);
@@ -53,7 +60,7 @@ export class CommandInfo<DataType extends CommandData> {
       let depStr: string = Fs.readFileSync(this.DependencyFile, 'utf8');
       try {
         let dep = <CommandData>JSON.parse(depStr);
-        let previousDependencies = dep.Dependencies.concat(dep.Files);
+        let previousDependencies = dep.Dependencies.concat(dep.Inputs).concat(dep.Outputs).concat(dep.Files);
         let existingDependencies = previousDependencies.filter(d => d && Fs.existsSync(d));
         this.AllDependencies = this.AllDependencies.concat(existingDependencies);
       } catch (e) {
@@ -64,10 +71,19 @@ export class CommandInfo<DataType extends CommandData> {
     }
   }
 
-  Write(files?: string[]) {
+  Write(inputs?: string[], outputs?: string[], files?: string[]) {
+    if (inputs) {
+      this.Data.Inputs = inputs;
+    }
+
+    if (outputs) {
+      this.Data.Outputs = outputs;
+    }
+
     if (files) {
       this.Data.Files = files;
     }
+
     Fs.writeFileSync(this.DependencyFile, JSON.stringify(this.Data, null, ' '));
   }
 }

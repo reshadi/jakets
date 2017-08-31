@@ -5,7 +5,7 @@ import * as ChildProcess from "child_process";
 import * as Util from "./Util";
 import * as Jakets from "./Jakets";
 // import * as Jake from "../Jake";
-// import * as Command from "./Command";
+import * as Command from "./Command";
 import * as Tsc from "./TscTask";
 
 let jakeCmd = Util.GetNodeCommand("jake", "jake --version", "jake/bin/cli.js");
@@ -70,7 +70,7 @@ function CompileJakefile(targetDir: string): Jakets.TaskType {
     let depStr: string = Fs.readFileSync(jakefileDepJson.GetName(), 'utf8');
     try {
       let dep = <Jakets.CommandData>JSON.parse(depStr);
-      computedDependencies = dep.Dependencies.concat(dep.Files);
+      computedDependencies = dep.Dependencies.concat(dep.Inputs).concat(dep.Outputs).concat(dep.Files);
     } catch (e) {
       console.error(`Invalid dep file: ${jakefileDepJson}`);
     }
@@ -91,10 +91,11 @@ JAKE_TASKS += ${taskList.join(" ")}
 Jakefile.js: $(wildcard ${computedDependencies.join(" ")})
 
 clean:
-\trm -f $(wildcard ${
+\trm -f -r $(wildcard ${
       computedDependencies
         .filter(f => /[.]ts$/.test(f) && !/node_modules|[.]d[.]ts/.test(f))
-        .map(f => f.replace(".ts", ".js") + " " + f.replace(".ts", ".dep.*"))
+        .map(f => f.replace(".ts", ".js") /* + " " + f.replace(".ts", ".dep.*") */)
+        .concat([jakefileDepMk, Command.DepDir])
         .join(" ")
       })
 `;

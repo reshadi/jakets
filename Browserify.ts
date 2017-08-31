@@ -44,11 +44,12 @@ export function BrowserifyTask(
   , tsargs?: string
   , options?: string
 ): string {
-  let depInfo = new CommandInfo({
+  let depInfo = new CommandInfo(<any>{
     Name: name,
     Dir: Path.resolve(Util.LocalDir),
-    Output: output,
+    Command: "browserify",
     Inputs: inputs,
+    Outputs: [output],
     IsRelease: isRelease,
     Tsargs: tsargs,
     Options: options,
