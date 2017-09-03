@@ -32,7 +32,7 @@ export type TaskAction = (this: Task, ...params: any[]) => Promise<any>;
 
 let LocalTaskId = 0;
 export class Task {
-  private readonly TaskImplementation: ITask;
+  protected readonly TaskImplementation: ITask;
 
   protected GetTaskCreatorFunc(): TaskCreatorFunc {
     return task;
@@ -81,7 +81,7 @@ export class Task {
   }
 
   GetName(): string {
-    return this.TaskImplementation.fullName;
+    return this.TaskImplementation.name;
   }
 
   static NormalizeDedpendencies(dependencies: TaskDependencies): string[] {

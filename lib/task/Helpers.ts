@@ -1,5 +1,6 @@
 import * as T from "./Task";
 import * as G from "./GlobalTask";
+import * as GNs from "./GlobalTaskNs";
 import * as F from "./FileTask";
 import * as D from "./DirectoryTask";
 
@@ -32,7 +33,7 @@ export function GlobalTask(globalName: string, dependencies?: T.TaskDependencies
 
 /** Creates a global task with a namespace, i.e. ns:taskName */
 export function GlobalTaskNs(globalName: string, namespace: string, dependencies?: T.TaskDependencies, action?: T.TaskAction): G.GlobalTask {
-  return Prepare(new G.GlobalTask(globalName, namespace), dependencies, action);
+  return Prepare(new GNs.GlobalTaskNs(globalName, namespace), dependencies, action);
 }
 
 /** Creates a task for checking files freshnes */
