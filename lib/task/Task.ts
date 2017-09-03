@@ -6,6 +6,7 @@ export const ParallelLimit: number = parseInt(process.env.ParallelLevel) || Os.c
 
 interface ITask {
   name?: string;
+  fullName?: string;
   prereqs?: string[];
   action?: (...params: any[]) => any;
   taskStatus?: string;
@@ -80,7 +81,7 @@ export class Task {
   }
 
   GetName(): string {
-    return this.TaskImplementation.name;
+    return this.TaskImplementation.fullName;
   }
 
   static NormalizeDedpendencies(dependencies: TaskDependencies): string[] {
