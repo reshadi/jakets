@@ -85,7 +85,7 @@ async function UpdateVersionRangeTags(runRemoveCmds?: boolean) {
   }
 
   let versionChangeInfo = await GetVersionChangeInfo();
-  if (versionChangeInfo.Current && versionChangeInfo.Previous) {
+  if (versionChangeInfo.Current && versionChangeInfo.Previous && versionChangeInfo.Hash) {
     //Current head is a version change
     if (!version2hash.get(versionChangeInfo.Current)) {
       //We don't have a tag for the current version;
@@ -124,7 +124,7 @@ async function UpdateVersionRangeTags(runRemoveCmds?: boolean) {
 
   for (let range of ranges) {
     let maxVer = Semver.maxSatisfying(versions, range);
-    if (version2hash.get(range) !== version2hash.get(maxVer)) {
+    if (maxVer && version2hash.get(range) !== version2hash.get(maxVer)) {
       localCmds.push(`git tag -f ${range} ${maxVer}`);
       remoteCmds.push(`git push ${writableRemote} :refs/tags/${range}`);
     }
