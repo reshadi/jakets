@@ -1,6 +1,6 @@
 {
   "name": "jakets",
-  "version": "5.19.4",
+  "version": "5.19.5",
   "description": "Jake with TypeScript.",
   "main": "Jakefile.js",
   "scripts": {
