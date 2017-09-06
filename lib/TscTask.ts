@@ -62,7 +62,10 @@ export function TscTask(
     console.timeEnd(sectionName);
 
     if (exitCode > 0) {
-      throw `>> TypeScript compilation failed for ${name}`;
+      const msg  = `>> TypeScript compilation failed for ${name}`;
+      this.Log(msg, 0);
+      complete(); //End the whole compilation
+      throw msg;
     }
   });
 }
