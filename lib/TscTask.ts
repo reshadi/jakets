@@ -64,8 +64,9 @@ export function TscTask(
     if (exitCode > 0) {
       const msg  = `>> TypeScript compilation failed for ${name}`;
       this.Log(msg, 0);
-      fail(msg, exitCode); //End the whole compilation
-      throw msg;
+      process.exit(exitCode);
+      // fail(msg, exitCode); //End the whole compilation
+      // throw msg;
     }
   });
 }

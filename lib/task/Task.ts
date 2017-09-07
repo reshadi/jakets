@@ -103,7 +103,7 @@ export class Task {
         .then(value => this.complete())
         .catch(reason => {
           Log(reason, 0);
-          complete();
+          fail(reason, 1);
         });
     };
     return this;
