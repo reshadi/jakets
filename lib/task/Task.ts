@@ -12,6 +12,7 @@ interface ITask {
   taskStatus?: string;
   async?: boolean;
   description?: string;
+  parallelLimit?: number;
 
   addListener?(event: string, listener: Function): this;
   removeListener?(event: string, listener: Function): this;
@@ -127,6 +128,11 @@ export class Task {
   Description(description: string): this {
     //Based on https://github.com/jakejs/jake/blob/master/lib/jake.js#L223
     this.TaskImplementation.description = description;
+    return this;
+  }
+
+  ParallelLimit(parallelLimit: number): this {
+    this.TaskImplementation.parallelLimit =parallelLimit;
     return this;
   }
 
