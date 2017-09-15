@@ -29,7 +29,7 @@ export interface CommandData {
   Files?: string[];
 }
 
-export class CommandInfo<DataType extends CommandData> {
+export class CommandInfo<DataType extends CommandData = CommandData> {
   /** The original command data */
   Data: DataType;
 

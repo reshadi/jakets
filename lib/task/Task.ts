@@ -1,3 +1,4 @@
+import * as Fs from "fs";
 import * as Os from "os";
 import "jake";
 import { Log } from "../Log";
@@ -89,7 +90,36 @@ export class Task {
     return dependencies.map(t => typeof t === "string" ? t : t.GetName());
   }
 
+  protected ValidateDependencies(dependencies: TaskDependencies) {
+    let currTask = <any>this.TaskImplementation;
+    if (currTask instanceof jake.FileTask || currTask instanceof jake.DirectoryTask) {
+      dependencies.forEach(d => {
+        if (typeof d === "string") {
+          let t = jake.Task[d];
+          if (
+            (t && !(t instanceof jake.FileTask))
+            || (
+              Fs.existsSync(d)
+              && Fs.existsSync(this.GetName())
+              && Fs.statSync(d).mtime > Fs.statSync(this.GetName()).mtime
+            )
+          ) {
+            console.error(`file ${this.GetName()} depends on non-file or will be recreated based on ${d}`);
+          }
+
+        } else {
+          let t = d.TaskImplementation;
+          if (!(t instanceof jake.FileTask)) {
+            console.error(`file ${this.GetName()} depends on non-file ${d}`);
+          }
+        }
+      });
+    }
+  }
+
   DependsOn(dependencies: TaskDependencies): this {
+    // this.ValidateDependencies(dependencies);
+
     //Based on https://github.com/jakejs/jake/blob/master/lib/jake.js#L203
     this.TaskImplementation.prereqs = this.TaskImplementation.prereqs.concat(Task.NormalizeDedpendencies(dependencies));
     return this;
@@ -132,7 +162,7 @@ export class Task {
   }
 
   ParallelLimit(parallelLimit: number): this {
-    this.TaskImplementation.parallelLimit =parallelLimit;
+    this.TaskImplementation.parallelLimit = parallelLimit;
     return this;
   }
 
