@@ -6,6 +6,11 @@ import { Exec } from "./Exec";
 
 //We use the following to better clarity what we are using/checking
 export var LocalDir = process.cwd();
+if (/^win/.test(process.platform) && /^[a-z]:/.test(LocalDir)) {
+  console.log(`LocalDir: ${LocalDir}`);
+  LocalDir = LocalDir[0].toUpperCase() + LocalDir.substr(1);
+  console.log(`LocalDir: ${LocalDir}`);
+}
 
 export function MakeRelativeToWorkingDir(fullpath: string): string {
   if (!fullpath) {

@@ -60,7 +60,7 @@ export class CommandInfo<DataType extends CommandData = CommandData> {
       let depStr: string = Fs.readFileSync(this.DependencyFile, 'utf8');
       try {
         let dep = <CommandData>JSON.parse(depStr);
-        let previousDependencies = dep.Dependencies.concat(dep.Inputs).concat(dep.Outputs).concat(dep.Files);
+        let previousDependencies = dep.Dependencies.concat(dep.Inputs).concat(dep.Files);
         let existingDependencies = previousDependencies.filter(d => d && Fs.existsSync(d));
         this.AllDependencies = this.AllDependencies.concat(existingDependencies);
       } catch (e) {
