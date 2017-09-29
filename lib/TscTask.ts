@@ -37,12 +37,22 @@ export function TscTask(
     if (!excludeExternals) {
       program = Typescript.createProgram(allFilenames, options);
       if (allFilenames.length !== program.getSourceFiles().length) {
-        throw "Unexpected new sources files discovered";
+        let newAllFilenames = program.getSourceFiles().map(f => Util.MakeRelativeToWorkingDir(f.fileName));
+        let diff1 = allFilenames.filter(f => newAllFilenames.indexOf(f) === -1);
+        let diff2 = newAllFilenames.filter(f => allFilenames.indexOf(f) === -1);
+        this.Log(`
+Unexpected new sources files discovered 
+<<<
+${diff1.join("\n")}
+>>>
+${diff2.join("\n")}
+`, 0);
+        process.exit(1);
       }
     }
 
     let emitResult = program.emit();
-    let outputs = emitResult && emitResult.emittedFiles && emitResult.emittedFiles.map(Util.MakeRelativeToWorkingDir); 
+    let outputs = emitResult && emitResult.emittedFiles && emitResult.emittedFiles.map(Util.MakeRelativeToWorkingDir);
     depInfo.Write(allFilenames, outputs);
 
     let allDiagnostics = Typescript.getPreEmitDiagnostics(program).concat(emitResult.diagnostics);
@@ -62,7 +72,7 @@ export function TscTask(
     console.timeEnd(sectionName);
 
     if (exitCode > 0) {
-      const msg  = `>> TypeScript compilation failed for ${name}`;
+      const msg = `>> TypeScript compilation failed for ${name}`;
       this.Log(msg, 0);
       process.exit(exitCode);
       // fail(msg, exitCode); //End the whole compilation
