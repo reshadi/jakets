@@ -65,7 +65,9 @@ function CompileJakefile(targetDir: string): Jakets.TaskType {
     // outDir: Jakets.MakeRelativeToWorkingDir("build")
   });
 
-  Jakets.FileTask(jakefileJs, [jakefileDepJson]);
+  Jakets.FileTask(jakefileJs, [jakefileDepJson], async function () {
+    this.Log(`Generated: ${this.GetName()}`, 1);
+  });
 
   return Jakets.FileTask(jakefileDepMk, [jakefileJs], async function () {
     let computedDependencies: string[];
