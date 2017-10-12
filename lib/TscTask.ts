@@ -41,13 +41,15 @@ export function TscTask(
         let diff1 = allFilenames.filter(f => newAllFilenames.indexOf(f) === -1);
         let diff2 = newAllFilenames.filter(f => allFilenames.indexOf(f) === -1);
         this.Log(`
-Unexpected new sources files discovered 
-<<<
+WARNING: Unexpected new source files discovered when compiling
+>^^ top files
+${filenames.join("\n")}
+>-- reachable files removed
 ${diff1.join("\n")}
->>>
+>++ reachable files added
 ${diff2.join("\n")}
 `, 0);
-        process.exit(1);
+        // process.exit(1); //Only report but still try to compile!
       }
     }
 
