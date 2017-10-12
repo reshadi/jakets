@@ -14,7 +14,7 @@ CURRENT__DIR := $(subst //,,$(dir $(firstword $(MAKEFILE_LIST)))/)
 #overwritable values
 LOG_LEVEL?=0
 PARALLEL_LEVEL?=0
-EXPECTED_NODE_VERSION?=v8.4.0
+EXPECTED_NODE_VERSION?=v8.7.0
 NODE__DIR?=./build/nodejs
 
 ###################################################################################################
