@@ -8,5 +8,9 @@
   },
   "files": [
     "Jakefile.ts"
+  ],
+  "include": [
+    "lib/**/*.ts",
+    "tests/**/*.ts"
   ]
 }
