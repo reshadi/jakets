@@ -25,7 +25,7 @@ export function MakeRelativeToWorkingDir(fullpath: string): string {
 
 
 export function CreateMakeRelative(dirname: string) {
-  return (path: string) => MakeRelativeToWorkingDir(Path.join(dirname, path));
+  return (path: string) => MakeRelativeToWorkingDir(Path.isAbsolute(path) ? path : Path.join(dirname, path));
 }
 
 export var JaketsDir = MakeRelativeToWorkingDir(__dirname.replace("bootstrap", ""));

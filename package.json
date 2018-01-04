@@ -1,6 +1,6 @@
 {
   "name": "jakets",
-  "version": "6.0.4",
+  "version": "6.0.5",
   "description": "Jake with TypeScript.",
   "main": "Jakefile.js",
   "scripts": {
@@ -21,7 +21,7 @@
     "@types/semver": "^5.4.0",
     "jake": "^8.0.15",
     "semver": "^5.4.1",
-    "tslib": "^1.8.0",
+    "tslib": "^1.8.1",
     "typescript": "^2.5.2"
   }
 }
