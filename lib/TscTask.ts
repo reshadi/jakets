@@ -55,7 +55,6 @@ ${diff2.join("\n")}
 
     let emitResult = program.emit();
     let outputs = emitResult && emitResult.emittedFiles && emitResult.emittedFiles.map(Util.MakeRelativeToWorkingDir);
-    depInfo.Write(allFilenames, outputs);
 
     let allDiagnostics = Typescript.getPreEmitDiagnostics(program).concat(emitResult.diagnostics);
 
@@ -80,6 +79,7 @@ ${diff2.join("\n")}
       // fail(msg, exitCode); //End the whole compilation
       // throw msg;
     }
+    depInfo.Write(allFilenames, outputs);
   });
 }
 
