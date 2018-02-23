@@ -31,3 +31,6 @@ export const TopTask = Jakets
     this.Log(">>>Finished tests", 0);
   })
   ;
+
+console.log(`name: ${Jakets.CurrentPackageName}`);
+console.log(`version: ${Jakets.CurrentPackageVersion}`);

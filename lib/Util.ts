@@ -94,18 +94,20 @@ export function CreateNodeExec(
   return CreateExec(cmdName);
 }
 
-export function GetPackageVersion(packageFilepath: string): string {
-  let version: string;
+export function GetPackage<T extends object = { name: string; version: string; }>(packageFilepath: string): T {
+  let packageObj: T;
   try {
     let content = Fs.readFileSync(packageFilepath, { encoding: "utf8" });
-    let parsed = <{ version: string; }>JSON.parse(content);
-    version = parsed.version;
-
+    packageObj = JSON.parse(content);
   } catch (e) {
-    console.error(`Could not read version from ${packageFilepath}`);
-    version = "0.0.0";
+    console.error(`Could not read package ${packageFilepath}`);
+    packageObj = <T>{};
   }
-  return version;
+  return packageObj;
 }
+
 export const CurrentPackageJson = MakeRelativeToWorkingDir("package.json");
-export const CurrentPackageVersion = GetPackageVersion(CurrentPackageJson);
+
+const CurrentPackage = GetPackage(CurrentPackageJson);
+export const CurrentPackageVersion = CurrentPackage.version;
+export const CurrentPackageName = CurrentPackage.name;
