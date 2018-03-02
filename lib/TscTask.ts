@@ -16,6 +16,9 @@ export function TscTask(
   , filenames: string[]
   , dependencies: Task.TaskDependencies
   , options: Typescript.CompilerOptions
+  , emitOptions?: {
+    customTransformers?: Typescript.CustomTransformers
+  }
   , excludeExternals?: boolean
 ): FileTask {
 
@@ -53,7 +56,7 @@ ${diff2.join("\n")}
       }
     }
 
-    let emitResult = program.emit();
+    let emitResult = program.emit(undefined, undefined, undefined, undefined, emitOptions && emitOptions.customTransformers);
     let outputs = emitResult && emitResult.emittedFiles && emitResult.emittedFiles.map(Util.MakeRelativeToWorkingDir);
 
     let allDiagnostics = Typescript.getPreEmitDiagnostics(program).concat(emitResult.diagnostics);
