@@ -92,7 +92,7 @@ function CompileJakefile(targetDir: string): Jakets.TaskType {
     var content = `
 JAKE_TASKS += ${taskList.join(" ")}
 
-Jakefile.js: $(wildcard ${computedDependencies.join(" ")})
+#Jakefile.js: $(wildcard ${computedDependencies.join(" ")})
 
 clean:
 \trm -f -r $(wildcard ${

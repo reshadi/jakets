@@ -18,10 +18,10 @@
   "homepage": "https://github.com/reshadi/jakets",
   "dependencies": {
     "@types/jake": "^0.0.30",
-    "@types/semver": "^5.4.0",
+    "@types/semver": "^5.5.0",
     "jake": "^8.0.15",
-    "semver": "^5.4.1",
-    "tslib": "^1.8.1",
-    "typescript": "^2.5.2"
+    "semver": "^5.5.0",
+    "tslib": "^1.9.0",
+    "typescript": "^2.7.2"
   }
 }

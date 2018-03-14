@@ -88,9 +88,11 @@ ifneq ($(JAKETS__DIR),$(CURRENT__DIR))
 endif
 
 jts_run_jake: jts_compile_jake
+	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
 	$(JAKE) $(JAKE__PARAMS)
 
 j-%: jts_compile_jake
+	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
 	$(JAKE) $* $(JAKE__PARAMS)
 
 #The following is auto generated to make sure local Jakefile.ts dependencies are captured properly
@@ -100,7 +102,8 @@ $(JAKE_TASKS):%: j-%
 
 jts_setup: jts_compile_jake
 
-jts_compile_jake: $(JAKETS_JAKEFILE__JS) $(LOCAL_JAKEFILE__JS)
+jts_compile_jake: $(JAKETS_JAKEFILE__JS)
+# jts_compile_jake: $(JAKETS_JAKEFILE__JS) $(LOCAL_JAKEFILE__JS)
 
 #
 ###################################################################################################
@@ -110,8 +113,8 @@ jts_compile_jake: $(JAKETS_JAKEFILE__JS) $(LOCAL_JAKEFILE__JS)
 # setup in jakets directory
 #
 
-$(LOCAL_JAKEFILE__JS): $(JAKE) $(JAKETS_JAKEFILE__JS) $(filter-out Jakefile.dep.mk, $(MAKEFILE_LIST))
-	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
+# $(LOCAL_JAKEFILE__JS): $(JAKE) $(JAKETS_JAKEFILE__JS) $(filter-out Jakefile.dep.mk, $(MAKEFILE_LIST))
+# 	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
 
 $(JAKETS_JAKEFILE__JS): $(JAKE) $(TSC) $(wildcard $(JAKETS__DIR)/*.ts)
 	$(TSC) -p $(JAKETS__DIR)/tsconfig.json
@@ -137,6 +140,7 @@ $(TS_NODE): $(NODE_MODULES__UPDATE_INDICATOR)
 
 $(NODE_MODULES__UPDATE_INDICATOR): $(NODE_BIN__FILE) $(wildcard package.json)
 	$(NPM) update --no-save
+	$(NPM) dedup
 	touch $@
 
 _jts_get_node: $(NODE_BIN__FILE)

@@ -1,6 +1,6 @@
 node_modules/
 
-*.js
+#*.js
 *.js.map
 *.dep.json
 *.dep.mk
