@@ -17,6 +17,7 @@ export function TscTask(
   , dependencies: Task.TaskDependencies
   , options: Typescript.CompilerOptions
   , emitOptions?: {
+    programEmit?: (program: Typescript.Program) => Typescript.EmitResult,
     customTransformers?: Typescript.CustomTransformers
   }
   , excludeExternals?: boolean
@@ -56,7 +57,11 @@ ${diff2.join("\n")}
       }
     }
 
-    let emitResult = program.emit(undefined, undefined, undefined, undefined, emitOptions && emitOptions.customTransformers);
+    let emitResult = (emitOptions && emitOptions.programEmit)
+      ? emitOptions.programEmit(program)
+      : program.emit(undefined, undefined, undefined, undefined, emitOptions && emitOptions.customTransformers)
+      ;
+
     let outputs = emitResult && emitResult.emittedFiles && emitResult.emittedFiles.map(Util.MakeRelativeToWorkingDir);
 
     let allDiagnostics = Typescript.getPreEmitDiagnostics(program).concat(emitResult.diagnostics);
