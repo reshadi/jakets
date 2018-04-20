@@ -60,7 +60,13 @@ export class CommandInfo<DataType extends CommandData = CommandData> {
       let depStr: string = Fs.readFileSync(this.DependencyFile, 'utf8');
       try {
         let dep = <CommandData>JSON.parse(depStr);
-        let previousDependencies = dep.Dependencies.concat(dep.Inputs).concat(dep.Files);
+        let previousDependencies = dep.Dependencies;
+        if (dep.Inputs) {
+          previousDependencies = previousDependencies.concat(dep.Inputs);
+        }
+        if (dep.Files) {
+          previousDependencies = previousDependencies.concat(dep.Files);
+        }
         let existingDependencies = previousDependencies.filter(d => d && Fs.existsSync(d));
         this.AllDependencies = this.AllDependencies.concat(existingDependencies);
       } catch (e) {
@@ -88,7 +94,7 @@ export class CommandInfo<DataType extends CommandData = CommandData> {
   }
 }
 
-export function ExtractFilesAndUpdateDependencyInfo<T extends CommandData>(cmdInfo: CommandInfo<T>, error, stdout: string, stderror) {
+export function ExtractFilesAndUpdateDependencyInfo<T extends CommandData>(cmdInfo: CommandInfo<T>, error: any, stdout: string, stderror: string) {
   if (error) {
     console.error(`
 ${error}

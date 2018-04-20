@@ -69,7 +69,7 @@ ${diff2.join("\n")}
     allDiagnostics.forEach(diagnostic => {
       let message = Typescript.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
       if (diagnostic.file) {
-        let { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
+        let { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start || 0);
         message = `${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`;
       }
       console.warn(message);

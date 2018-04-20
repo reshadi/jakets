@@ -36,7 +36,7 @@ var NodeDir = ""; //TODO: try to detect the correct path
 var Node = NodeDir + "node";
 
 let DefaultSearchPath = [LocalDir, JaketsDir];
-export function FindModulePath(modulePath: string, additionalLocations?: string[]): string {
+export function FindModulePath(modulePath: string, additionalLocations?: string[]): string | null {
   let searchDirs = DefaultSearchPath;
   if (additionalLocations) {
     searchDirs = searchDirs.concat(additionalLocations)
@@ -73,7 +73,7 @@ export function GetNodeCommand(
 }
 
 export function CreateExec(cmd: string) {
-  return function (args: string | string[], callback, isSilent?: boolean) {
+  return function (args: string | string[], callback: (...args: any[]) => void, isSilent?: boolean) {
     let argsSet: string[];
     if (Array.isArray(args)) {
       argsSet = args;

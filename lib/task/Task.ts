@@ -3,21 +3,22 @@ import * as Os from "os";
 import "jake";
 import { Log } from "../Log";
 
-export const ParallelLimit: number = parseInt(process.env.ParallelLevel) || Os.cpus().length;
+export const ParallelLimit: number = (process.env.ParallelLimit !== void 0 && parseInt(process.env.ParallelLimit)) || Os.cpus().length;
 
 interface ITask {
   name?: string;
   fullName?: string;
   prereqs?: string[];
-  action?: (...params: any[]) => any;
+  action?: (this: ITask, ...params: any[]) => any;
   taskStatus?: string;
   async?: boolean;
   description?: string;
   parallelLimit?: number;
 
-  addListener?(event: string, listener: Function): this;
-  removeListener?(event: string, listener: Function): this;
-  invoke?(): void;
+  addListener(event: string, listener: Function): this;
+  removeListener(event: string, listener: Function): this;
+  invoke(): void;
+  complete(): void;
 }
 
 type JakeTasks = jake.Task | jake.FileTask | jake.DirectoryTask;
@@ -37,11 +38,11 @@ export class Task {
   protected readonly TaskImplementation: ITask;
 
   protected GetTaskCreatorFunc(): TaskCreatorFunc {
-    return task;
+    return <any>task;
   }
 
   protected CreateTask(taskName: string, ns?: string): ITask {
-    let taskImp: ITask;
+    let taskImp!: ITask;
     let taskFunc = this.GetTaskCreatorFunc();
     let defaultOptions: JakeTaskOptions = {
       async: true,
@@ -74,16 +75,16 @@ export class Task {
       : `${taskName}_task_${++LocalTaskId}_${Math.floor(100000 * Math.random())}`;
 
     let taskImp = this.TaskImplementation = this.CreateTask(fullTaskName, ns);
-    let defaultAction = taskImp.action;
-    if (defaultAction) {
+    if (taskImp.action) {
       //This type of task adds default action, so either call it, or make the task non-async
       //Assert this is a directory task!
+      let defaultAction = taskImp.action;
       this.Action(async () => defaultAction.apply(taskImp, arguments));
     }
   }
 
   GetName(): string {
-    return this.TaskImplementation.name;
+    return this.TaskImplementation.name || "";
   }
 
   static NormalizeDedpendencies(dependencies: TaskDependencies): string[] {
@@ -95,7 +96,7 @@ export class Task {
     if (currTask instanceof jake.FileTask || currTask instanceof jake.DirectoryTask) {
       dependencies.forEach(d => {
         if (typeof d === "string") {
-          let t = jake.Task[d];
+          let t = (<{ [name: string]: Task }><any>jake.Task)[d];
           if (
             (t && !(t instanceof jake.FileTask))
             || (
@@ -120,8 +121,10 @@ export class Task {
   DependsOn(dependencies: TaskDependencies): this {
     // this.ValidateDependencies(dependencies);
 
+    let normalizedPreReqs = Task.NormalizeDedpendencies(dependencies);
     //Based on https://github.com/jakejs/jake/blob/master/lib/jake.js#L203
-    this.TaskImplementation.prereqs = this.TaskImplementation.prereqs.concat(Task.NormalizeDedpendencies(dependencies));
+    let currPreReqs = this.TaskImplementation.prereqs;
+    this.TaskImplementation.prereqs = currPreReqs ? currPreReqs.concat(normalizedPreReqs) : normalizedPreReqs;
     return this;
   }
 
@@ -172,7 +175,7 @@ export class Task {
       (message || "")
       + (
         showLongForm
-          ? `[${t.taskStatus} => ${this.GetName()}: ['${t.prereqs.join("', '")}']]`
+          ? `[${t.taskStatus} => ${this.GetName()}: ['${t.prereqs && t.prereqs.join("', '")}']]`
           : `[${this.GetName()}]`
       )
       , level

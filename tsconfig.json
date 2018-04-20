@@ -4,7 +4,8 @@
     "target": "es2015",
     "inlineSourceMap": true,
     "noEmitOnError": true,
-    "importHelpers": true
+    "importHelpers": true,
+    "strict": true,
   },
   "files": [
     "Jakefile.ts"

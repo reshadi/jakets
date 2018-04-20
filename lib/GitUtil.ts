@@ -96,7 +96,7 @@ async function UpdateVersionRangeTags(runRemoveCmds?: boolean) {
   }
 
   for (let version of versions) {
-    let range: string;
+    let range: string = "";
     for (let r of ranges) {
       if (Semver.satisfies(version, r)) {
         range = r;
@@ -110,7 +110,7 @@ async function UpdateVersionRangeTags(runRemoveCmds?: boolean) {
   }
 
   let remotes = await GetRemoteRepoInfo();
-  let writableRemote: string; //TODO: can we check each tag in each remote and decide to update or not?
+  let writableRemote: string = ""; //TODO: can we check each tag in each remote and decide to update or not?
   for (let remote of remotes) {
     if (
       /^ssh:/.test(remote.Url) //ssh has highest priority

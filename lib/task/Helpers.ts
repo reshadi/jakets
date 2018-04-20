@@ -4,7 +4,7 @@ import * as GNs from "./GlobalTaskNs";
 import * as F from "./FileTask";
 import * as D from "./DirectoryTask";
 
-function Prepare<T extends T.Task>(task: T, dependencies: T.TaskDependencies, action: T.TaskAction): T {
+function Prepare<T extends T.Task>(task: T, dependencies?: T.TaskDependencies, action?: T.TaskAction): T {
   if (dependencies) {
     task.DependsOn(dependencies);
   }
@@ -43,5 +43,5 @@ export function FileTask(filename: string, dependencies?: T.TaskDependencies, ac
 
 /** Creates a task for creating missing directory */
 export function DirectoryTask(dirname: string, dependencies?: T.TaskDependencies): D.DirectoryTask {
-  return Prepare(new D.DirectoryTask(dirname), dependencies, null);
+  return Prepare(new D.DirectoryTask(dirname), dependencies);
 }

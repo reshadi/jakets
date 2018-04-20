@@ -1,7 +1,7 @@
 import * as ChildProcess from "child_process";
 import { Log } from "./Log";
 
-export function Exec(cmd: string | string[], callback, isSilent?: boolean) {
+export function Exec(cmd: string | string[], callback: (...args: any[]) => void, isSilent?: boolean) {
   let cmdArray: string[];
   if (Array.isArray(cmd)) {
     cmdArray = cmd;

@@ -61,6 +61,7 @@ function CompileJakefile(targetDir: string): Jakets.TaskType {
     inlineSourceMap: true,
     noEmitOnError: true,
     importHelpers: true,
+    // string: true
     // baseUrl: "./node_module",
     // outDir: Jakets.MakeRelativeToWorkingDir("build")
   });
@@ -70,11 +71,11 @@ function CompileJakefile(targetDir: string): Jakets.TaskType {
   });
 
   return Jakets.FileTask(jakefileDepMk, [jakefileJs], async function () {
-    let computedDependencies: string[];
+    let computedDependencies: string[] = [];
     let depStr: string = Fs.readFileSync(jakefileDepJson.GetName(), 'utf8');
     try {
       let dep = <Jakets.CommandData>JSON.parse(depStr);
-      computedDependencies = dep.Dependencies.concat(dep.Inputs).concat(dep.Outputs).concat(dep.Files);
+      computedDependencies = dep.Dependencies.concat(dep.Inputs || []).concat(dep.Outputs || []).concat(dep.Files || []);
     } catch (e) {
       console.error(`Invalid dep file: ${jakefileDepJson}`);
     }
@@ -83,7 +84,7 @@ function CompileJakefile(targetDir: string): Jakets.TaskType {
     Jakets.Log(publicTasks.StdOut);
     let taskList = !publicTasks.StdErr && publicTasks.StdOut.match(/^jake ([-:\w]*)/gm);
     if (taskList) {
-      taskList = taskList.map(t => t.match(/\s.*/)[0]).filter(t => t.indexOf(":") === -1);
+      taskList = taskList.map(t => { let m = t.match(/\s.*/); return m ? m[0] : ""; }).filter(t => t.indexOf(":") === -1);
       Jakets.Log(`Found public tasks ${taskList}`, 1);
     } else {
       taskList = [];

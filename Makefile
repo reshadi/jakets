@@ -13,7 +13,7 @@ CURRENT__DIR := $(subst //,,$(dir $(firstword $(MAKEFILE_LIST)))/)
 
 #overwritable values
 LOG_LEVEL?=0
-PARALLEL_LEVEL?=0
+PARALLEL_LIMIT?=0
 EXPECTED_NODE_VERSION?=v9.3.0
 NODE__DIR?=./build/nodejs
 ###################################################################################################
@@ -69,7 +69,7 @@ endif
 NODE_MODULES__DIR=$(CURRENT__DIR)/node_modules
 NODE_MODULES__UPDATE_INDICATOR=$(NODE_MODULES__DIR)/.node_modules_updated
 JAKE = $(NODE_MODULES__DIR)/.bin/jake
-JAKE__PARAMS += LogLevel=$(LOG_LEVEL) ParallelLevel=$(PARALLEL_LEVEL)
+JAKE__PARAMS += LogLevel=$(LOG_LEVEL) ParallelLimit=$(PARALLEL_LIMIT)
 TSC = $(NODE_MODULES__DIR)/.bin/tsc
 TS_NODE = $(NODE_MODULES__DIR)/.bin/ts-node
 
@@ -170,7 +170,7 @@ $(NODE_DIST_LOCAL__FILE):
 .PHONY: show_vars
 show_vars: $(patsubst %,print-%, \
           LOG_LEVEL \
-          PARALLEL_LEVEL \
+          PARALLEL_LIMIT \
           JAKETS__DIR \
           CURRENT__DIR \
           JAKETS_JAKEFILE__JS \
