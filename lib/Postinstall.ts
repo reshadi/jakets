@@ -5,9 +5,9 @@ import { Log } from "./Log";
 import { ExecAsync } from "./Exec";
 
 async function PostInstall() {
-  try {
-    let topInitDir = process.env.INIT_CWD;
-    if (topInitDir) {
+  let topInitDir = process && process.env && process.env.INIT_CWD;
+  if (topInitDir) {
+    try {
       const topPackageJson = Path.join(topInitDir, "package.json");
       Log(`looking for jakets commands in ${topPackageJson}`, 0);
       let pkg = Util.GetPackage<{
@@ -41,9 +41,9 @@ async function PostInstall() {
         Log(`Updating jakets commands in ${topPackageJson}`, 0);
         Fs.writeFileSync(topPackageJson, JSON.stringify(pkg, null, "  "));
       }
+    } finally {
+      return ExecAsync(`touch ${Util.MakeRelativeToBaseDir(topInitDir, Util.NodeModulesUpdateIndicator)} `)
     }
-  } finally {
-    return ExecAsync(`touch ${Util.NodeModulesUpdateIndicator}`)
   }
 }
 
