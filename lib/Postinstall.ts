@@ -41,8 +41,8 @@ async function PostInstall() {
         Log(`Updating jakets commands in ${topPackageJson}`, 0);
         Fs.writeFileSync(topPackageJson, JSON.stringify(pkg, null, "  "));
       }
+      return ExecAsync(`touch ${Util.MakeRelativeToBaseDir(topInitDir, Util.NodeModulesUpdateIndicator)} `);
     } finally {
-      return ExecAsync(`touch ${Util.MakeRelativeToBaseDir(topInitDir, Util.NodeModulesUpdateIndicator)} `)
     }
   }
 }
