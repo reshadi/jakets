@@ -5,35 +5,40 @@ import { Log } from "./Log";
 import { Exec } from "./Exec";
 
 //We use the following to better clarity what we are using/checking
-export var LocalDir = process.cwd();
+export let LocalDir = process.cwd();
 if (/^win/.test(process.platform) && /^[a-z]:/.test(LocalDir)) {
-  console.log(`LocalDir: ${LocalDir}`);
+  Log(`LocalDir before windows fix: ${LocalDir}`, 0);
   LocalDir = LocalDir[0].toUpperCase() + LocalDir.substr(1);
-  console.log(`LocalDir: ${LocalDir}`);
+  Log(`LocalDir  after windows fix: ${LocalDir}`, 0);
 }
 
-export function MakeRelativeToWorkingDir(fullpath: string): string {
+export function MakeRelativeToBaseDir(baseDir: string, fullpath: string): string {
   if (!fullpath) {
     return fullpath;
   }
-  return Path.relative(LocalDir, fullpath)
+  return Path.relative(baseDir, fullpath)
     .replace(/\\/g, "/") //Convert \ to / on windows
     || '.' //in case the answer is empty
     ;
   // return path.relative(LocalDir, fullpath) || '.';
 }
 
+export function MakeRelativeToWorkingDir(fullpath: string): string {
+  return MakeRelativeToBaseDir(LocalDir, fullpath);
+}
 
 export function CreateMakeRelative(dirname: string) {
   return (path: string) => MakeRelativeToWorkingDir(Path.isAbsolute(path) ? path : Path.join(dirname, path));
 }
 
-export var JaketsDir = MakeRelativeToWorkingDir(__dirname.replace("bootstrap", ""));
+export const NodeModulesUpdateIndicator = MakeRelativeToWorkingDir("node_modules/.node_modules_updated");
 
-export var BuildDir: string = process.env.BUILD__DIR || MakeRelativeToWorkingDir("./build");
+export const JaketsDir = MakeRelativeToWorkingDir(__dirname.replace("bootstrap", ""));
 
-var NodeDir = ""; //TODO: try to detect the correct path
-var Node = NodeDir + "node";
+export const BuildDir: string = process.env.BUILD__DIR || MakeRelativeToWorkingDir("./build");
+
+const NodeDir = ""; //TODO: try to detect the correct path
+const Node = NodeDir + "node";
 
 let DefaultSearchPath = [LocalDir, JaketsDir];
 export function FindModulePath(modulePath: string, additionalLocations?: string[]): string | null {

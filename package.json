@@ -4,7 +4,13 @@
   "description": "Jake with TypeScript.",
   "main": "Jakefile.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build:compile": "tsc -p ./tsconfig.json",
+    "build:test": "jake jts_test",
+    "build": "npm run build:compile && npm run build:test",
+    "postinstall": "node ./lib/Postinstall.js",
+    "jakets:build": "jake --jakefile Jakefile.js",
+    "jakets:setup": "jake --jakefile Jakefile.js jts:setup",
+    "jakets": "npm run jakets:setup && npm run jakets:build"
   },
   "repository": {
     "type": "git",
