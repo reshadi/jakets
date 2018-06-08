@@ -19,7 +19,7 @@ async function PostInstall() {
       }>(topPackageJson);
       const scripts = pkg.scripts = pkg.scripts || {};
       const runJaketsSetup = `jake --jakefile ${Util.MakeRelativeToBaseDir(topInitDir, Path.join(Util.LocalDir, "Jakefile.js"))} jts:setup`;
-      const runJaketsBuild = `jake --jakefile ${Util.MakeRelativeToBaseDir(topInitDir, "./Jakefile.js")}`;
+      const runJaketsBuild = `jake --jakefile Jakefile.js`;
       const runJakets = `npm run jakets:setup && npm run jakets:build`;
 
       function CheckAndSet(fieldName: keyof Required<typeof pkg>["scripts"], value: string): boolean {
@@ -33,8 +33,8 @@ async function PostInstall() {
 
       if (
         [
-          CheckAndSet("jakets:build", runJaketsBuild),
           CheckAndSet("jakets:setup", runJaketsSetup),
+          CheckAndSet("jakets:build", runJaketsBuild),
           CheckAndSet("jakets", runJakets)
         ].some(needSave => needSave)
       ) {
