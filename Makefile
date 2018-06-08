@@ -14,7 +14,7 @@ CURRENT__DIR := $(subst //,,$(dir $(firstword $(MAKEFILE_LIST)))/)
 #overwritable values
 LOG_LEVEL?=0
 PARALLEL_LIMIT?=0
-EXPECTED_NODE_VERSION?=v9.3.0
+EXPECTED_NODE_VERSION?=v10.4.0
 NODE__DIR?=./build/nodejs
 ###################################################################################################
 # setup platform dependent variables
@@ -68,10 +68,10 @@ endif
 # NODE_MODULES__DIR=$(JAKETS__DIR)/node_modules
 NODE_MODULES__DIR=$(CURRENT__DIR)/node_modules
 NODE_MODULES__UPDATE_INDICATOR=$(NODE_MODULES__DIR)/.node_modules_updated
-JAKE = $(NODE_MODULES__DIR)/.bin/jake
+# JAKE = $(NODE_MODULES__DIR)/.bin/jake
 JAKE__PARAMS += LogLevel=$(LOG_LEVEL) ParallelLimit=$(PARALLEL_LIMIT)
-TSC = $(NODE_MODULES__DIR)/.bin/tsc
-TS_NODE = $(NODE_MODULES__DIR)/.bin/ts-node
+# TSC = $(NODE_MODULES__DIR)/.bin/tsc
+# TS_NODE = $(NODE_MODULES__DIR)/.bin/ts-node
 
 #One can use the following local file to overwrite the above settings
 -include LocalPaths.mk
@@ -87,13 +87,19 @@ ifneq ($(JAKETS__DIR),$(CURRENT__DIR))
   LOCAL_JAKEFILE__JS=Jakefile.js
 endif
 
-jts_run_jake: jts_compile_jake
-	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
-	$(JAKE) $(JAKE__PARAMS)
+jts_run_jake: $(NODE_MODULES__UPDATE_INDICATOR)
+	$(NPM) run jakets -- $(JAKE__PARAMS)
 
-j-%: jts_compile_jake
-	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
-	$(JAKE) $* $(JAKE__PARAMS)
+j-%: $(NODE_MODULES__UPDATE_INDICATOR)
+	$(NPM) run jakets -- $* $(JAKE__PARAMS)
+
+# jts_run_jake: jts_compile_jake
+# 	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
+# 	$(JAKE) $(JAKE__PARAMS)
+
+# j-%: jts_compile_jake
+# 	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
+# 	$(JAKE) $* $(JAKE__PARAMS)
 
 #The following is auto generated to make sure local Jakefile.ts dependencies are captured properly
 -include Jakefile.dep.mk
@@ -116,31 +122,35 @@ jts_compile_jake: $(JAKETS_JAKEFILE__JS)
 # $(LOCAL_JAKEFILE__JS): $(JAKE) $(JAKETS_JAKEFILE__JS) $(filter-out Jakefile.dep.mk, $(MAKEFILE_LIST))
 # 	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
 
-$(JAKETS_JAKEFILE__JS): $(JAKE) $(TSC) $(wildcard $(JAKETS__DIR)/*.ts)
-	$(TSC) -p $(JAKETS__DIR)/tsconfig.json
-	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
-	touch $@
+$(JAKETS_JAKEFILE__JS): $(NODE_MODULES__UPDATE_INDICATOR) $(wildcard $(JAKETS__DIR)/*.ts)
+	$(NPM) run build
 
-jts_get_tools: $(TSC)
+# $(JAKETS_JAKEFILE__JS): $(JAKE) $(TSC) $(wildcard $(JAKETS__DIR)/*.ts)
+# 	$(TSC) -p $(JAKETS__DIR)/tsconfig.json
+# 	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
+# 	touch $@
 
-$(JAKE): $(NODE_MODULES__UPDATE_INDICATOR)
-	if [ ! -f $@ ]; then $(NPM) install --no-save jake; fi
-	@echo found jake @ `node -e "console.log(require.resolve('jake'))"`
-	touch $@
+# jts_get_tools: $(TSC)
 
-$(TSC): $(NODE_MODULES__UPDATE_INDICATOR)
-	if [ ! -f $@ ]; then $(NPM) install --no-save typescript; fi
-	@echo found typescript @ `node -e "console.log(require.resolve('typescript'))"`
-	touch $@
+# $(JAKE): $(NODE_MODULES__UPDATE_INDICATOR)
+# 	if [ ! -f $@ ]; then $(NPM) install --no-save jake; fi
+# 	@echo found jake @ `node -e "console.log(require.resolve('jake'))"`
+# 	touch $@
 
-$(TS_NODE): $(NODE_MODULES__UPDATE_INDICATOR)
-	if [ ! -f $@ ]; then $(NPM) install --no-save ts-node; fi
-	@echo found ts-node @ `node -e "console.log(require.resolve('ts-node'))"`
-	touch $@
+# $(TSC): $(NODE_MODULES__UPDATE_INDICATOR)
+# 	if [ ! -f $@ ]; then $(NPM) install --no-save typescript; fi
+# 	@echo found typescript @ `node -e "console.log(require.resolve('typescript'))"`
+# 	touch $@
+
+# $(TS_NODE): $(NODE_MODULES__UPDATE_INDICATOR)
+# 	if [ ! -f $@ ]; then $(NPM) install --no-save ts-node; fi
+# 	@echo found ts-node @ `node -e "console.log(require.resolve('ts-node'))"`
+# 	touch $@
+
+_jts_npm_install: $(NODE_MODULES__UPDATE_INDICATOR)
 
 $(NODE_MODULES__UPDATE_INDICATOR): $(NODE_BIN__FILE) $(wildcard package.json)
-	$(NPM) update --no-save
-	$(NPM) dedup
+	$(NPM) install
 	touch $@
 
 _jts_get_node: $(NODE_BIN__FILE)
