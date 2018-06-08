@@ -32,5 +32,5 @@ export const TopTask = Jakets
   })
   ;
 
-console.log(`name: ${Jakets.CurrentPackageName}`);
-console.log(`version: ${Jakets.CurrentPackageVersion}`);
+Jakets.Log(`name: ${Jakets.CurrentPackageName}`);
+Jakets.Log(`version: ${Jakets.CurrentPackageVersion}`);
