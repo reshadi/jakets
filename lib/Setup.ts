@@ -48,7 +48,7 @@ let NpmUpdateTask = Jakets.FileTask(
   , [PackageJsonTask, Jakets.MakeRelativeToWorkingDir("Makefile")]
   , async function () {
     Jakets.Log(`updating file ${this.GetName()} from package file ${PackageJsonTask.GetName()}`, 1);
-    return Jakets.ExecAsync(`npm update --no-save && npm dedup && touch ${this.GetName()}`);
+    return Jakets.ExecAsync(`npm install && touch ${this.GetName()}`);
   }
 );
 
