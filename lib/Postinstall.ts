@@ -10,7 +10,7 @@ async function PostInstall() {
     try {
       const topPackageJson = Path.join(topInitDir, "package.json");
       Log(`looking for jakets commands in ${topPackageJson}`, 0);
-      let pkg = Util.GetPackage<{
+      let pkg = Util.LoadJson<{
         scripts?: {
           "jakets:setup"?: string;
           "jakets:build"?: string;

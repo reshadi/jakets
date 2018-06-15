@@ -99,13 +99,13 @@ export function CreateNodeExec(
   return CreateExec(cmdName);
 }
 
-export function GetPackage<T extends object = { name: string; version: string; }>(packageFilepath: string): T {
+export function LoadJson<T extends object = { name: string; version: string; }>(jsonFilepath: string): T {
   let packageObj: T;
   try {
-    let content = Fs.readFileSync(packageFilepath, { encoding: "utf8" });
+    let content = Fs.readFileSync(jsonFilepath, { encoding: "utf8" });
     packageObj = JSON.parse(content);
   } catch (e) {
-    console.error(`Could not read package ${packageFilepath}`);
+    console.error(`Could not read package ${jsonFilepath}`);
     packageObj = <T>{};
   }
   return packageObj;
@@ -113,6 +113,6 @@ export function GetPackage<T extends object = { name: string; version: string; }
 
 export const CurrentPackageJson = MakeRelativeToWorkingDir("package.json");
 
-const CurrentPackage = GetPackage(CurrentPackageJson);
+const CurrentPackage = LoadJson(CurrentPackageJson);
 export const CurrentPackageVersion = CurrentPackage.version;
 export const CurrentPackageName = CurrentPackage.name;
