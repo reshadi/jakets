@@ -8,8 +8,8 @@
     "build:test": "jake jts_test",
     "build": "npm run build:compile && npm run build:test",
     "postinstall": "node ./lib/Postinstall.js",
-    "jakets:build": "jake --jakefile Jakefile.js",
-    "jakets:setup": "jake --jakefile Jakefile.js jts:setup",
+    "jakets:build": "jake -t --jakefile Jakefile.js",
+    "jakets:setup": "jake -t --jakefile Jakefile.js jts:setup",
     "jakets": "npm run jakets:setup && npm run jakets:build"
   },
   "repository": {
