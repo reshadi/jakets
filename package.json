@@ -10,7 +10,7 @@
     "postinstall": "node ./lib/Postinstall.js",
     "jakets:build": "jake -t --jakefile Jakefile.js",
     "jakets:setup": "jake -t --jakefile Jakefile.js jts:setup",
-    "jakets": "npm run jakets:setup && npm run jakets:build"
+    "jakets": "npm run jakets:setup && node --stack-size=8000 `which npm` run jakets:build"
   },
   "repository": {
     "type": "git",
