@@ -33,7 +33,7 @@ export function CreateMakeRelative(dirname: string) {
 
 export const NodeModulesUpdateIndicator = MakeRelativeToWorkingDir("node_modules/.node_modules_updated");
 
-export const JaketsDir = MakeRelativeToWorkingDir(__dirname.replace("bootstrap", ""));
+export const JaketsDir = MakeRelativeToWorkingDir(Path.resolve(__dirname, ".."));
 
 export const BuildDir: string = process.env.BUILD__DIR || MakeRelativeToWorkingDir("./build");
 
