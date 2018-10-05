@@ -1,16 +1,13 @@
 {
   "name": "jakets",
-  "version": "7.1.2",
+  "version": "7.2.0",
   "description": "Jake with TypeScript.",
+  "bin": "./bin/cli.js",
   "main": "Jakefile.js",
   "scripts": {
     "build:compile": "tsc -p ./tsconfig.json",
     "build:test": "jake jts_test",
-    "build": "npm run build:compile && npm run build:test",
-    "postinstall": "node ./lib/Postinstall.js",
-    "jakets:build": "jake -t --jakefile Jakefile.js",
-    "jakets:setup": "jake -t --jakefile Jakefile.js jts:setup",
-    "jakets": "npm run jakets:setup && npm run jakets:build"
+    "build": "npm run build:compile && npm run build:test"
   },
   "repository": {
     "type": "git",

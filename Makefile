@@ -88,10 +88,10 @@ ifneq ($(JAKETS__DIR),$(CURRENT__DIR))
 endif
 
 jts_run_jake: $(NODE_MODULES__UPDATE_INDICATOR)
-	$(NPM) run jakets -- $(JAKE__PARAMS)
+	$(NODE_MODULES__DIR)/.bin/jakets -- $(JAKE__PARAMS)
 
 j-%: $(NODE_MODULES__UPDATE_INDICATOR)
-	$(NPM) run jakets -- $* $(JAKE__PARAMS)
+	$(NODE_MODULES__DIR)/.bin/jakets -- $* $(JAKE__PARAMS)
 
 # jts_run_jake: jts_compile_jake
 # 	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)

@@ -4,6 +4,12 @@ import * as Util from "./Util";
 import { Log } from "./Log";
 import { ExecAsync } from "./Exec";
 
+/**
+ * add the following to scripts section to have this file update the parent package.json
+ * "scripts": {
+    "postinstall": "node ./lib/Postinstall.js",
+ * }
+ */
 async function PostInstall() {
   let topInitDir = process && process.env && process.env.INIT_CWD;
   if (topInitDir) {
