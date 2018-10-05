@@ -50,7 +50,7 @@ interface IRange extends IVersion {
   MaxVersion?: IVersion;
 }
 
-async function UpdateVersionRangeTags(runRemoveCmds?: boolean) {
+async function UpdateVersionRangeTags(runRemoteCmds?: boolean) {
   Jakets.Log(Util.LocalDir, 0);
   // "git tag -l"
   let tagInfo: string[];
@@ -140,7 +140,7 @@ async function UpdateVersionRangeTags(runRemoveCmds?: boolean) {
     console.log("# " + remoteCmds.join("\n# "));
   }
 
-  if (runRemoveCmds && remoteCmds.length) {
+  if (runRemoteCmds && remoteCmds.length) {
     await Jakets.ExecAsyncAll(remoteCmds);
   }
   return remoteCmds;

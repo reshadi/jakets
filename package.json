@@ -1,13 +1,14 @@
 {
   "name": "jakets",
-  "version": "7.2.0",
+  "version": "7.2.1",
   "description": "Jake with TypeScript.",
   "bin": "./bin/cli.js",
   "main": "Jakefile.js",
   "scripts": {
     "build:compile": "tsc -p ./tsconfig.json",
     "build:test": "jake jts_test",
-    "build": "npm run build:compile && npm run build:test"
+    "build": "npm run build:compile && npm run build:test",
+    "release": "jake update_version_range_tags[true]"
   },
   "repository": {
     "type": "git",
