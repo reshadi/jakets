@@ -35,9 +35,9 @@ export const TopTask = Jakets
 Jakets.Log(`name: ${Jakets.CurrentPackageName}`);
 Jakets.Log(`version: ${Jakets.CurrentPackageVersion}`);
 
-if (
-  Jakets.IsWorkingDir(__dirname) ||
-  !Jakets.IsWorkingDir(__dirname + "/..")
-) {
-  throw "Incorrect IsWorkingDir";
-}
+// if (
+//   Jakets.IsWorkingDir(__dirname) ||
+//   !Jakets.IsWorkingDir(__dirname + "/..")
+// ) {
+//   throw "Incorrect IsWorkingDir";
+// }
