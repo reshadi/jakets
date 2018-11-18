@@ -27,6 +27,10 @@ export function MakeRelativeToWorkingDir(fullpath: string): string {
   return MakeRelativeToBaseDir(LocalDir, fullpath);
 }
 
+export function IsWorkingDir(dirname: string): boolean {
+  return MakeRelativeToWorkingDir(dirname) === MakeRelativeToWorkingDir(LocalDir);
+}
+
 export function CreateMakeRelative(dirname: string) {
   return (path: string) => MakeRelativeToWorkingDir(Path.isAbsolute(path) ? path : Path.join(dirname, path));
 }
