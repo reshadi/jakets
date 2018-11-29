@@ -79,7 +79,7 @@ export class Task {
       //This type of task adds default action, so either call it, or make the task non-async
       //Assert this is a directory task!
       let defaultAction = taskImp.action;
-      this.Action(async () => defaultAction.apply(taskImp, arguments));
+      this.Action(async function () { return defaultAction.apply(taskImp, <any>arguments); });
     }
   }
 
@@ -132,7 +132,7 @@ export class Task {
     //Based on https://github.com/jakejs/jake/blob/master/lib/task/task.js#L70
     let thisTask = this;
     this.TaskImplementation.action = function () {
-      let result: Promise<any> = action.apply(thisTask, arguments);
+      let result: Promise<any> = action.apply(thisTask, <any>arguments);
       result
         .then(value => this.complete())
         .catch(reason => {
