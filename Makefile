@@ -14,7 +14,7 @@ CURRENT__DIR := $(subst //,,$(dir $(firstword $(MAKEFILE_LIST)))/)
 #overwritable values
 LOG_LEVEL?=0
 PARALLEL_LIMIT?=0
-EXPECTED_NODE_VERSION?=v11.1.0
+EXPECTED_NODE_VERSION?=v11.5.0
 NODE__DIR?=./build/nodejs
 ###################################################################################################
 # setup platform dependent variables
