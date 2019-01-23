@@ -14,7 +14,7 @@ CURRENT__DIR := $(subst //,,$(dir $(firstword $(MAKEFILE_LIST)))/)
 #overwritable values
 LOG_LEVEL?=0
 PARALLEL_LIMIT?=0
-EXPECTED_NODE_VERSION?=v11.5.0
+EXPECTED_NODE_VERSION?=v11.7.0
 NODE__DIR?=./build/nodejs
 ###################################################################################################
 # setup platform dependent variables
@@ -146,6 +146,11 @@ $(JAKETS_JAKEFILE__JS): $(NODE_MODULES__UPDATE_INDICATOR) $(wildcard $(JAKETS__D
 # 	if [ ! -f $@ ]; then $(NPM) install --no-save ts-node; fi
 # 	@echo found ts-node @ `node -e "console.log(require.resolve('ts-node'))"`
 # 	touch $@
+
+npm_update: $(NODE_BIN__FILE)
+	$(NPM) update --depth 999
+	$(NPM) update dedup
+	touch $(NODE_MODULES__UPDATE_INDICATOR)
 
 _jts_npm_install: $(NODE_MODULES__UPDATE_INDICATOR)
 
