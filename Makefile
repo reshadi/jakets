@@ -14,7 +14,7 @@ CURRENT__DIR := $(subst //,,$(dir $(firstword $(MAKEFILE_LIST)))/)
 #overwritable values
 LOG_LEVEL?=0
 PARALLEL_LIMIT?=0
-EXPECTED_NODE_VERSION?=v11.7.0
+EXPECTED_NODE_VERSION?=v11.9.0
 NODE__DIR?=./build/nodejs
 ###################################################################################################
 # setup platform dependent variables
@@ -27,12 +27,15 @@ EXTRACT = tar xvf --strip-components=1
 
 ifeq ($(UNAME), Linux)
 	NODE_DIST__NAME = node-$(EXPECTED_NODE_VERSION)-linux-x64.tar.gz
+	NODE_BIN__DIR = $(NODE__DIR)/bin
 else ifeq ($(UNAME), Darwin)
 	NODE_DIST__NAME = node-$(EXPECTED_NODE_VERSION)-darwin-x64.tar.gz
+	NODE_BIN__DIR = $(NODE__DIR)/bin
 else 
 # ifeq($(UNAME), MINGW32_NT-6.2)
 	# NULL = $$null
 	NODE_DIST__NAME = node-$(EXPECTED_NODE_VERSION)-win-x64.zip
+	NODE_BIN__DIR = $(NODE__DIR)
 	WGET += --no-check-certificate
 	EXTRACT = Expand-Archive -DestinationPath $(NODE__DIR)
 endif
@@ -56,7 +59,6 @@ ifneq "$(INSTALLED_NODE_VERSION)" "$(EXPECTED_NODE_VERSION)"
     $(info using installed node $(INSTALLED_NODE_VERSION))
   else
     $(info using local node $(EXPECTED_NODE_VERSION))
-    NODE_BIN__DIR = $(NODE__DIR)/bin
     NODE_BIN__FILE = $(NODE_BIN__DIR)/$(NODE)
     export PATH := $(PWD)/$(NODE_BIN__DIR):$(PATH)
   endif
@@ -148,8 +150,8 @@ $(JAKETS_JAKEFILE__JS): $(NODE_MODULES__UPDATE_INDICATOR) $(wildcard $(JAKETS__D
 # 	touch $@
 
 npm_update: $(NODE_BIN__FILE)
-	$(NPM) update --depth 999
-	$(NPM) update dedup
+	$(NPM) update --no-save --depth 999
+	$(NPM) dedup
 	touch $(NODE_MODULES__UPDATE_INDICATOR)
 
 _jts_npm_install: $(NODE_MODULES__UPDATE_INDICATOR)
