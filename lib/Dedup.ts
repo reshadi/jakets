@@ -10,7 +10,7 @@ import { LoadJson } from './Util';
  */
 export function Dedup(folders: string[]): string[] {
   let files = new jake.FileList();
-  files.include(folders.map(scope => `./node_modules/${scope}/**/package.json`));
+  files.include(folders.filter(f => Fse.existsSync(`./node_modules/${f}`)).map(f => `./node_modules/${f}/**/package.json`));
   let allFiles = files.toArray();
   let normalModules = new Set<string>();
   let repeatModules = new Map<string, string>();
