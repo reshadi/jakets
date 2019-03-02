@@ -8,8 +8,8 @@
       "stopOnEntry": false,
       "args": [
         // "jts:setup"
-        "update_version_range_tags"
-        //"jts_test"
+        // "update_version_range_tags"
+        "jts_test"
       ],
       "cwd": "${workspaceRoot}",
       "runtimeExecutable": null,

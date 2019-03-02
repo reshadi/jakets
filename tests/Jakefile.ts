@@ -1,12 +1,13 @@
-import * as Fs from "fs";
+import * as Fse from "fs-extra";
 import * as Jakets from "../lib/Jakets";
+import { Dedup } from '../lib/Jakets';
 
 let MakeRelative = Jakets.CreateMakeRelative(__dirname);
 
 let d = Jakets.DirectoryTask(Jakets.BuildDir + "/test/d");
 
 let CreateFileAction: Jakets.TaskAction = async function () {
-  Fs.writeFileSync(this.GetName(), `Testfile: ${this.GetName()} ${Jakets.CurrentPackageVersion}`, { encoding: "utf8", });
+  Fse.writeFileSync(this.GetName(), `Testfile: ${this.GetName()} ${Jakets.CurrentPackageVersion}`, { encoding: "utf8", });
   this.Log(`Generated file ${this.GetName()}`, 0);
 };
 
@@ -20,7 +21,15 @@ let LocalAction: Jakets.TaskAction = async function () {
 let t1 = Jakets.Task("local", [f1], LocalAction);
 let t2 = Jakets.Task("local", [f2]).Action(LocalAction);
 
-let global = Jakets.GlobalTaskNs("top", "jtstest", [t1], async () => t2.Invoke());
+let t3 = Jakets.Task("dedup_test", [], async () => {
+  let sammplePath = './node_modules/@test/jake'
+  await Fse.copy('./node_modules/jake', sammplePath);
+  await Fse.copy('./node_modules/jake', './node_modules/@test/duped/' + sammplePath);
+  let deduped = Dedup(["@test"]);
+  console.log("deduped", deduped);
+});
+
+let global = Jakets.GlobalTaskNs("top", "jtstest", [t1, t3], async () => t2.Invoke());
 
 export const TopTask = Jakets
   .GlobalTask("jts_test")

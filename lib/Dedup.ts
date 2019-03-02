@@ -2,6 +2,7 @@ import * as Fse from "fs-extra";
 import * as Path from "path";
 import { Log } from './Log';
 import { LoadJson } from './Util';
+import { GlobalTaskNs } from './task/Helpers';
 
 /**
  * Usually after full installation, npm still leaves duplicate modules in the node_modules folder
@@ -35,7 +36,7 @@ export function Dedup(folders: string[]): string[] {
         Log(`in compatible but similar packages found at ${value} & ${key}`, 0);
       } else {
         let delFolder = Path.dirname(key);
-        Log(`Removing ${delFolder}`, 0);
+        Log(`Keeping ${Path.dirname(value)}\n\`-- deduping ${delFolder}`, 0);
         Fse.removeSync(delFolder);
         deletedFolders.push(delFolder);
       }
@@ -43,3 +44,7 @@ export function Dedup(folders: string[]): string[] {
   });
   return deletedFolders;
 }
+
+GlobalTaskNs("dedup", "jts", [], async function (...folders: string[]) {
+  Dedup(folders);
+});
