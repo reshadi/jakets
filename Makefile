@@ -71,7 +71,7 @@ endif
 NODE_MODULES__DIR=$(CURRENT__DIR)/node_modules
 NODE_MODULES__UPDATE_INDICATOR=$(NODE_MODULES__DIR)/.node_modules_updated
 NODE_MODULES__NPM_INSTALL_INDICATOR=$(NODE_MODULES__DIR)/.node_modules_npm_install
-POST_NPM_INSTALL=$(shell echo post-npm install)
+POST_NPM_INSTALL=
 # JAKE = $(NODE_MODULES__DIR)/.bin/jake
 JAKE__PARAMS += LogLevel=$(LOG_LEVEL) ParallelLimit=$(PARALLEL_LIMIT)
 # TSC = $(NODE_MODULES__DIR)/.bin/tsc
