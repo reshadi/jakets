@@ -70,6 +70,8 @@ endif
 # NODE_MODULES__DIR=$(JAKETS__DIR)/node_modules
 NODE_MODULES__DIR=$(CURRENT__DIR)/node_modules
 NODE_MODULES__UPDATE_INDICATOR=$(NODE_MODULES__DIR)/.node_modules_updated
+NODE_MODULES__NPM_INSTALL_INDICATOR=$(NODE_MODULES__DIR)/.node_modules_npm_install
+POST_NPM_INSTALL=$(shell echo post-npm install)
 # JAKE = $(NODE_MODULES__DIR)/.bin/jake
 JAKE__PARAMS += LogLevel=$(LOG_LEVEL) ParallelLimit=$(PARALLEL_LIMIT)
 # TSC = $(NODE_MODULES__DIR)/.bin/tsc
@@ -156,7 +158,11 @@ npm_update: $(NODE_BIN__FILE)
 
 _jts_npm_install: $(NODE_MODULES__UPDATE_INDICATOR)
 
-$(NODE_MODULES__UPDATE_INDICATOR): $(NODE_BIN__FILE) $(wildcard package.json)
+$(NODE_MODULES__UPDATE_INDICATOR): $(NODE_MODULES__NPM_INSTALL_INDICATOR)
+	$(POST_NPM_INSTALL)
+	touch $@
+
+$(NODE_MODULES__NPM_INSTALL_INDICATOR): $(NODE_BIN__FILE) $(wildcard package.json)
 	$(NPM) install
 	touch $@
 

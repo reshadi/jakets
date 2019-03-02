@@ -1,6 +1,6 @@
 {
   "name": "jakets",
-  "version": "7.6.0",
+  "version": "7.6.1",
   "description": "Jake with TypeScript.",
   "bin": "./bin/cli.js",
   "main": "Jakefile.js",
