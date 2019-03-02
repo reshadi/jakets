@@ -151,16 +151,16 @@ $(JAKETS_JAKEFILE__JS): $(NODE_MODULES__UPDATE_INDICATOR) $(wildcard $(JAKETS__D
 # 	@echo found ts-node @ `node -e "console.log(require.resolve('ts-node'))"`
 # 	touch $@
 
-npm_update: $(NODE_BIN__FILE)
-	$(NPM) update --no-save --depth 999
-	$(NPM) dedup
-	touch $(NODE_MODULES__UPDATE_INDICATOR)
-
-_jts_npm_install: $(NODE_MODULES__UPDATE_INDICATOR)
-
 $(NODE_MODULES__UPDATE_INDICATOR): $(NODE_MODULES__NPM_INSTALL_INDICATOR)
 	$(POST_NPM_INSTALL)
 	touch $@
+
+npm_update: $(NODE_BIN__FILE)
+	$(NPM) update --no-save --depth 999
+	$(NPM) dedup
+	touch $(NODE_MODULES__NPM_INSTALL_INDICATOR)
+
+_jts_npm_install: $(NODE_MODULES__NPM_INSTALL_INDICATOR)
 
 $(NODE_MODULES__NPM_INSTALL_INDICATOR): $(NODE_BIN__FILE) $(wildcard package.json)
 	$(NPM) install
