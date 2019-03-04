@@ -32,9 +32,16 @@ export function Dedup(folders: string[]): string[] {
       //Key is potentially repeate of value and can be removed
       let original = LoadJson(value);
       let repeat = LoadJson(key);
-      if (original.name !== repeat.name && original.version !== repeat.version) {
-        Log(`in compatible but similar packages found at ${value} & ${key}`, 0);
+
+      let originalFullname = `${original.name}@${original.version}`;
+      let repeatFullname = `${repeat.name}@${repeat.version}`;
+      let description = `found\n\`-- ${originalFullname} at ${value}:\n\`-- ${repeatFullname} at ${key}:`;
+      if (original.name !== repeat.name) {
+        Log(`incompatible package names ${description}`, 0);
+      } else if (original.version !== repeat.version) {
+        Log(`incompatible package versions ${description}`, 0);
       } else {
+        Log(`compatible packages ${description}`, 0);
         let delFolder = Path.dirname(key);
         Log(`Keeping ${Path.dirname(value)}\n\`-- deduping ${delFolder}`, 0);
         Fse.removeSync(delFolder);
