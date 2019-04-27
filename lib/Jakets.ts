@@ -2,17 +2,18 @@ export * from "./task/Helpers";
 export * from "./Exec";
 export * from "./Log";
 export {
-  MakeRelativeToWorkingDir,
-  CreateMakeRelative,
-  LocalDir,
   BuildDir,
+  CreateMakeRelative,
   CurrentPackageJson,
   CurrentPackageName,
   CurrentPackageVersion,
-  MakeRelativeToBaseDir,
-  NodeModulesUpdateIndicator,
+  IsWorkingDir,
   LoadJson,
-  IsWorkingDir
+  LocalDir,
+  MakeRelativeToBaseDir,
+  MakeRelativeToWorkingDir,
+  NodeModulesUpdateIndicator,
+  PathResolverFrom,
 } from "./Util";
 
 export * from "./Command";

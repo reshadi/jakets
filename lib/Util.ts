@@ -18,9 +18,8 @@ export function MakeRelativeToBaseDir(baseDir: string, fullpath: string): string
   }
   return Path.relative(baseDir, fullpath)
     .replace(/\\/g, "/") //Convert \ to / on windows
-    || '.' //in case the answer is empty
+    || "." //in case the answer is empty
     ;
-  // return path.relative(LocalDir, fullpath) || '.';
 }
 
 export function MakeRelativeToWorkingDir(fullpath: string): string {
@@ -31,9 +30,27 @@ export function IsWorkingDir(dirname: string): boolean {
   return MakeRelativeToWorkingDir(dirname) === MakeRelativeToWorkingDir(LocalDir);
 }
 
-export function CreateMakeRelative(dirname: string) {
-  return (path: string) => MakeRelativeToWorkingDir(Path.isAbsolute(path) ? path : Path.join(dirname, path));
+/**
+ * Returns a function that resolves a filepath relative to the
+ * given dirname.
+ *
+ * For example, say the file /my/proj/subdir/Example.ts has:
+ *
+ *     const Here = PathResolverFrom(__dirname);
+ *     console.log(Here("child/item"));
+ *
+ * The intent is to refer to /my/proj/subdir/child/item, and if
+ * you run subdir/Example.ts from cwd /my/proj, it will print
+ *
+ *     subdir/child/file
+ */
+export function PathResolverFrom(dirname: string): (path: string) => string {
+  return (path: string) =>
+    MakeRelativeToWorkingDir(Path.resolve(dirname, path));
 }
+
+/** Deprecated, use PathResolverFrom */
+export const CreateMakeRelative = PathResolverFrom;
 
 export const NodeModulesUpdateIndicator = MakeRelativeToWorkingDir("node_modules/.node_modules_updated");
 

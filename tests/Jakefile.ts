@@ -2,7 +2,7 @@ import * as Fse from "fs-extra";
 import * as Jakets from "../lib/Jakets";
 import { Dedup } from '../lib/Jakets';
 
-let MakeRelative = Jakets.CreateMakeRelative(__dirname);
+let Here = Jakets.PathResolverFrom(__dirname);
 
 let d = Jakets.DirectoryTask(Jakets.BuildDir + "/test/d");
 
@@ -12,7 +12,7 @@ let CreateFileAction: Jakets.TaskAction = async function () {
 };
 
 let f1 = Jakets.FileTask(`${d.GetName()}/f1.txt`, [d], CreateFileAction);
-let f2 = Jakets.FileTask(`${d.GetName()}/f2.txt`, [d, MakeRelative(__filename)], CreateFileAction);
+let f2 = Jakets.FileTask(`${d.GetName()}/f2.txt`, [d, Here(__filename)], CreateFileAction);
 
 let LocalAction: Jakets.TaskAction = async function () {
   this.Log(`Running task ${this.GetName()}`, 0);
