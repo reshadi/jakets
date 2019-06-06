@@ -14,7 +14,7 @@ CURRENT__DIR := $(subst //,,$(dir $(firstword $(MAKEFILE_LIST)))/)
 #overwritable values
 LOG_LEVEL?=0
 PARALLEL_LIMIT?=0
-EXPECTED_NODE_VERSION?=v11.10.0
+EXPECTED_NODE_VERSION?=v12.4.0
 NODE__DIR?=./build/nodejs
 ###################################################################################################
 # setup platform dependent variables
@@ -152,18 +152,19 @@ $(JAKETS_JAKEFILE__JS): $(NODE_MODULES__UPDATE_INDICATOR) $(wildcard $(JAKETS__D
 # 	touch $@
 
 $(NODE_MODULES__UPDATE_INDICATOR): $(NODE_MODULES__NPM_INSTALL_INDICATOR)
-	$(POST_NPM_INSTALL)
 	touch $@
 
 npm_update: $(NODE_BIN__FILE)
 	$(NPM) update --no-save --depth 999
 	$(NPM) dedup
+	$(POST_NPM_INSTALL)
 	touch $(NODE_MODULES__NPM_INSTALL_INDICATOR)
 
 _jts_npm_install: $(NODE_MODULES__NPM_INSTALL_INDICATOR)
 
 $(NODE_MODULES__NPM_INSTALL_INDICATOR): $(NODE_BIN__FILE) $(wildcard package.json)
 	$(NPM) install
+	$(POST_NPM_INSTALL)
 	touch $@
 
 _jts_get_node: $(NODE_BIN__FILE)
