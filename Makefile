@@ -14,7 +14,7 @@ CURRENT__DIR := $(subst //,,$(dir $(firstword $(MAKEFILE_LIST)))/)
 #overwritable values
 LOG_LEVEL?=0
 PARALLEL_LIMIT?=0
-EXPECTED_NODE_VERSION?=v12.4.0
+EXPECTED_NODE_VERSION?=v12.11.0
 NODE__DIR?=./build/nodejs
 ###################################################################################################
 # setup platform dependent variables
@@ -73,7 +73,7 @@ NODE_MODULES__UPDATE_INDICATOR=$(NODE_MODULES__DIR)/.node_modules_updated
 NODE_MODULES__NPM_INSTALL_INDICATOR=$(NODE_MODULES__DIR)/.node_modules_npm_install
 POST_NPM_INSTALL=
 # JAKE = $(NODE_MODULES__DIR)/.bin/jake
-JAKE__PARAMS += LogLevel=$(LOG_LEVEL) ParallelLimit=$(PARALLEL_LIMIT)
+JAKE__PARAMS += LogLevel=$(LOG_LEVEL) ParallelLimit=$(PARALLEL_LIMIT) --trace
 # TSC = $(NODE_MODULES__DIR)/.bin/tsc
 # TS_NODE = $(NODE_MODULES__DIR)/.bin/ts-node
 

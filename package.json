@@ -1,6 +1,6 @@
 {
   "name": "jakets",
-  "version": "7.6.5",
+  "version": "7.6.6",
   "description": "Jake with TypeScript.",
   "bin": "./bin/cli.js",
   "main": "Jakefile.js",
@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/reshadi/jakets",
   "dependencies": {
-    "@types/fs-extra": "^7.0.0",
+    "@types/fs-extra": "^8.0.0",
     "@types/jake": "^0.0.30",
     "@types/semver": "^6.0.0",
     "fs-extra": "^8.0.1",

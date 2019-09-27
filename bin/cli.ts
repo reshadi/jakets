@@ -13,7 +13,7 @@ declare namespace jake {
 
 var args = process.argv.slice(2);
 if (args.indexOf("jts:setup") === -1 && args.indexOf("--skip-setup") === -1) {
-  let command = Path.join("node_modules", ".bin", "jake") + ` -t --jakefile ${Util.MakeRelativeToWorkingDir(`${__dirname}/../Jakefile.js`)} jts:setup`;
+  let command = Path.join("node_modules", ".bin", "jake") + ` --trace --jakefile ${Util.MakeRelativeToWorkingDir(`${__dirname}/../Jakefile.js`)} jts:setup`;
   Log(command, 0);
   let setup = ChildProcess.execSync(command);
   Log(setup && setup.toString(), 0);
