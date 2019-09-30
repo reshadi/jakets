@@ -35,8 +35,8 @@ export const TopTask = Jakets
   .GlobalTask("jts_test")
   .DependsOn(["jtstest:top"])
   .Description("run Jakets tests")
-  .Action(async function () {
-    await LocalAction.apply(this, <any>arguments);
+  .Action(async function (...args: any[]) {
+    await LocalAction.apply(this, args);
     this.Log(">>>Finished tests", 0);
   })
   ;

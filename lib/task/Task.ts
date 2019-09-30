@@ -79,7 +79,7 @@ export class Task {
       //This type of task adds default action, so either call it, or make the task non-async
       //Assert this is a directory task!
       let defaultAction = taskImp.action;
-      this.Action(async function () { return defaultAction.apply(taskImp, <any>arguments); });
+      this.Action(async function (...args: any[]) { return defaultAction.apply(taskImp, args); });
     }
   }
 
