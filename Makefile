@@ -54,7 +54,7 @@ INSTALLED_NODE_VERSION = $(shell $(NODE) --version 2>$(NULL))
 ifneq "$(INSTALLED_NODE_VERSION)" "$(EXPECTED_NODE_VERSION)"
   SEMVER_ERROR := $(shell $(NODE) -e "try{ require('semver'); } catch(e) { console.log('error'); }" 2>$(NULL))
   ifneq "$(SEMVER_ERROR)" ""
-    SEMVER_ERROR := $(shell $(NPM) install semver )
+    SEMVER_ERROR := $(shell $(NPM) install --no-save semver )
   endif
 
   # INSTALLED_NODE_VERSION = $(EXPECTED_NODE_VERSION)
