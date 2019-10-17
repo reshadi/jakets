@@ -52,6 +52,11 @@ NPM := npm
 NODE_BIN__FILE =
 INSTALLED_NODE_VERSION = $(shell $(NODE) --version 2>$(NULL))
 ifneq "$(INSTALLED_NODE_VERSION)" "$(EXPECTED_NODE_VERSION)"
+  SEMVER_ERROR := $(shell $(NODE) -e "try{ require('semver'); } catch(e) { console.log('error'); }" 2>$(NULL))
+  ifneq "$(SEMVER_ERROR)" ""
+    SEMVER_ERROR := $(shell $(NPM) install semver )
+  endif
+
   # INSTALLED_NODE_VERSION = $(EXPECTED_NODE_VERSION)
   # IS_NEWER_NODE_VERSION := $(shell $(NODE) -e "console.log(require('semver').satisfies('$(INSTALLED_NODE_VERSION)','$(EXPECTED_NODE_VERSION)'))" 2>$(NULL))
   IS_NEWER_NODE_VERSION := $(shell $(NODE) -e "console.log(require('semver').gt('$(INSTALLED_NODE_VERSION)','$(EXPECTED_NODE_VERSION)'))" 2>$(NULL))
