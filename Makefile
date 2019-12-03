@@ -73,7 +73,7 @@ endif
 
 
 # NODE_MODULES__DIR=$(JAKETS__DIR)/node_modules
-NODE_MODULES__DIR=$(CURRENT__DIR)/node_modules
+NODE_MODULES__DIR ?= $(CURRENT__DIR)/node_modules
 NODE_MODULES__UPDATE_INDICATOR=$(NODE_MODULES__DIR)/.node_modules_updated
 NODE_MODULES__NPM_INSTALL_INDICATOR=$(NODE_MODULES__DIR)/.node_modules_npm_install
 POST_NPM_INSTALL=
@@ -81,6 +81,7 @@ POST_NPM_INSTALL=
 JAKE__PARAMS += LogLevel=$(LOG_LEVEL) ParallelLimit=$(PARALLEL_LIMIT) --trace
 # TSC = $(NODE_MODULES__DIR)/.bin/tsc
 # TS_NODE = $(NODE_MODULES__DIR)/.bin/ts-node
+# JAKETS ?= $(NODE_MODULES__DIR)/.bin/jakets
 
 #One can use the following local file to overwrite the above settings
 -include LocalPaths.mk
@@ -96,11 +97,19 @@ ifneq ($(JAKETS__DIR),$(CURRENT__DIR))
   LOCAL_JAKEFILE__JS=Jakefile.js
 endif
 
-jts_run_jake: $(NODE_MODULES__UPDATE_INDICATOR)
-	$(NODE_MODULES__DIR)/.bin/jakets -- $(JAKE__PARAMS)
+jts_run_jake: $(NODE_MODULES__UPDATE_INDICATOR) _jts_jakets_bin
+	$(JAKETS) -- $(JAKE__PARAMS)
 
-j-%: $(NODE_MODULES__UPDATE_INDICATOR)
-	$(NODE_MODULES__DIR)/.bin/jakets -- $* $(JAKE__PARAMS)
+j-%: $(NODE_MODULES__UPDATE_INDICATOR) _jts_jakets_bin
+	$(JAKETS) -- $* $(JAKE__PARAMS)
+
+define find_jakets
+	$(eval JAKETS ?= $(shell $(NODE) -e "try {console.log(require.resolve('.bin/jakets').replace(/\\\/g, '/'))}catch(e){console.log('npx jakets')}"))
+endef
+
+_jts_jakets_bin: $(NODE_MODULES__UPDATE_INDICATOR)
+	$(call find_jakets)
+
 
 # jts_run_jake: jts_compile_jake
 # 	$(JAKE) --jakefile $(JAKETS_JAKEFILE__JS) jts:setup $(JAKE__PARAMS)
@@ -169,6 +178,7 @@ _jts_npm_install: $(NODE_MODULES__NPM_INSTALL_INDICATOR)
 
 $(NODE_MODULES__NPM_INSTALL_INDICATOR): $(NODE_BIN__FILE) $(wildcard package.json)
 	$(NPM) install
+	$(call find_jakets)
 	$(POST_NPM_INSTALL)
 	touch $@
 
