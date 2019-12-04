@@ -1,6 +1,6 @@
 {
   "name": "jakets",
-  "version": "7.6.10",
+  "version": "7.6.11",
   "description": "Jake with TypeScript.",
   "bin": "./bin/cli.js",
   "main": "Jakefile.js",
@@ -25,7 +25,7 @@
     "@types/jake": "^0.0.30",
     "@types/semver": "^6.0.0",
     "fs-extra": "^8.0.1",
-    "jake": "^10.3.2",
+    "jake": "^8.1.1",
     "semver": "^6.1.1",
     "tslib": "^1.9.3",
     "typescript": "^3.2.4"
