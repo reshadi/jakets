@@ -66,6 +66,7 @@ ifneq "$(INSTALLED_NODE_VERSION)" "$(EXPECTED_NODE_VERSION)"
     $(info using local node $(EXPECTED_NODE_VERSION))
     NODE_BIN__FILE = $(NODE_BIN__DIR)/$(NODE)
     export PATH := $(PWD)/$(NODE_BIN__DIR):$(PATH)
+    $(info PATH=$(PATH))
   endif
 else
   $(info using installed node $(INSTALLED_NODE_VERSION))
@@ -104,7 +105,8 @@ j-%: $(NODE_MODULES__UPDATE_INDICATOR) _jts_jakets_bin
 	$(JAKETS) -- $* $(JAKE__PARAMS)
 
 define find_jakets
-	$(eval JAKETS ?= $(shell $(NODE) -e "try {console.log(require.resolve('.bin/jakets').replace(/\\\/g, '/'))}catch(e){console.log('npx jakets')}"))
+	$(eval JAKETS ?= $(firstword $(shell $(NODE) -e "try {console.log(require.resolve('.bin/jakets').replace(/\\\/g, '/'))}catch(e){console.log('npx jakets')}")) $(NODE_MODULES__DIR)/.bin/jakets)
+	$(info JAKETS=$(JAKETS))
 endef
 
 _jts_jakets_bin: $(NODE_MODULES__UPDATE_INDICATOR)
