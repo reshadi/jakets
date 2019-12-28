@@ -22,7 +22,7 @@
   "homepage": "https://github.com/reshadi/jakets",
   "dependencies": {
     "@types/fs-extra": "^8.0.0",
-    "@types/jake": "^0.0.30",
+    "@types/jake": "^0.0.31",
     "@types/semver": "^6.0.0",
     "fs-extra": "^8.0.1",
     "jake": "^8.1.1",
