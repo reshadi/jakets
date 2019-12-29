@@ -83,12 +83,14 @@ function CompileJakefile(targetDir: string): Jakets.TaskType {
     }
 
     let publicTasks = await Jakets.ExecAsync(`${jakeCmd} -T -f ${jakefileJs}`);
-    Jakets.Log(publicTasks.StdOut);
-    let taskList = !publicTasks.StdErr && publicTasks.StdOut.match(/^jake ([-:\w]*)/gm);
+    let taskList = !publicTasks.StdErr && publicTasks.StdOut.match(/^jake ([-:\w]+)/gm);
     if (taskList) {
-      taskList = taskList.map(t => { let m = t.match(/\s.*/); return m ? m[0] : ""; }).filter(t => t.indexOf(":") === -1);
-      Jakets.Log(`Found public tasks ${taskList}`, 1);
+      taskList = taskList.map(t => t.replace(/^jake /, "")).filter(t => t.indexOf(":") === -1);
+      Jakets.Log(`Public tasks: ${taskList.join(" ")}`, 1);
     } else {
+      Jakets.Log(`No public tasks?`, 1);
+      Jakets.Log(`StdOut:\n${publicTasks.StdOut}`, 1);
+      Jakets.Log(`StdErr:\n${publicTasks.StdErr}`, 1);
       taskList = [];
     }
 
