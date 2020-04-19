@@ -1,14 +1,15 @@
 import * as Path from "path";
 import * as Util from "./Util";
 import * as Helpers from "./task/Helpers";
-import * as Exec from "./Exec";
 import * as Command from "./Command";
 import * as Typescript from "typescript";
 import * as Task from "./task/Task";
 import { FileTask } from "./task/FileTask";
+import { Log } from "./Log";
+import { inspect } from "util";
 
-//The following are the most common types used from typescript for the compiler optionss
-export let ModuleKind = Typescript.ModuleKind;;
+//The following are the most common types used from typescript for the compiler options
+export let ModuleKind = Typescript.ModuleKind;
 export let ScriptTarget = Typescript.ScriptTarget;
 
 export function TscTask(
@@ -35,6 +36,9 @@ export function TscTask(
   return Helpers.FileTask(depInfo.DependencyFile, depInfo.AllDependencies, async function () {
     let sectionName = `tsc compile ${depInfo.DependencyFile}`;
     console.time(sectionName);
+
+    Log(`options for ${sectionName}`, 0);
+    Log(inspect(options, { depth: null }), 0)
 
     let program = Typescript.createProgram(filenames, options);
     let allFilenames = program.getSourceFiles().map(f => Util.MakeRelativeToWorkingDir(f.fileName));
